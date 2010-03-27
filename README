@@ -1,0 +1,34 @@
+EvilPixie
+=========
+
+Contact: Ben Campbell (http://scumways.com)
+
+Overview
+--------
+
+A pixel-oriented paint program. If you ever used Deluxe Paint, this should
+be familiar :-)
+
+Currently only supports paletted images.
+
+
+Building from source (some random notes)
+----------------------------------------
+
+depends upon:
+qt4
+libxpm
+libdevil
+libgif
+(more?)
+
+
+All QT code is kept inside src/qt. All the core stuff (in src/) is pretty
+abstracted and could be used on any GUI system (eg I was thinking of doing
+a Nintendo DS homebrew version some time)
+
+To build:
+
+$ qmake evilpixie.pro
+$ make
+

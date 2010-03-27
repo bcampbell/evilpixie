@@ -1,0 +1,73 @@
+TODO
+====
+
+For initial release:
+
+- provide reasonable default palette
+- about box/help/keyboard shortcut cheatsheet etc...
+- move code to public rcs
+- copyright notes in source
+- website
+- win32 build
+
+Later:
+
+- circle tools
+    - modifier key for 1:1 ratio? or separate ellipse/circle tools?
+- status bar - show zoom, mousepos, tool info (eg rectangle dimensions)
+- BUG: mousedroppings around right and bottom edges of view
+- grid config tool
+- add palette edits to the undo/redo stack
+- brush pickup, rect tool - should exclude right and bottom edge if grid on
+  (optional)
+- BUG: TGA load flips image
+- BUG: palette spread not 100% correct (off-by-one-error somewhere?)
+
+LATER
+=====
+
+- paletteeditor
+    - allow ad-hoc layout (and save in custom PNG chunk)
+    - textboxes for each component
+    - hex/dec
+    - html colour box
+- brush flip (X and Y)
+- support palettes with <256 colours
+- palette animation (colour cycling)
+- fileformat save options (eg png transparent colour)
+- animation
+  - preview view
+  - anim control
+  - onionskinning
+- file formats
+  - pixen
+  - palettes (jasc, ms, gimp...)
+  - animated gif
+  - mng
+  - graphicsgale
+  - ds formats?
+- layers
+- support for non-indexed images (rgba)
+- support restricted colour palettes (eg 12bit colour)
+
+
+DevIL issues
+------------
+
+DOC: ilSetPixels description refers to ilCopyPixels by mistake.
+
+ilTexImage creates IL_ORIGIN_LOWER_LEFT images. No way to change this from
+public API.
+
+No gif saving.
+
+No way to get supported load/save formats at runtime.
+
+ilRegisterPal name is misleading (not really part of register fns).
+Should be ilSetPal() or something.
+
+No key colour support for indexed images.
+
+IFF loading: unify frontend for ILBM and CIMG because they share .iff
+filename extension
+
