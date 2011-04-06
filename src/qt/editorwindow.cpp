@@ -490,7 +490,7 @@ void EditorWindow::do_open( bool )
 {
     if( !CheckZappingOK() )
         return;
-    QString loadfilters = "Image files (*.bpl *.bmp *.dcx *.gif *.ico *.ilbm *.lif *.mdl *.pcx *.png *.psd *.psp *.ras *.sun *.tga *.tif *.tiff *.tpl *.wal);;Any files (*)";
+    QString loadfilters = "Image files (*.bpl *.bmp *.dcx *.gif *.ico *.iff *.ilbm *.lif *.mdl *.pcx *.png *.psd *.psp *.ras *.sun *.tga *.tif *.tiff *.tpl *.wal);;Any files (*)";
 
     std::string startdir = Proj().Filename();
     if( startdir.empty() )
