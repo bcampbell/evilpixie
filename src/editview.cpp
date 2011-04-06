@@ -123,7 +123,7 @@ void EditView::OnMouseDown( Point const& viewpos, Button button )
 void EditView::OnMouseMove( Point const& viewpos )
 {
     Point p = ViewToProj( viewpos );
-    if( m_Panning && !(p != m_PrevPos) )
+    if( m_Panning && !(p == m_PrevPos) )
     {
         AlignView( viewpos, m_PanAnchor );
         m_PrevPos = p;
@@ -167,7 +167,7 @@ void EditView::OnMouseUp( Point const & viewpos, Button button )
 
 
 
-
+#if 0
 void EditView::DrawProj( Box const& projbox, Box* affectedview )
 {
     Point viewpos = ProjToView( Point( projbox.x, projbox.y ) );
@@ -203,7 +203,129 @@ void EditView::DrawProj( Box const& projbox, Box* affectedview )
     if( affectedview )
         *affectedview = vb;
 }
+#endif
 
+// TAKE 2
+#if 0
+void EditView::DrawProj( Box projbox, Box* affectedview )
+{
+    // only need to redraw onscreen bits
+    projbox.ClipAgainst( ViewToProj(m_ViewBox) );
+
+    Box vb = ProjToView(projbox);
+
+    int y;
+    for( y=vb.y; y<vb.y+vb.h; ++y )
+    {
+        RGBx* dest = m_Canvas->Ptr(vb.x,y);
+
+        int px = projbox.x;
+        int py = y/m_Zoom + m_Offset.y;
+        int px2 = Proj().Img().W();
+        int px3 = projbox.Right();
+        if(px2>px3)
+            px2=px3;
+
+        int i;
+        for(; px<0; ++px)
+        {
+            for(i=0;i<m_Zoom;++i)
+                *dest++ = RGBx(0,0,128);
+        }
+
+        for(; px<px2; ++px)
+        {
+            RGBx c(Proj().GetColour(Proj().Img().GetPixel(px,py)));
+            for(i=0;i<m_Zoom;++i)
+                *dest++ = c;
+        }
+        for(; px<px3; ++px)
+        {
+            for(i=0;i<m_Zoom;++i)
+                *dest++ = RGBx(0,0,128);
+        }
+    }
+
+    if( affectedview )
+        *affectedview = vb;
+}
+#endif
+
+
+void EditView::DrawProj( Box const& projbox, Box* affectedview )
+{
+    // note: projbox can be outside the project boundary
+
+    Point viewpos = ProjToView( Point( projbox.x, projbox.y ) );
+
+    // translate into view coords
+    Box vb(0,0,0,0);
+    vb.x = viewpos.x;
+    vb.y = viewpos.y;
+    vb.w = (projbox.w * m_Zoom);// + (m_Zoom-1);
+    vb.h = (projbox.h * m_Zoom);// + (m_Zoom-1);
+
+    vb.ClipAgainst( m_ViewBox );
+
+    int y;
+    for( y=vb.y; y<vb.y+vb.h; ++y )
+    {
+        RGBx* dest = m_Canvas->Ptr(vb.x,y);
+
+        int x = vb.x;
+
+        int px = x/m_Zoom + m_Offset.x;
+        int py = y/m_Zoom + m_Offset.y;
+
+        int pstart = projbox.x<0 ? 0:projbox.x;
+        int start = (pstart-m_Offset.x)*m_Zoom;
+        int pend = (projbox.x+projbox.w)>Proj().Img().W() ? Proj().Img().W() : projbox.x+projbox.w;
+        int end = (pend-m_Offset.x)*m_Zoom + (m_Zoom-1);
+
+        if(py >= 0 && py < Proj().Img().H())
+        {
+            // line is within project vertical bounds
+
+            // draw blank to the left of image
+            while(x<start)
+            {
+                *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
+                ++x;
+            }
+
+            px = x/m_Zoom + m_Offset.x;
+            // the in-view part of the image
+            uint8_t const* src = Proj().Img().PtrConst( px,py );
+            int i;
+            // whole pixels
+            while(x<end-(m_Zoom-1))
+            {
+                const RGBx c(Proj().GetColour(*src++));
+                for(i=0;i<m_Zoom;++i)
+                    *dest++ = c;
+                x += m_Zoom;
+            }
+            // trailing clipped pixel, if any
+            while(x<end)
+            {
+                const RGBx c(Proj().GetColour(*src++));
+                for(i=0;i<m_Zoom && x<end; ++i)
+                {
+                    *dest++ = c;
+                    ++x;
+                }
+            }
+        }
+        // blank to the right of image
+        while( x<vb.x+vb.w )
+        {
+            *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
+            ++x;
+        }
+    }
+    if( affectedview )
+        *affectedview = vb;
+}
 
 
 // called when project has been modified
