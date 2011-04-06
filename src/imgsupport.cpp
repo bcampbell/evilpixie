@@ -21,7 +21,16 @@ void LoadImg( IndexedImg& img, RGBx* palette, const char* filename )
     ILuint im;
     ilGenImages( 1, &im );
     ilBindImage( im );
-    ilLoadImage( (char*)filename );
+    std::string ext = ToLower( ExtName(filename) );
+    // cheesy hack to bias il in favour of amiga-style iffs
+    if( ext==".iff" )
+    {
+        ilLoad(IL_ILBM, (char*)filename);
+    }
+    else
+    {
+        ilLoadImage((char*)filename);
+    }
 
     ILenum err = ilGetError();
     if( err != IL_NO_ERROR )
