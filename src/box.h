@@ -18,10 +18,10 @@ struct Box
 
     bool Empty() const { return w==0 || h==0; }
 
-    int Left() const { return x; }
-    int Right() const { return x+w-1; }
-    int Top() const { return y; }
-    int Bottom() const { return y+h-1; }
+    int XMin() const { return x; }
+    int XMax() const { return x+w-1; }
+    int YMin() const { return y; }
+    int YMax() const { return y+h-1; }
     int W() const { return w; }
     int H() const { return h; }
 
@@ -41,8 +41,8 @@ struct Box
 
 inline bool Box::Contains( Point const& pt ) const
 {
-    return pt.x>=Left() && pt.x<Right() &&
-        pt.y>=Top() && pt.y<Bottom();
+    return pt.x>=XMin() && pt.x<XMax() &&
+        pt.y>=YMin() && pt.y<YMax();
 }
 
 

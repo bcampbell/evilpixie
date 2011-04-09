@@ -53,8 +53,8 @@ void Box::Merge( Box const& other )
 
     int l = std::min(x, other.x );
     int t = std::min(y, other.y );
-    int r = std::max( Right(), other.Right() );
-    int b = std::max( Bottom(), other.Bottom() );
+    int r = std::max( XMax(), other.XMax() );
+    int b = std::max( YMax(), other.YMax() );
 
     x = l;
     y = t;
@@ -64,9 +64,9 @@ void Box::Merge( Box const& other )
 
 bool Box::Contains( Box const& other ) const
 {
-    return ( Left() <= other.Left() &&
-        Right() >= other.Right() &&
-        Top() <= other.Top() &&
-        Bottom() >= other.Bottom() );
+    return ( XMin() <= other.XMin() &&
+        XMax() >= other.XMax() &&
+        YMin() <= other.YMin() &&
+        YMax() >= other.YMax() );
 }
 

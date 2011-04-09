@@ -85,16 +85,16 @@ void EditView::ConfineView()
 
     if( p.W() < v.W() )
         m_Offset.x = -(v.W()-p.W())/2;   // center
-    else if( v.Left() < 0 )
+    else if( v.XMin() < 0 )
         m_Offset.x = 0;
-    else if( v.Right() > p.Right() )
+    else if( v.XMax() > p.XMax() )
         m_Offset.x = (p.x + p.W()) - v.W();
 
     if( p.H() < v.H() )
         m_Offset.y = -(v.H()-p.H())/2;   // center
-    else if( v.Top() < 0 )
+    else if( v.YMin() < 0 )
         m_Offset.y = 0;
-    else if( v.Bottom() > p.Bottom() )
+    else if( v.YMax() > p.YMax() )
         m_Offset.y = (p.y+p.H()) - v.H();
 
 }
@@ -222,7 +222,7 @@ void EditView::DrawProj( Box projbox, Box* affectedview )
         int px = projbox.x;
         int py = y/m_Zoom + m_Offset.y;
         int px2 = Proj().Img().W();
-        int px3 = projbox.Right();
+        int px3 = projbox.XMax();
         if(px2>px3)
             px2=px3;
 

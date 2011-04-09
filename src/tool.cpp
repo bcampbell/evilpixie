@@ -231,11 +231,11 @@ void DrawCrossHairCursor( EditView& view, Point const& centre, RGBx const& c )
     int zoom = view.Zoom();
     Point p = view.ProjToView(centre);
 
-    Box hbox( bnd.Left(), p.y, bnd.W(), 1*zoom );
+    Box hbox( bnd.XMin(), p.y, bnd.W(), 1*zoom );
     view.Canvas().FillBox( c,hbox );
     view.AddCursorDamage( hbox );
 
-    Box vbox( p.x, bnd.Top(), 1*zoom, bnd.H() );
+    Box vbox( p.x, bnd.YMin(), 1*zoom, bnd.H() );
     view.Canvas().FillBox( c,vbox );
     view.AddCursorDamage( vbox );
 }
@@ -712,8 +712,8 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
 
     // top (including left and rightmost pixels)
     dmg.SetEmpty();
-    y = rect.Top();
-    for( x=rect.Left(); x<=rect.Right(); ++x )
+    y = rect.YMin();
+    for( x=rect.XMin(); x<=rect.XMax(); ++x )
     {
         Box tmp;
         PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
@@ -723,8 +723,8 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
 
     // right edge (exclude top and bottom rows)
     dmg.SetEmpty();
-    x = rect.Right();
-    for( y=rect.Top()+1; y<=rect.Bottom()-1; ++y )
+    x = rect.XMax();
+    for( y=rect.YMin()+1; y<=rect.YMax()-1; ++y )
     {
         Box tmp;
         PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
@@ -734,8 +734,8 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
 
     // bottom edge (including right and leftmost pixels)
     dmg.SetEmpty();
-    y = rect.Bottom();
-    for( x=rect.Right(); x>=rect.Left(); --x )
+    y = rect.YMax();
+    for( x=rect.XMax(); x>=rect.XMin(); --x )
     {
         Box tmp;
         PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
@@ -745,8 +745,8 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
 
     // left edge (exclude bottom and top rows)
     dmg.SetEmpty();
-    x = rect.Left();
-    for( y=rect.Bottom()-1; y>=rect.Top()+1; --y )
+    x = rect.XMin();
+    for( y=rect.YMax()-1; y>=rect.YMin()+1; --y )
     {
         Box tmp;
         PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
@@ -780,8 +780,8 @@ void RectTool::DrawCursor( EditView& view )
 
     // top (include left and rightmost pixels)
     dmg.SetEmpty();
-    y = rect.Top();
-    for( x=rect.Left(); x<=rect.Right(); ++x )
+    y = rect.YMin();
+    for( x=rect.XMin(); x<=rect.XMax(); ++x )
     {
         Box tmp;
         PlonkBrushToView( view, Point(x,y), tmp, m_DownButton );
@@ -791,8 +791,8 @@ void RectTool::DrawCursor( EditView& view )
 
     // right edge (exclude top and bottom rows)
     dmg.SetEmpty();
-    x = rect.Right();
-    for( y=rect.Top()+1; y<=rect.Bottom()-1; ++y )
+    x = rect.XMax();
+    for( y=rect.YMin()+1; y<=rect.YMax()-1; ++y )
     {
         Box tmp;
         PlonkBrushToView( view, Point(x,y), tmp, m_DownButton );
@@ -802,8 +802,8 @@ void RectTool::DrawCursor( EditView& view )
 
     // bottom edge (include right and leftmost)
     dmg.SetEmpty();
-    y = rect.Bottom();
-    for( x=rect.Right(); x>=rect.Left(); --x )
+    y = rect.YMax();
+    for( x=rect.XMax(); x>=rect.XMin(); --x )
     {
         Box tmp;
         PlonkBrushToView( view, Point(x,y), tmp, m_DownButton );
@@ -813,8 +813,8 @@ void RectTool::DrawCursor( EditView& view )
 
     // left edge (exclude bottom and top)
     dmg.SetEmpty();
-    x = rect.Left();
-    for( y=rect.Bottom()-1; y>=rect.Top()+1; --y )
+    x = rect.XMin();
+    for( y=rect.YMax()-1; y>=rect.YMin()+1; --y )
     {
         Box tmp;
         PlonkBrushToView( view, Point(x,y), tmp, m_DownButton );

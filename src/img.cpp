@@ -10,11 +10,11 @@ void RGBImg::FillBox( RGBx c, Box& b )
     b.ClipAgainst( Bounds() );
 
     int y;
-    for( y=b.Top(); y<=b.Bottom(); ++y )
+    for( y=b.YMin(); y<=b.YMax(); ++y )
     {
         int x;
-        RGBx* dest = Ptr(b.Left(),y);
-        for( x=b.Left(); x<=b.Right(); ++x )
+        RGBx* dest = Ptr(b.XMin(),y);
+        for( x=b.XMin(); x<=b.XMax(); ++x )
         {
             *dest++ = c;
         }
@@ -26,19 +26,19 @@ void RGBImg::OutlineBox( RGBx c, Box& b )
     b.ClipAgainst( Bounds() );
     // draw top & bottom
     int x;
-    RGBx* ptop = Ptr(b.Left(),b.Top());
-    RGBx* pbot = Ptr(b.Left(),b.Bottom());
-    for( x=b.Left(); x<=b.Right(); ++x )
+    RGBx* ptop = Ptr(b.XMin(),b.YMin());
+    RGBx* pbot = Ptr(b.XMin(),b.YMax());
+    for( x=b.XMin(); x<=b.XMax(); ++x )
     {
         *ptop++ = c;
         *pbot++ = c;
     }
 
     // draw sides (note: already draw top & bottom pixels)
-    RGBx* pleft = Ptr(b.Left(),b.Top()+1);
-    RGBx* pright = Ptr(b.Right(),b.Top()+1);
+    RGBx* pleft = Ptr(b.XMin(),b.YMin()+1);
+    RGBx* pright = Ptr(b.XMax(),b.YMin()+1);
     int y;
-    for( y=b.Top()+1; y<=b.Bottom()-1; ++y )
+    for( y=b.YMin()+1; y<=b.YMax()-1; ++y )
     {
         *pleft = c;
         pleft += W();
@@ -96,11 +96,11 @@ void IndexedImg::FillBox( uint8_t c, Box& b )
     b.ClipAgainst( Bounds() );
 
     int y;
-    for( y=b.Top(); y<=b.Bottom(); ++y )
+    for( y=b.YMin(); y<=b.YMax(); ++y )
     {
         int x;
-        uint8_t* dest = Ptr(b.Left(),y);
-        for( x=b.Left(); x<=b.Right(); ++x )
+        uint8_t* dest = Ptr(b.XMin(),y);
+        for( x=b.XMin(); x<=b.XMax(); ++x )
         {
             *dest++ = c;
         }
@@ -249,8 +249,8 @@ void BlitZoomIndexedToRGBx(
     for( y=0; y<destclipped.H(); ++y )
     {
         int x;
-        RGBx* dest = destimg.Ptr( destclipped.Left() + 0, destclipped.Top() + y );
-        uint8_t const* src = srcimg.PtrConst( srcclipped.Left()+0, srcclipped.Top()+y/zoom );
+        RGBx* dest = destimg.Ptr( destclipped.XMin() + 0, destclipped.YMin() + y );
+        uint8_t const* src = srcimg.PtrConst( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
         int n=0;
         for( x=0; x<destclipped.W(); ++x )
         {
