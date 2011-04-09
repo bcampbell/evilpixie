@@ -1,0 +1,6 @@
+*.o
+/moc_*.cpp
+/evilpixie
+/Makefile
+*.swp
+tags
