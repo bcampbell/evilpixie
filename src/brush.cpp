@@ -10,6 +10,14 @@ Brush::Brush( BrushStyle style, int w, int h, uint8_t const* initial, int transp
 {
 }
 
+Brush::Brush( BrushStyle style, IndexedImg const& src, Box const& area, int transparent ) :
+    IndexedImg( src,area ),
+    m_Style(style),
+    m_Handle( area.w/2, area.h/2 ),
+    m_Transparent(transparent)
+{
+}
+
 Brush::~Brush()
 {
 }

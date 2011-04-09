@@ -81,7 +81,7 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
 
 void Project::LoadPalette( std::string const& filename )
 {
-    ::LoadPalette( m_Palette, filename.c_str() );
+    ::LoadPalette( m_Palette.raw(), filename.c_str() );
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
         (*it)->OnPaletteReplaced();
@@ -89,18 +89,7 @@ void Project::LoadPalette( std::string const& filename )
 
 void Project::Load( std::string const& filename )
 {
-    LoadImg( m_Img, m_Palette, filename.c_str() );
-#if 0
-    std::string ext = ToLower( ExtName(filename) );
-    if( ext==".png" )
-        LoadPNG( m_Img, m_Palette, filename.c_str() );
-    else if( ext==".gif" )
-        LoadGIF( m_Img, m_Palette, filename.c_str() );
-    else if( ext==".xpm" )
-        LoadXPM( m_Img, m_Palette, filename.c_str() );
-    else
-        throw Wobbly( "unsupported load format - %s", ext.c_str() );
-#endif
+    LoadImg( m_Img, m_Palette.raw(), filename.c_str() );
 
     SetModifiedFlag( false );
     m_Filename = filename;
@@ -117,15 +106,7 @@ void Project::Load( std::string const& filename )
 
 void Project::Save( std::string const& filename )
 {
-/*    std::string ext = ToLower( ExtName(filename) );
-    if( ext==".png" )
-        SavePNG( m_Img, m_Palette, filename.c_str() );
-    else if( ext==".gif" )
-        SaveGIF( m_Img, m_Palette, filename.c_str() );
-    else
-        throw Wobbly( "unsupported save format - %s", ext.c_str() );
-*/
-    SaveImg( m_Img, m_Palette, filename.c_str() );
+    SaveImg( m_Img, m_Palette.raw(), filename.c_str() );
 
     SetModifiedFlag( false );
     m_Filename = filename;

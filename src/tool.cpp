@@ -158,7 +158,7 @@ void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
 
     BlitZoomIndexedToRGBx( b, b.Bounds(),
         view.Canvas(), viewdmg,
-        view.Proj().GetPaletteConst(),
+        view.Proj().PaletteConst(),
         view.Zoom(),
         b.TransparentColour(),
         maskcolour );
@@ -177,7 +177,7 @@ void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
 
     BlitZoomIndexedToRGBx( b, b.Bounds(),
         view.Canvas(), viewdmg,
-        view.Proj().GetPaletteConst(),
+        view.Proj().PaletteConst(),
         view.Zoom(),
         b.TransparentColour(),
         maskcolour );
@@ -557,18 +557,14 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
     if( pickup.Empty() )
         return;
 
-    Brush* brush = new Brush( FULLCOLOUR, pickup.W(), pickup.H(), 0, proj.BGPen() );
+    Brush* brush = new Brush( FULLCOLOUR, proj.Img(), pickup, proj.BGPen() );
 
     // copy in palette
-    brush->SetPalette( proj.GetPalette() );
+    brush->SetPalette( proj.PaletteConst() );
 
     if( Owner().GridActive() )
         brush->SetHandle( Point(0,0) );
 
-
-    Box bb(0,0,0,0);
-    BlitIndexed( proj.Img(), pickup,
-        *brush, bb, -1, -1 );
     g_App->SetCustomBrush( brush );
     Owner().SetBrush( -1 );
 

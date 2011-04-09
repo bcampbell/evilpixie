@@ -9,13 +9,13 @@
 #include "point.h"
 
 #include "colours.h"
+#include "palette.h"
 #include "box.h"
 #include "img.h"
 
 class Tool;
 class ProjectListener;
 class Cmd;
-class Palette;
 
 class Project
 {
@@ -51,12 +51,14 @@ public:
     IndexedImg& Img() { return m_Img; }
     IndexedImg const& ImgConst() const { return m_Img; }
 
-    // palette manipulation
-	RGBx const& GetColour(int n ) { return m_Palette[n]; }
-	void SetColour( int n, RGBx const& c ) { m_Palette[n]=c; }
     // kill!
-    RGBx const* GetPaletteConst() const { return m_Palette; }
-    RGBx* GetPalette() { return m_Palette; }
+    // palette manipulation
+	RGBx const& GetColour(int n ) { return m_Palette.GetColour(n); }
+	void SetColour( int n, RGBx const& c ) { m_Palette.SetColour(n,c); }
+    RGBx const* GetPaletteConst() const { return m_Palette.rawconst(); }
+//    RGBx* GetPalette() { return m_Palette.raw(); }
+
+    Palette const& PaletteConst() const { return m_Palette; }
 
     // project holds FG and BG pens
 	int FGPen() const { return m_FGPen; }
@@ -107,7 +109,7 @@ private:
     Project();                  // disallowed
     Project( Project const& );  // disallowed
 
-	RGBx m_Palette[256];
+    Palette m_Palette;
     int m_FGPen;
     int m_BGPen;
     IndexedImg m_Img;

@@ -1,4 +1,5 @@
 #include "img.h"
+#include "palette.h"
 
 #include <cstring>
 #include <cstdio>
@@ -232,7 +233,7 @@ void BlitSwapIndexed(
 void BlitZoomIndexedToRGBx(
     IndexedImg const& srcimg, Box const& srcbox,
     RGBImg& destimg, Box& destbox,
-    RGBx const* palette,
+    Palette const& palette,
     int zoom,
     int transparentcolour,
     int maskcolour )
@@ -256,9 +257,9 @@ void BlitZoomIndexedToRGBx(
 
             RGBx c;// = *dest;
             if( maskcolour != -1 )
-                c = palette[maskcolour];
+                c = palette.GetColour(maskcolour);
             else
-                c = palette[*src];
+                c = palette.GetColour(*src);
             if( *src != transparentcolour )
                 *dest = c;
             ++dest;

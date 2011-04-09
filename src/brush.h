@@ -11,6 +11,9 @@ class Brush : public IndexedImg
 {
 public:
     Brush( BrushStyle style, int w, int h, uint8_t const* initial=0, int transparent=-1 );
+
+    // copy from an image
+    Brush( BrushStyle style, IndexedImg const& src, Box const& area, int transparent=-1 );
     virtual ~Brush();
 
     Point const& Handle() const     { return m_Handle; }
@@ -22,8 +25,8 @@ public:
     Palette const& GetPalette()
         { return m_Palette; }
 
-    void SetPalette( RGBx const* pal )
-        { m_Palette = Palette(pal); }
+    void SetPalette( Palette const& pal )
+        { m_Palette = pal; }
 
 private:
     BrushStyle m_Style;

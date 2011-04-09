@@ -5,6 +5,8 @@
 #include "colours.h"
 #include "point.h"
 
+class Palette;
+
 // An RGB bitmap
 class RGBImg
 {
@@ -109,7 +111,7 @@ void BlitSwapIndexed(
 void BlitZoomIndexedToRGBx(
     IndexedImg const& srcimg, Box const& srcbox,
     RGBImg& destimg, Box& destbox,
-    RGBx const* palette,
+    Palette const& palette,
     int zoom,
     int transparentcolour=-1,
     int maskcolour=-1 );
