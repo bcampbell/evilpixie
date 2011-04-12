@@ -85,7 +85,7 @@ private:
     //
     std::vector<Box> m_CursorDamage;
 
-    void DrawProj( Box const& projbox, Box* affectedview=0  );
+    void DrawView( Box const& viewbox, Box* affectedview=0  );
     void ConfineView();
 };
 

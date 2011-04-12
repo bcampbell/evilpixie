@@ -13,7 +13,7 @@ EditView::EditView( Editor& editor, int w, int h ) :
     m_Panning(false),
     m_PanAnchor(0,0)
 {
-    DrawProj( Box( m_Offset.x, m_Offset.y, Width()/m_Zoom, Height()/m_Zoom ) );
+    DrawView(m_ViewBox);
     Proj().AddListener( this );
     editor.AddView( this );
 }
@@ -43,15 +43,15 @@ void EditView::Resize( int w, int h )
     m_Canvas = new RGBImg( w,h );
 
     ConfineView();
-    DrawProj( Box( m_Offset.x, m_Offset.y, Width()/m_Zoom, Height()/m_Zoom ) );
-    Redraw( m_ViewBox );
+    DrawView(m_ViewBox);
+    Redraw(m_ViewBox);
 }
 
 void EditView::SetZoom( int zoom )
 {
     m_Zoom = zoom;
     ConfineView();
-    DrawProj(m_ViewBox);  //Box( m_Offset.x, m_Offset.y, Width()/m_Zoom, Height()/m_Zoom ) );
+    DrawView(m_ViewBox);
     Redraw(m_ViewBox);
 }
 
@@ -59,8 +59,8 @@ void EditView::SetOffset( Point const& projpos )
 {
     m_Offset = projpos;
     ConfineView();
-    DrawProj( Box( m_Offset.x, m_Offset.y, Width()/m_Zoom, Height()/m_Zoom ) );
-    Redraw( m_ViewBox );
+    DrawView(m_ViewBox);
+    Redraw(m_ViewBox);
 }
 
 // Offsets the view to make sure viewspace point viewp is over
@@ -167,130 +167,12 @@ void EditView::OnMouseUp( Point const & viewpos, Button button )
 
 
 
-#if 0
-void EditView::DrawProj( Box const& projbox, Box* affectedview )
-{
-    Point viewpos = ProjToView( Point( projbox.x, projbox.y ) );
 
-    // translate into view coords
-    Box vb(0,0,0,0);
-    vb.x = viewpos.x;
-    vb.y = viewpos.y;
-    vb.w = projbox.w * m_Zoom;
-    vb.h = projbox.h * m_Zoom;
-
-    vb.ClipAgainst( m_ViewBox );
-
-    int y;
-    for( y=vb.y; y<vb.y+vb.h; ++y )
-    {
-        RGBx* dest = m_Canvas->Ptr(vb.x,y);
-        int x;
-        for( x=vb.x; x<vb.x+vb.w; ++x )
-        {
-            Point p = ViewToProj( Point(x,y) );
-            if( p.x < 0 || p.x >= Proj().Img().W()
-                || p.y <0 || p.y >= Proj().Img().H() )
-            {
-                *dest++ = RGBx(0,0,128);
-            }
-            else
-            {
-                *dest++ = Proj().GetColour( Proj().Img().GetPixel( p.x,p.y ) );
-            }
-        }
-    }
-    if( affectedview )
-        *affectedview = vb;
-}
-#endif
-
-
-
-#if 0
-void EditView::DrawProj( Box const& projbox, Box* affectedview )
+void EditView::DrawView( Box const& viewbox, Box* affectedview )
 {
     // note: projbox can be outside the project boundary
 
-    Point viewpos = ProjToView( Point( projbox.x, projbox.y ) );
-
-    // translate into view coords
-/*
-    Box vb(0,0,0,0);
-    vb.x = viewpos.x;
-    vb.y = viewpos.y;
-    vb.w = (projbox.w * m_Zoom);// + (m_Zoom-1);
-    vb.h = (projbox.h * m_Zoom);// + (m_Zoom-1);
-*/
-    Box vb = ProjToView(projbox);
-    vb.ClipAgainst( m_ViewBox );
-
-    int y;
-    for( y=vb.y; y<vb.y+vb.h; ++y )
-    {
-        RGBx* dest = m_Canvas->Ptr(vb.x,y);
-
-        int x = vb.x;
-
-        int px = x/m_Zoom + m_Offset.x;
-        int py = y/m_Zoom + m_Offset.y;
-
-        int pstart = projbox.x<0 ? 0:projbox.x;
-        int start = (pstart-m_Offset.x)*m_Zoom;
-        int pend = (projbox.x+projbox.w)>Proj().Img().W() ? Proj().Img().W() : projbox.x+projbox.w;
-        int end = (pend-m_Offset.x)*m_Zoom; // + (m_Zoom-1);
-
-        if(py >= 0 && py < Proj().Img().H())
-        {
-            // line is within project vertical bounds
-
-            // draw blank to the left of image
-            while(x<start)
-            {
-                *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
-                ++x;
-            }
-
-            px = x/m_Zoom + m_Offset.x;
-            // the in-view part of the image
-            uint8_t const* src = Proj().Img().PtrConst( px,py );
-            int i;
-            // whole pixels
-            while(x<end-(m_Zoom-1))
-            {
-                const RGBx c(Proj().GetColour(*src++));
-                for(i=0;i<m_Zoom;++i)
-                    *dest++ = c;
-                x += m_Zoom;
-            }
-            // trailing clipped pixel, if any
-            while(x<end)
-            {
-                const RGBx c(Proj().GetColour(*src++));
-                for(i=0;i<m_Zoom && x<end; ++i)
-                {
-                    *dest++ = c;
-                    ++x;
-                }
-            }
-        }
-        // blank to the right of image
-        while( x<vb.x+vb.w )
-        {
-            *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
-            ++x;
-        }
-    }
-    if( affectedview )
-        *affectedview = vb;
-}
-#endif
-
-void EditView::DrawProj( Box const& projbox, Box* affectedview )
-{
-    // note: projbox can be outside the project boundary
-
-    Box vb(ProjToView(projbox));
+    Box vb(viewbox);
     vb.ClipAgainst(m_ViewBox);
 
     // get project bounds in view coords (unclipped)
@@ -354,7 +236,8 @@ void EditView::OnDamaged( Box const& projdmg )
     Box viewdirtied;
 
     // just redraw the damaged part of the project...
-    DrawProj(projdmg, &viewdirtied );
+    Box area(ProjToView(projdmg));
+    DrawView(area, &viewdirtied );
 
     // tell the gui to display damaged part
     Redraw( viewdirtied );
@@ -368,10 +251,11 @@ void EditView::OnPaletteChanged( int, RGBx const& )
 
 void EditView::OnPaletteReplaced()
 {
-    // redraw everything in view
-    Box projdmg = ViewToProj( m_ViewBox );
-    DrawProj(projdmg);
-    Redraw( m_ViewBox );
+    // redraw the whole project
+    Box area(ProjToView(Proj().Img().Bounds()));
+    Box affected;
+    DrawView(area,&affected);
+    Redraw(affected);
 }
 
 
