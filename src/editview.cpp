@@ -51,8 +51,8 @@ void EditView::SetZoom( int zoom )
 {
     m_Zoom = zoom;
     ConfineView();
-    DrawProj( Box( m_Offset.x, m_Offset.y, Width()/m_Zoom, Height()/m_Zoom ) );
-    Redraw( m_ViewBox );
+    DrawProj(m_ViewBox);  //Box( m_Offset.x, m_Offset.y, Width()/m_Zoom, Height()/m_Zoom ) );
+    Redraw(m_ViewBox);
 }
 
 void EditView::SetOffset( Point const& projpos )
@@ -205,53 +205,9 @@ void EditView::DrawProj( Box const& projbox, Box* affectedview )
 }
 #endif
 
-// TAKE 2
+
+
 #if 0
-void EditView::DrawProj( Box projbox, Box* affectedview )
-{
-    // only need to redraw onscreen bits
-    projbox.ClipAgainst( ViewToProj(m_ViewBox) );
-
-    Box vb = ProjToView(projbox);
-
-    int y;
-    for( y=vb.y; y<vb.y+vb.h; ++y )
-    {
-        RGBx* dest = m_Canvas->Ptr(vb.x,y);
-
-        int px = projbox.x;
-        int py = y/m_Zoom + m_Offset.y;
-        int px2 = Proj().Img().W();
-        int px3 = projbox.XMax();
-        if(px2>px3)
-            px2=px3;
-
-        int i;
-        for(; px<0; ++px)
-        {
-            for(i=0;i<m_Zoom;++i)
-                *dest++ = RGBx(0,0,128);
-        }
-
-        for(; px<px2; ++px)
-        {
-            RGBx c(Proj().GetColour(Proj().Img().GetPixel(px,py)));
-            for(i=0;i<m_Zoom;++i)
-                *dest++ = c;
-        }
-        for(; px<px3; ++px)
-        {
-            for(i=0;i<m_Zoom;++i)
-                *dest++ = RGBx(0,0,128);
-        }
-    }
-
-    if( affectedview )
-        *affectedview = vb;
-}
-#endif
-
-
 void EditView::DrawProj( Box const& projbox, Box* affectedview )
 {
     // note: projbox can be outside the project boundary
@@ -259,12 +215,14 @@ void EditView::DrawProj( Box const& projbox, Box* affectedview )
     Point viewpos = ProjToView( Point( projbox.x, projbox.y ) );
 
     // translate into view coords
+/*
     Box vb(0,0,0,0);
     vb.x = viewpos.x;
     vb.y = viewpos.y;
     vb.w = (projbox.w * m_Zoom);// + (m_Zoom-1);
     vb.h = (projbox.h * m_Zoom);// + (m_Zoom-1);
-
+*/
+    Box vb = ProjToView(projbox);
     vb.ClipAgainst( m_ViewBox );
 
     int y;
@@ -280,7 +238,7 @@ void EditView::DrawProj( Box const& projbox, Box* affectedview )
         int pstart = projbox.x<0 ? 0:projbox.x;
         int start = (pstart-m_Offset.x)*m_Zoom;
         int pend = (projbox.x+projbox.w)>Proj().Img().W() ? Proj().Img().W() : projbox.x+projbox.w;
-        int end = (pend-m_Offset.x)*m_Zoom + (m_Zoom-1);
+        int end = (pend-m_Offset.x)*m_Zoom; // + (m_Zoom-1);
 
         if(py >= 0 && py < Proj().Img().H())
         {
@@ -326,6 +284,68 @@ void EditView::DrawProj( Box const& projbox, Box* affectedview )
     if( affectedview )
         *affectedview = vb;
 }
+#endif
+
+void EditView::DrawProj( Box const& projbox, Box* affectedview )
+{
+    // note: projbox can be outside the project boundary
+
+    Box vb(ProjToView(projbox));
+    vb.ClipAgainst(m_ViewBox);
+
+    // get project bounds in view coords (unclipped)
+    Box pbox(ProjToView(Proj().Img().Bounds()));
+
+    // step x,y through view coords of the area to draw
+    int y;
+    for(y=vb.YMin(); y<=vb.YMax(); ++y)
+    {
+        RGBx* dest = m_Canvas->Ptr(vb.x,y);
+        int x=vb.XMin();
+
+        // scanline intersects canvas?
+        if(y>=pbox.YMin() && y<=pbox.YMax())
+        {
+            int xmin = std::min(pbox.XMin(), vb.XMax()+1);
+            int xmax = std::min(pbox.XMax(), vb.XMax());
+
+            // left of canvas
+            while(x<xmin)
+            {
+                *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
+                ++x;
+            }
+
+            // on the canvas
+            Point p( ViewToProj(Point(x,y)) );
+            uint8_t const* src = Proj().Img().PtrConst( p.x,p.y );
+            while(x<=xmax)
+            {
+                int cx = x + (m_Offset.x*m_Zoom);
+                int pixstop = x + (m_Zoom-(cx%m_Zoom));
+                if(pixstop>xmax)
+                    pixstop=xmax+1;
+                RGBx c(Proj().PaletteConst().GetColour(*src++));
+                while(x<pixstop)
+                {
+                    *dest++ = c;
+                    ++x;
+                }
+            }
+        }
+
+        // right of canvas (and above and below)
+        while(x<=vb.XMax())
+        {
+            *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
+            ++x;
+        }
+    }
+
+    if(affectedview)
+        *affectedview = vb;
+}
+
 
 
 // called when project has been modified
