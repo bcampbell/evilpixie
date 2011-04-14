@@ -70,6 +70,8 @@ protected:
     virtual void OnToolChanged() = 0;
     virtual void OnBrushChanged() = 0;
 
+    // options
+    bool m_SaveBGAsTransparent;
 private:
     Editor();                   // disallowed
     Editor( Editor const& );    // disallowed
@@ -88,6 +90,7 @@ private:
     // grid stuff
     bool m_GridActive;
     Box m_Grid;
+
 };
 
 

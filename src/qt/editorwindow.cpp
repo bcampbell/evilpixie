@@ -217,6 +217,7 @@ QLayout* EditorWindow::CreateToolButtons()
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
+        b->setIconSize(QSize(32,32));
         b->setCheckable( true );
         if( i==0 )
             b->setChecked(true);
@@ -264,6 +265,7 @@ QLayout* EditorWindow::CreateBrushButtons()
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
+        b->setIconSize(QSize(32,32));
         b->setCheckable( true );
         if( i==0 )
             b->setChecked(true);
@@ -421,6 +423,7 @@ void EditorWindow::update_menu_states()
     m_ActionUndo->setEnabled( Proj().CanUndo() );
     m_ActionRedo->setEnabled( Proj().CanRedo() );
     m_ActionGridOnOff->setChecked( GridActive() );
+    m_ActionSaveBGAsTransparent->setChecked( m_SaveBGAsTransparent );
     m_ActionUseBrushPalette->setEnabled( GetBrush() == -1 );
 }
 
@@ -439,6 +442,11 @@ void EditorWindow::do_redo( bool )
 void EditorWindow::do_gridonoff( bool checked )
 {
     ActivateGrid( checked );
+}
+
+void EditorWindow::do_togglesavebgastransparent( bool checked )
+{
+    m_SaveBGAsTransparent = checked;
 }
 
 void EditorWindow::do_new( bool )
@@ -529,7 +537,7 @@ void EditorWindow::do_save( bool )
         do_saveas(false);
     try
     {
-        Proj().Save( Proj().Filename() );
+        Proj().Save( Proj().Filename(), m_SaveBGAsTransparent );
     }
     catch( Wobbly const& e )
     {
@@ -567,7 +575,7 @@ void EditorWindow::do_saveas( bool )
 
     try
     {
-        Proj().Save( filename.toStdString() );
+        Proj().Save( filename.toStdString(), m_SaveBGAsTransparent );
     }
     catch( Wobbly const& e )
     {
@@ -615,6 +623,9 @@ QMenuBar* EditorWindow::CreateMenuBar()
         a = m->addAction( "&Load Palette", this, SLOT( do_loadpalette(bool)) );
 
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
+        a->setCheckable(true);
+
+        m_ActionSaveBGAsTransparent = a = m->addAction( "&Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)), QKeySequence("t") );
         a->setCheckable(true);
     }
 

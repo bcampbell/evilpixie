@@ -83,6 +83,7 @@ public slots:
     void do_undo( bool checked );
     void do_redo( bool checked );
     void do_gridonoff( bool checked );
+    void do_togglesavebgastransparent( bool checked );
     void do_new( bool checked );
     void do_open( bool checked );
     void do_save( bool checked );
@@ -110,6 +111,7 @@ private:
     QAction* m_ActionUndo;
     QAction* m_ActionRedo;
     QAction* m_ActionGridOnOff;
+    QAction* m_ActionSaveBGAsTransparent;
     QAction* m_ActionUseBrushPalette;
 
     

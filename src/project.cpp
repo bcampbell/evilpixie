@@ -1,5 +1,6 @@
 #include "project.h"
 #include "projectlistener.h"
+#include "imgsupport.h"
 #include "editview.h"
 #include "cmd.h"
 #include "editor.h"
@@ -7,9 +8,7 @@
 #include "wobbly.h"
 
 #include <assert.h>
-
-extern bool LoadImg( IndexedImg& img, RGBx* palette, const char* filename );
-extern void SaveImg( IndexedImg const& img, RGBx const* palette, const char* filename );
+#include <cstdio>
 
 extern void LoadPalette( RGBx* palette, const char* filename );
 
@@ -89,7 +88,8 @@ void Project::LoadPalette( std::string const& filename )
 
 void Project::Load( std::string const& filename )
 {
-    LoadImg( m_Img, m_Palette.raw(), filename.c_str() );
+    int transparent_idx = -1;
+    LoadImg( m_Img, m_Palette.raw(), filename.c_str(), &transparent_idx );
 
     SetModifiedFlag( false );
     m_Filename = filename;
@@ -101,12 +101,16 @@ void Project::Load( std::string const& filename )
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
         (*it)->OnPaletteReplaced();
 
+    //printf( "transparent_idx: %d\n",transparent_idx);
+    if(transparent_idx != -1)
+        SetBGPen(transparent_idx);
 }
 
 
-void Project::Save( std::string const& filename )
+void Project::Save( std::string const& filename, bool savetransparency )
 {
-    SaveImg( m_Img, m_Palette.raw(), filename.c_str() );
+    int transparent_idx = savetransparency ? BGPen():-1;
+    SaveImg( m_Img, m_Palette.raw(), filename.c_str(), transparent_idx );
 
     SetModifiedFlag( false );
     m_Filename = filename;

@@ -13,7 +13,7 @@ extern void SaveGIF( IndexedImg const& img, RGBx const* palette, const char* fil
 //extern void SavePNG( IndexedImg const& img, RGBx const* palette, const char* filename );
 
 
-void LoadImg( IndexedImg& img, RGBx* palette, const char* filename )
+void LoadImg( IndexedImg& img, RGBx* palette, const char* filename, int* transparent_idx )
 {
 
     ilDisable( IL_CONV_PAL );
@@ -53,6 +53,16 @@ void LoadImg( IndexedImg& img, RGBx* palette, const char* filename )
         throw Wobbly( "No palette - not an indexed image" );
     }
 
+    if(transparent_idx)
+    {
+        *transparent_idx = -1;
+        if(ext==".png") // ugh
+        {
+            // TODO: does IL_PNG_ALPHA even work for loading?
+            *transparent_idx = (int)ilGetInteger(IL_PNG_ALPHA_INDEX);
+        }
+    }
+
     /* make sure everything is in the format we expect! */
     ilConvertImage( IL_COLOUR_INDEX, IL_UNSIGNED_BYTE );
     ilConvertPal( IL_PAL_RGB24 );
@@ -87,11 +97,13 @@ void LoadImg( IndexedImg& img, RGBx* palette, const char* filename )
     IndexedImg tmp( w, h, pixels );
     img.Copy( tmp );
 
+
+
     ilDeleteImages(1,&im);
 }
 
 
-void SaveImg( IndexedImg const& img, RGBx const* palette, const char* filename )
+void SaveImg( IndexedImg const& img, RGBx const* palette, const char* filename, int transparent_idx )
 {
     std::string ext = ToLower( ExtName(filename) );
     if( ext==".gif" )
@@ -100,6 +112,8 @@ void SaveImg( IndexedImg const& img, RGBx const* palette, const char* filename )
         SaveGIF( img, palette, filename );
         return;
     }
+
+    ilSetInteger(IL_PNG_ALPHA_INDEX,transparent_idx);
 
     ILuint im;
     ilGenImages( 1, &im );

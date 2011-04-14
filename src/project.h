@@ -45,7 +45,7 @@ public:
 
     void LoadPalette( std::string const& filename );
     void Load( std::string const& filename );
-    void Save( std::string const& filename );
+    void Save( std::string const& filename, bool savetransparency );
 
     // pixel access
     IndexedImg& Img() { return m_Img; }
