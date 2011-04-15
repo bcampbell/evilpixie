@@ -11,7 +11,7 @@ class ProjectListener
 {
 public:
     virtual ~ProjectListener() {}
-	virtual void OnDamaged( Box const& viewdmg ) = 0;
+	virtual void OnDamaged( Box const& projdmg ) = 0;
     virtual void OnPaletteChanged( int n, RGBx const& c ) = 0;
     virtual void OnPaletteReplaced() {}
     virtual void OnModifiedFlagChanged( bool ) {}

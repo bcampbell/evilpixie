@@ -24,7 +24,7 @@ public:
 	virtual ~EditView();
 
     // ProjectListener Implementation
-	virtual void OnDamaged( Box const& viewdmg );
+	virtual void OnDamaged( Box const& projdmg );
     virtual void OnPaletteChanged( int n, RGBx const& c );
     virtual void OnPaletteReplaced();
 
