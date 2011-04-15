@@ -122,16 +122,16 @@ IndexedImg* Project:: ReplaceImg(IndexedImg* new_img)
 {
     IndexedImg* old = m_Img;
     m_Img = new_img;
-/*
-    SetModifiedFlag(true);
-    std::set<ProjectListener*>::iterator it;
 
-    Box b(Img().Bounds());
+    // tell listeners which bit needs a redraw...
+    Box b(old->Bounds());
+    b.Merge(new_img->Bounds());
+    std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
         (*it)->OnDamaged( b );
     }
-*/
+
     return old;
 }
 
