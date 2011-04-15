@@ -17,7 +17,7 @@ extern void LoadPalette( RGBx* palette, const char* filename );
 Project::Project( int w, int h ) :
     m_FGPen(1),
     m_BGPen(0),
-    m_Img(w,h),
+    m_Img(new IndexedImg(w,h)),
     m_DrawTool(0),
     m_DrawBackup(1,1),
     m_Modified( false )
@@ -89,13 +89,13 @@ void Project::LoadPalette( std::string const& filename )
 void Project::Load( std::string const& filename )
 {
     int transparent_idx = -1;
-    LoadImg( m_Img, m_Palette.raw(), filename.c_str(), &transparent_idx );
+    LoadImg( Img(), m_Palette.raw(), filename.c_str(), &transparent_idx );
 
     SetModifiedFlag( false );
     m_Filename = filename;
 
     DiscardUndoAndRedos();
-    Damage( m_Img.Bounds() );
+    Damage( Img().Bounds() );
 
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
@@ -110,11 +110,32 @@ void Project::Load( std::string const& filename )
 void Project::Save( std::string const& filename, bool savetransparency )
 {
     int transparent_idx = savetransparency ? BGPen():-1;
-    SaveImg( m_Img, m_Palette.raw(), filename.c_str(), transparent_idx );
+    SaveImg( ImgConst(), m_Palette.raw(), filename.c_str(), transparent_idx );
 
     SetModifiedFlag( false );
     m_Filename = filename;
 }
+
+
+
+IndexedImg* Project:: ReplaceImg(IndexedImg* new_img)
+{
+    IndexedImg* old = m_Img;
+    m_Img = new_img;
+/*
+    SetModifiedFlag(true);
+    std::set<ProjectListener*>::iterator it;
+
+    Box b(Img().Bounds());
+    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
+    {
+        (*it)->OnDamaged( b );
+    }
+*/
+    return old;
+}
+
+
 
 void Project::Damage( Box const& b )
 {
@@ -135,7 +156,7 @@ void Project::Draw_Begin( Tool* tool )
     m_DrawDamage.SetEmpty();
     // take a copy of the pristine image so we can
     // generate an undo buffer or roll back
-    m_DrawBackup.Copy( m_Img );
+    m_DrawBackup.Copy(ImgConst());
 }
 
 
@@ -168,7 +189,7 @@ void Project::Draw_Rollback()
 
     Box b( m_DrawDamage );
     BlitIndexed( m_DrawBackup, m_DrawDamage,
-        m_Img, b );
+        Img(), b );
 
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )

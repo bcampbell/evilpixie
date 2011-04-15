@@ -48,8 +48,10 @@ public:
     void Save( std::string const& filename, bool savetransparency );
 
     // pixel access
-    IndexedImg& Img() { return m_Img; }
-    IndexedImg const& ImgConst() const { return m_Img; }
+    IndexedImg& Img() { return *m_Img; }
+    IndexedImg const& ImgConst() const { return *m_Img; }
+
+    IndexedImg* ReplaceImg(IndexedImg* new_img);
 
     // kill!
     // palette manipulation
@@ -112,7 +114,7 @@ private:
     Palette m_Palette;
     int m_FGPen;
     int m_BGPen;
-    IndexedImg m_Img;
+    IndexedImg* m_Img;
 
 	std::set< ProjectListener* > m_Listeners;
 

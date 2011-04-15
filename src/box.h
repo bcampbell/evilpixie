@@ -29,6 +29,8 @@ struct Box
 
     Box& operator+=( Point const& delta )
         { x+=delta.x; y+=delta.y; return *this; }
+    Box& operator-=( Point const& delta )
+        { x-=delta.x; y-=delta.y; return *this; }
 
     void SetEmpty();
     void ClipAgainst( Box const& clipper );

@@ -28,6 +28,40 @@ void Cmd_Draw::Undo()
     SetState( NOT_DONE );
 }
 
+
+
+
+Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area) :
+    Cmd(proj,NOT_DONE),
+    m_Img(new IndexedImg(new_area.W(), new_area.H()))
+{
+    //
+    Box foo(m_Img->Bounds());
+    m_Img->FillBox(Proj().BGPen(), foo);
+
+    Box src_area(Proj().Img().Bounds());
+    Box dest_area(src_area);
+    dest_area -= new_area.TopLeft();
+
+    BlitIndexed(Proj().Img(), src_area, *m_Img, dest_area, -1, -1);
+
+}
+
+void Cmd_Resize::Do()
+{
+    assert( State() == NOT_DONE );
+    m_Img = Proj().ReplaceImg(m_Img);
+    Proj().Damage(Proj().Img().Bounds());
+    SetState( DONE );
+}
+
+void Cmd_Resize::Undo()
+{
+    assert( State() == DONE );
+    // BLAH BLAH
+    SetState( NOT_DONE );
+}
+
 #if 0
 
 Cmd_PlonkBrush::Cmd_PlonkBrush( Project& proj, Point const& pos, Brush const& brush, BrushStyle style, uint8_t pen ) :

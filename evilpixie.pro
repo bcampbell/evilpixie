@@ -25,6 +25,7 @@ SOURCES += src/app.cpp \
     src/qt/palettewidget.cpp \
     src/qt/paletteeditor.cpp \
     src/qt/newprojectdialog.cpp \
+    src/qt/resizeprojectdialog.cpp \
     src/qt/qtapp.cpp \
     src/qt/rgbwidget.cpp \
     src/qt/main.cpp
@@ -37,6 +38,7 @@ HEADERS += src/box.h \
     src/editview.h \
     src/global.h \
     src/img.h \
+    src/imgsupport.h \
     src/palette.h \
     src/point.h \
     src/project.h \
@@ -47,5 +49,6 @@ HEADERS += src/box.h \
     src/qt/palettewidget.h \
     src/qt/paletteeditor.h \
     src/qt/newprojectdialog.h \
+    src/qt/resizeprojectdialog.h \
     src/qt/rgbwidget.h \
     src/qt/editviewwidget.h

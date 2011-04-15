@@ -3,11 +3,13 @@
 #include "../brush.h"
 #include "../util.h"
 #include "../wobbly.h"
+#include "../cmd.h"
 #include "editorwindow.h"
 #include "editviewwidget.h"
 #include "palettewidget.h"
 #include "paletteeditor.h"
 #include "newprojectdialog.h"
+#include "resizeprojectdialog.h"
 
 #include <cassert>
 
@@ -449,6 +451,18 @@ void EditorWindow::do_togglesavebgastransparent( bool checked )
     m_SaveBGAsTransparent = checked;
 }
 
+void EditorWindow::do_resizeimage( bool checked )
+{
+    Box b = Proj().Img().Bounds();
+    ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
+    if( dlg.exec() == QDialog::Accepted )
+    {
+        QRect area = dlg.GetArea();
+        Cmd* c = new Cmd_Resize(Proj(), Box(0,0,area.width(),area.height()));
+        Proj().AddCmd(c);
+    }
+}
+
 void EditorWindow::do_new( bool )
 {
     NewProjectDialog dlg(this);
@@ -627,6 +641,8 @@ QMenuBar* EditorWindow::CreateMenuBar()
 
         m_ActionSaveBGAsTransparent = a = m->addAction( "&Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)), QKeySequence("t") );
         a->setCheckable(true);
+
+        a = m->addAction( "Resize Image...", this, SLOT( do_resizeimage(bool)) );
     }
 
     return menubar;

@@ -48,6 +48,19 @@ private:
 };
 
 
+
+// Resize/clip a project
+class Cmd_Resize : public Cmd
+{
+public:
+    Cmd_Resize(Project& proj, Box const& new_area);
+    virtual void Do();
+    virtual void Undo();
+private:
+    IndexedImg* m_Img;
+};
+
+
 #if 0
 class Cmd_PlonkBrush : public Cmd
 {
