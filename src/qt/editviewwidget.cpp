@@ -21,10 +21,18 @@ EditViewWidget::EditViewWidget( Editor& editor ) :
 
 
 
-static Button translatebutton( Qt::MouseButton qtmb )
+static Button translatebutton( QMouseEvent* event )
 {
+    Qt::MouseButton qtmb = event->button();
+    Qt::KeyboardModifiers mods = event->modifiers();
+
     if (qtmb == Qt::LeftButton)
-        return DRAW;
+    {
+        if(mods & Qt::AltModifier)
+            return PAN;
+        else
+            return DRAW;
+    }
     if (qtmb == Qt::RightButton)
         return ERASE;
     if (qtmb == Qt::MidButton)
@@ -35,7 +43,7 @@ static Button translatebutton( Qt::MouseButton qtmb )
 void EditViewWidget::mousePressEvent(QMouseEvent *event)
 {
     Point pos( event->pos().x(), event->pos().y() );
-    OnMouseDown( pos, translatebutton( event->button() ) );
+    OnMouseDown( pos, translatebutton(event) );
 }
 
 void EditViewWidget::mouseMoveEvent(QMouseEvent *event)
@@ -47,7 +55,7 @@ void EditViewWidget::mouseMoveEvent(QMouseEvent *event)
 void EditViewWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     Point pos( event->pos().x(), event->pos().y() );
-    OnMouseUp( pos, translatebutton( event->button() ) );
+    OnMouseUp( pos, translatebutton(event) );
 }
 
 void EditViewWidget::wheelEvent(QWheelEvent *event)
