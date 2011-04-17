@@ -49,6 +49,12 @@ void EditView::Resize( int w, int h )
 
 void EditView::SetZoom( int zoom )
 {
+    if(zoom<1)
+        zoom=1;
+    if(zoom>128)
+        zoom=128;
+    if(zoom == m_Zoom)
+        return;
     m_Zoom = zoom;
     ConfineView();
     DrawView(m_ViewBox);

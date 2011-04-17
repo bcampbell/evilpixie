@@ -634,12 +634,12 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionUndo = a = m->addAction( "&Undo", this, SLOT(do_undo(bool)), QKeySequence::Undo );
         m_ActionRedo = a = m->addAction( "&Redo", this, SLOT(do_redo(bool)), QKeySequence::Redo );
         m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette", this, SLOT(do_usebrushpalette(bool)) );
-        a = m->addAction( "&Load Palette", this, SLOT( do_loadpalette(bool)) );
+        a = m->addAction( "&Load Palette...", this, SLOT( do_loadpalette(bool)) );
 
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
         a->setCheckable(true);
 
-        m_ActionSaveBGAsTransparent = a = m->addAction( "&Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)), QKeySequence("t") );
+        m_ActionSaveBGAsTransparent = a = m->addAction( "Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)));
         a->setCheckable(true);
 
         a = m->addAction( "Resize Image...", this, SLOT( do_resizeimage(bool)) );

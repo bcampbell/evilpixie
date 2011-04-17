@@ -7,6 +7,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QShortcut>
 #include <cassert>
 
 EditViewWidget::EditViewWidget( Editor& editor ) :
@@ -15,6 +16,17 @@ EditViewWidget::EditViewWidget( Editor& editor ) :
     m_Panning(false)
 {
     setMouseTracking(true);
+    // some keyboard shortcuts
+    {
+        QShortcut* s;
+
+        s = new QShortcut( QKeySequence( "+" ), this );
+        connect(s, SIGNAL( activated()), this, SLOT( zoomIn()));
+
+        s = new QShortcut( QKeySequence( "-" ), this );
+        connect(s, SIGNAL( activated()), this, SLOT( zoomOut()));
+
+    }
 
 }
 
@@ -28,7 +40,7 @@ static Button translatebutton( QMouseEvent* event )
 
     if (qtmb == Qt::LeftButton)
     {
-        if(mods & Qt::AltModifier)
+        if(mods & Qt::ControlModifier)
             return PAN;
         else
             return DRAW;
@@ -66,13 +78,11 @@ void EditViewWidget::wheelEvent(QWheelEvent *event)
 	int dy = event->delta()/120;
 	int z = Zoom();
 	z += dy;
-	if( z<1 )
-		z=1;
-	if( z>128 )
-		z=128;
 	SetZoom(z);
 	AlignView( viewpos, projpos );
 }
+
+
 
 
 void EditViewWidget::paintEvent(QPaintEvent * /* event */)
@@ -98,3 +108,13 @@ void EditViewWidget::Redraw( Box const& b )
     update( b.x, b.y, b.w, b.h );
 }
 
+
+void EditViewWidget::zoomIn()
+{
+    SetZoom(Zoom()+1);
+}
+
+void EditViewWidget::zoomOut()
+{
+    SetZoom(Zoom()-1);
+}
