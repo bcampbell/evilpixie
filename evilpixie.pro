@@ -1,5 +1,5 @@
 TARGET = evilpixie
-CONFIG += qt release
+CONFIG += qt debug
 win32:INCLUDEPATH = /c/mingw/gnuwin32/include
 win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lpng
 unix:LIBS = -lgif -lXpm -lpng -lIL
@@ -19,7 +19,6 @@ SOURCES += src/app.cpp \
     src/wobbly.cpp \
     src/util.cpp \
     src/xpmsupport.cpp \
-    src/palettesupport.cpp \
     src/qt/editorwindow.cpp \
     src/qt/editviewwidget.cpp \
     src/qt/palettewidget.cpp \

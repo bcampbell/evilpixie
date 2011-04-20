@@ -178,6 +178,8 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 {
     // note: projbox can be outside the project boundary
 
+    RGBx checkerboard[2] = { RGBx(192,192,192),RGBx(224,224,224) }; 
+
     Box vb(viewbox);
     vb.ClipAgainst(m_ViewBox);
 
@@ -200,7 +202,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
             // left of canvas
             while(x<xmin)
             {
-                *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
+                *dest++ = checkerboard[((x & 16) ^ (y & 16)) ? 0:1];
                 ++x;
             }
 
@@ -225,7 +227,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
         // right of canvas (and above and below)
         while(x<=vb.XMax())
         {
-            *dest++ = ((x & 16) ^ (y & 16)) ? RGBx(128,128,128):RGBx(224,224,224);
+            *dest++ = checkerboard[((x & 16) ^ (y & 16)) ? 0:1];
             ++x;
         }
     }

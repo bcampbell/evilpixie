@@ -12,12 +12,12 @@
 
 
 Editor::Editor( Project* proj ) :
+    m_SaveBGAsTransparent(true),
     m_Tool(0),
     m_Brush(0),
     m_Project( proj ),
     m_GridActive(false),
-    m_Grid( 0,0,8,8 ),
-    m_SaveBGAsTransparent(true)
+    m_Grid( 0,0,8,8 )
 {
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);

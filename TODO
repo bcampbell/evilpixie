@@ -3,9 +3,9 @@ TODO
 
 For initial release:
 
-- provide reasonable default palette
+- (DONE) provide reasonable default palette
 - about box/help/keyboard shortcut cheatsheet etc...
-- move code to public rcs
+- (DONE) move code to public rcs
 - copyright notes in source
 - website
 - win32 build

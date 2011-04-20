@@ -78,19 +78,20 @@ public slots:
     void useeyedroppertool();
     void nextColour();
     void prevColour();
+    void showHelp();
 
     void update_menu_states();
-    void do_undo( bool checked );
-    void do_redo( bool checked );
+    void do_undo();
+    void do_redo();
     void do_gridonoff( bool checked );
     void do_togglesavebgastransparent( bool checked );
-    void do_resizeimage( bool checked );
-    void do_new( bool checked );
-    void do_open( bool checked );
-    void do_save( bool checked );
-    void do_saveas( bool checked );
-    void do_loadpalette( bool checked );
-    void do_usebrushpalette( bool checked );
+    void do_resizeimage();
+    void do_new();
+    void do_open();
+    void do_save();
+    void do_saveas();
+    void do_loadpalette();
+    void do_usebrushpalette();
 
 private:
     EditViewWidget* m_ViewWidget;

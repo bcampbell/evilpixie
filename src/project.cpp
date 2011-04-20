@@ -10,11 +10,11 @@
 #include <assert.h>
 #include <cstdio>
 
-extern void LoadPalette( RGBx* palette, const char* filename );
 
 
 
-Project::Project( int w, int h ) :
+Project::Project( int w, int h, Palette* palette ) :
+    m_Palette(palette),
     m_FGPen(1),
     m_BGPen(0),
     m_Img(new IndexedImg(w,h)),
@@ -22,19 +22,32 @@ Project::Project( int w, int h ) :
     m_DrawBackup(1,1),
     m_Modified( false )
 {
-    int n;
-    for( n=0; n<256; ++n )
+    if(!m_Palette)
     {
-        SetColour( n, RGBx(0,0,0) );
+        try
+        {
+            m_Palette = Palette::Load("data/default.gpl");
+        }
+        catch(...)
+        {
+            m_Palette = new Palette();
+            int n;
+            for( n=0; n<256; ++n )
+            {
+                SetColour( n, RGBx(0,0,0) );
+            }
+            SetColour( 1, RGBx(255,0,0) );
+            SetColour( 2, RGBx(0,255,0) );
+            SetColour( 3, RGBx(0,0,255) );
+        }
     }
-    SetColour( 1, RGBx(255,0,0) );
-    SetColour( 2, RGBx(0,255,0) );
-    SetColour( 3, RGBx(0,0,255) );
 }
 
 
 Project::~Project()
 {
+    delete m_Palette;
+    delete m_Img;
     DiscardUndoAndRedos();
 }
 
@@ -78,9 +91,10 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
 }
 
 
-void Project::LoadPalette( std::string const& filename )
+void Project::ReplacePalette(Palette* newpalette)
 {
-    ::LoadPalette( m_Palette.raw(), filename.c_str() );
+    delete m_Palette;
+    m_Palette = newpalette;
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
         (*it)->OnPaletteReplaced();
@@ -89,7 +103,7 @@ void Project::LoadPalette( std::string const& filename )
 void Project::Load( std::string const& filename )
 {
     int transparent_idx = -1;
-    LoadImg( Img(), m_Palette.raw(), filename.c_str(), &transparent_idx );
+    LoadImg( Img(), m_Palette->raw(), filename.c_str(), &transparent_idx );
 
     SetModifiedFlag( false );
     m_Filename = filename;
@@ -110,7 +124,7 @@ void Project::Load( std::string const& filename )
 void Project::Save( std::string const& filename, bool savetransparency )
 {
     int transparent_idx = savetransparency ? BGPen():-1;
-    SaveImg( ImgConst(), m_Palette.raw(), filename.c_str(), transparent_idx );
+    SaveImg( ImgConst(), m_Palette->raw(), filename.c_str(), transparent_idx );
 
     SetModifiedFlag( false );
     m_Filename = filename;

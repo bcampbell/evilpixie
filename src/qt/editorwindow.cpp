@@ -12,7 +12,9 @@
 #include "resizeprojectdialog.h"
 
 #include <cassert>
-
+#ifdef WIN32
+#include <unistd.h> // for getcwd()
+#endif
 #include <QApplication>
 #include <QPushButton>
 #include <QButtonGroup>
@@ -31,6 +33,7 @@
 #include <QCloseEvent>
 #include <QCursor>
 #include <QShortcut>
+#include <QTextEdit>
 
 extern bool LoadGIF( IndexedImg& img, RGBx* palette, const char* filename );
 
@@ -429,13 +432,13 @@ void EditorWindow::update_menu_states()
     m_ActionUseBrushPalette->setEnabled( GetBrush() == -1 );
 }
 
-void EditorWindow::do_undo( bool )
+void EditorWindow::do_undo()
 {
     if( Proj().CanUndo() )
         Proj().Undo();
 }
 
-void EditorWindow::do_redo( bool )
+void EditorWindow::do_redo()
 {
     if( Proj().CanRedo() )
         Proj().Redo();
@@ -451,7 +454,7 @@ void EditorWindow::do_togglesavebgastransparent( bool checked )
     m_SaveBGAsTransparent = checked;
 }
 
-void EditorWindow::do_resizeimage( bool checked )
+void EditorWindow::do_resizeimage()
 {
     Box b = Proj().Img().Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
@@ -463,7 +466,7 @@ void EditorWindow::do_resizeimage( bool checked )
     }
 }
 
-void EditorWindow::do_new( bool )
+void EditorWindow::do_new()
 {
     NewProjectDialog dlg(this);
     if( dlg.exec() == QDialog::Accepted )
@@ -475,7 +478,7 @@ void EditorWindow::do_new( bool )
     }
 }
 
-void EditorWindow::do_usebrushpalette( bool )
+void EditorWindow::do_usebrushpalette()
 {
     if( GetBrush() != -1 )
         return; // std brush - do nothing
@@ -486,7 +489,7 @@ void EditorWindow::do_usebrushpalette( bool )
 }
 
 
-void EditorWindow::do_loadpalette( bool )
+void EditorWindow::do_loadpalette()
 {
     QString filename = QFileDialog::getOpenFileName(
                     this,
@@ -498,7 +501,8 @@ void EditorWindow::do_loadpalette( bool )
 
     try
     {
-        Proj().LoadPalette( filename.toStdString() );
+        Palette* p = Palette::Load(filename.toStdString().c_str());
+        Proj().ReplacePalette(p);
     }
     catch( Wobbly const& e )
     {
@@ -508,7 +512,7 @@ void EditorWindow::do_loadpalette( bool )
 }
 
 
-void EditorWindow::do_open( bool )
+void EditorWindow::do_open()
 {
     if( !CheckZappingOK() )
         return;
@@ -545,10 +549,10 @@ void EditorWindow::do_open( bool )
 }
 
 
-void EditorWindow::do_save( bool )
+void EditorWindow::do_save()
 {
     if( Proj().Filename().empty() )
-        do_saveas(false);
+        do_saveas();
     try
     {
         Proj().Save( Proj().Filename(), m_SaveBGAsTransparent );
@@ -563,7 +567,7 @@ void EditorWindow::do_save( bool )
 
 
 
-void EditorWindow::do_saveas( bool )
+void EditorWindow::do_saveas()
 {
     std::string startdir = Proj().Filename();
     if( startdir.empty() )
@@ -599,6 +603,18 @@ void EditorWindow::do_saveas( bool )
     RethinkWindowTitle();
 }
 
+
+void EditorWindow::showHelp()
+{
+   QTextEdit* help=new QTextEdit();
+//   help->setWindowFlag(Qt::Dialog); //or Qt::Tool, Qt::Dialog if you like
+   help->setWindowFlags(Qt::Dialog);
+   help->setReadOnly(true);
+   help->append("<h1>Help</h1>Welcom to my help.<br/> Hope you like it.");
+   help->show();
+}
+
+
 // helper - find a button in a group with a matching property
 QAbstractButton* EditorWindow::FindButton( QButtonGroup* grp, const char* propname, QVariant const& val )
 {
@@ -619,10 +635,10 @@ QMenuBar* EditorWindow::CreateMenuBar()
     {
         QMenu* m = menubar->addMenu("&File");
 
-        a = m->addAction( "&New...", this, SLOT( do_new(bool)), QKeySequence::New );
-        a = m->addAction( "&Open...", this, SLOT( do_open(bool)), QKeySequence::Open );
-        a = m->addAction( "&Save", this, SLOT( do_save(bool)), QKeySequence::Save );
-        a = m->addAction( "Save &As", this, SLOT( do_saveas(bool)), QKeySequence("CTRL+A") );
+        a = m->addAction( "&New...", this, SLOT( do_new()), QKeySequence::New );
+        a = m->addAction( "&Open...", this, SLOT( do_open()), QKeySequence::Open );
+        a = m->addAction( "&Save", this, SLOT( do_save()), QKeySequence::Save );
+        a = m->addAction( "Save &As", this, SLOT( do_saveas()), QKeySequence("CTRL+A") );
         a = m->addAction( "&Close", this, SLOT( close()), QKeySequence::Close );
 
         // KEH?
@@ -631,10 +647,10 @@ QMenuBar* EditorWindow::CreateMenuBar()
     {
         QMenu* m = menubar->addMenu("&Edit");
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
-        m_ActionUndo = a = m->addAction( "&Undo", this, SLOT(do_undo(bool)), QKeySequence::Undo );
-        m_ActionRedo = a = m->addAction( "&Redo", this, SLOT(do_redo(bool)), QKeySequence::Redo );
-        m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette", this, SLOT(do_usebrushpalette(bool)) );
-        a = m->addAction( "&Load Palette...", this, SLOT( do_loadpalette(bool)) );
+        m_ActionUndo = a = m->addAction( "&Undo", this, SLOT(do_undo()), QKeySequence::Undo );
+        m_ActionRedo = a = m->addAction( "&Redo", this, SLOT(do_redo()), QKeySequence::Redo );
+        m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette", this, SLOT(do_usebrushpalette()) );
+        a = m->addAction( "&Load Palette...", this, SLOT( do_loadpalette()) );
 
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
         a->setCheckable(true);
@@ -642,7 +658,8 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionSaveBGAsTransparent = a = m->addAction( "Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)));
         a->setCheckable(true);
 
-        a = m->addAction( "Resize Image...", this, SLOT( do_resizeimage(bool)) );
+        a = m->addAction( "Resize Image...", this, SLOT( do_resizeimage()) );
+        a = m->addAction( "Help...", this, SLOT( showHelp()) );
     }
 
     return menubar;

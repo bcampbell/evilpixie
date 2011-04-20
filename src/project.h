@@ -20,7 +20,7 @@ class Cmd;
 class Project
 {
 public:
-	Project( int w, int h );
+	Project( int w, int h, Palette* palette=0 );
 	virtual ~Project();
 
 	void AddListener( ProjectListener* l )
@@ -43,7 +43,9 @@ public:
 
     bool ModifiedFlag() const { return m_Modified; }
 
-    void LoadPalette( std::string const& filename );
+    // replace palette, informing listeners. ownership is passed to proj.
+    void ReplacePalette(Palette* newpalette);
+
     void Load( std::string const& filename );
     void Save( std::string const& filename, bool savetransparency );
 
@@ -55,12 +57,12 @@ public:
 
     // kill!
     // palette manipulation
-	RGBx const& GetColour(int n ) { return m_Palette.GetColour(n); }
-	void SetColour( int n, RGBx const& c ) { m_Palette.SetColour(n,c); }
-    RGBx const* GetPaletteConst() const { return m_Palette.rawconst(); }
+	RGBx const& GetColour(int n ) { return m_Palette->GetColour(n); }
+	void SetColour( int n, RGBx const& c ) { m_Palette->SetColour(n,c); }
+    RGBx const* GetPaletteConst() const { return m_Palette->rawconst(); }
 //    RGBx* GetPalette() { return m_Palette.raw(); }
 
-    Palette const& PaletteConst() const { return m_Palette; }
+    Palette const& PaletteConst() const { return *m_Palette; }
 
     // project holds FG and BG pens
 	int FGPen() const { return m_FGPen; }
@@ -111,7 +113,7 @@ private:
     Project();                  // disallowed
     Project( Project const& );  // disallowed
 
-    Palette m_Palette;
+    Palette* m_Palette;
     int m_FGPen;
     int m_BGPen;
     IndexedImg* m_Img;
