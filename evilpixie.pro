@@ -1,7 +1,7 @@
 TARGET = evilpixie
 CONFIG += qt release
 win32:INCLUDEPATH = /c/mingw/gnuwin32/include
-win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm
+win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
 unix:LIBS = -lgif -lXpm -lIL
 SOURCES += src/app.cpp \
     src/box.cpp \
