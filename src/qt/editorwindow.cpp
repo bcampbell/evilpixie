@@ -10,6 +10,7 @@
 #include "paletteeditor.h"
 #include "newprojectdialog.h"
 #include "resizeprojectdialog.h"
+#include "miscwindows.h"
 
 #include <cassert>
 #ifdef WIN32
@@ -77,6 +78,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_BrushButtons(0),
     m_ToolButtons(0),
     m_PaletteEditor(0),
+    m_AboutBox(0),
+    m_HelpWindow(0),
     m_ActionUndo(0),
     m_ActionRedo(0),
     m_StatusViewInfo(0)
@@ -181,6 +184,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
 EditorWindow::~EditorWindow()
 {
     delete m_PaletteEditor;
+    delete m_AboutBox;
+    delete m_HelpWindow;
     delete m_ViewWidget;
 }
 
@@ -606,14 +611,34 @@ void EditorWindow::do_saveas()
 
 void EditorWindow::showHelp()
 {
+    if(!m_HelpWindow)
+        m_HelpWindow = new HelpWindow();
+
+    if(m_HelpWindow->isVisible())
+        m_HelpWindow->raise();
+    else
+        m_HelpWindow->show();
+#if 0
+
    QTextEdit* help=new QTextEdit();
 //   help->setWindowFlag(Qt::Dialog); //or Qt::Tool, Qt::Dialog if you like
    help->setWindowFlags(Qt::Dialog);
    help->setReadOnly(true);
    help->append("<h1>Help</h1>Welcom to my help.<br/> Hope you like it.");
    help->show();
+#endif
 }
 
+void EditorWindow::showAbout()
+{
+    if(!m_AboutBox)
+        m_AboutBox = new AboutBox(this);
+
+    if(m_AboutBox->isVisible())
+        m_AboutBox->raise();
+    else
+        m_AboutBox->show();
+}
 
 // helper - find a button in a group with a matching property
 QAbstractButton* EditorWindow::FindButton( QButtonGroup* grp, const char* propname, QVariant const& val )
@@ -637,20 +662,26 @@ QMenuBar* EditorWindow::CreateMenuBar()
 
         a = m->addAction( "&New...", this, SLOT( do_new()), QKeySequence::New );
         a = m->addAction( "&Open...", this, SLOT( do_open()), QKeySequence::Open );
+        m->addSeparator();
         a = m->addAction( "&Save", this, SLOT( do_save()), QKeySequence::Save );
         a = m->addAction( "Save &As", this, SLOT( do_saveas()), QKeySequence("CTRL+A") );
+        m->addSeparator();
         a = m->addAction( "&Close", this, SLOT( close()), QKeySequence::Close );
 
-        // KEH?
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
+
+    // EDIT menu
     {
         QMenu* m = menubar->addMenu("&Edit");
-        connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
         m_ActionUndo = a = m->addAction( "&Undo", this, SLOT(do_undo()), QKeySequence::Undo );
         m_ActionRedo = a = m->addAction( "&Redo", this, SLOT(do_redo()), QKeySequence::Redo );
+        m->addSeparator();
+
+        a = m->addAction( "Edit palette...", this, SLOT(togglepaletteeditor()));
         m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette", this, SLOT(do_usebrushpalette()) );
         a = m->addAction( "&Load Palette...", this, SLOT( do_loadpalette()) );
+        m->addSeparator();
 
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
         a->setCheckable(true);
@@ -658,8 +689,16 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionSaveBGAsTransparent = a = m->addAction( "Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)));
         a->setCheckable(true);
 
-        a = m->addAction( "Resize Image...", this, SLOT( do_resizeimage()) );
-        a = m->addAction( "Help...", this, SLOT( showHelp()) );
+        a = m->addAction( "Resize Image...", this, SLOT(do_resizeimage()));
+        connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
+    }
+
+    // Help menu
+    {
+        QMenu* m = menubar->addMenu("&Help");
+        a = m->addAction( "Help...", this, SLOT(showHelp()));
+        a = m->addAction( "About Evilpixie...", this, SLOT(showAbout()));
+        connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 
     return menubar;

@@ -14,11 +14,12 @@
 class EditViewWidget;
 class PaletteEditor;
 class PaletteWidget;
+class HelpWindow;
+class AboutBox;
 class QLayout;
 class QLabel;
 class QMenuBar;
 class QAction;
-
 
 class CurrentColourWidget : public QWidget
 {
@@ -45,6 +46,10 @@ private:
     QColor m_FG;
     QColor m_BG;
 };
+
+
+
+
 
 
 class EditorWindow : public QWidget, public Editor
@@ -79,6 +84,7 @@ public slots:
     void nextColour();
     void prevColour();
     void showHelp();
+    void showAbout();
 
     void update_menu_states();
     void do_undo();
@@ -108,6 +114,8 @@ private:
     QAbstractButton* FindButton( QButtonGroup* grp, const char* propname, QVariant const& val );
 
     PaletteEditor* m_PaletteEditor;
+    AboutBox* m_AboutBox;
+    HelpWindow* m_HelpWindow;
 
     // ptrs to any actions we need to be able to enable/disable
     QAction* m_ActionUndo;
