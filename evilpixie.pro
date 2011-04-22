@@ -1,8 +1,8 @@
 TARGET = evilpixie
-CONFIG += qt debug
+CONFIG += qt release
 win32:INCLUDEPATH = /c/mingw/gnuwin32/include
-win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lpng
-unix:LIBS = -lgif -lXpm -lpng -lIL
+win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm
+unix:LIBS = -lgif -lXpm -lIL
 SOURCES += src/app.cpp \
     src/box.cpp \
     src/brush.cpp \
@@ -13,7 +13,6 @@ SOURCES += src/app.cpp \
     src/img.cpp \
     src/imgsupport.cpp \
     src/palette.cpp \
-    src/pngsupport.cpp \
     src/project.cpp \
     src/tool.cpp \
     src/wobbly.cpp \

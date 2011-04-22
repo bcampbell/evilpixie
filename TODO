@@ -4,9 +4,9 @@ TODO
 For initial release:
 
 - (DONE) provide reasonable default palette
-- about box/help/keyboard shortcut cheatsheet etc...
+- (DONE) about box/help/keyboard shortcut cheatsheet etc...
 - (DONE) move code to public rcs
-- copyright notes in source
+- (close enough) copyright notes in source
 - website
 - win32 build
 
