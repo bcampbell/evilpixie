@@ -2,8 +2,9 @@
 #define PROJECT_H
 
 #include <stdint.h>
-#include <set>
 #include <list>
+#include <set>
+#include <vector>
 #include <string>
 
 #include "point.h"
@@ -50,10 +51,12 @@ public:
     void Save( std::string const& filename, bool savetransparency );
 
     // pixel access
-    IndexedImg& Img() { return *m_Img; }
-    IndexedImg const& ImgConst() const { return *m_Img; }
+    IndexedImg& Img(int frame) { return *m_Frames[frame]; }
+    IndexedImg const& ImgConst(int frame) const { return *m_Frames[frame]; }
 
     IndexedImg* ReplaceImg(IndexedImg* new_img);
+
+    int NumFrames() const { return m_Frames.size(); }
 
     // kill!
     // palette manipulation
@@ -85,9 +88,11 @@ public:
     //--------------------------------------
     // interface for tools to use, to enable the capturing of multiple
     // modifications into a single cmd.
+    // TODO: KILLKILLKILL!
+    // (use a Cmd_Draw held by the tool instead)
 
     // a tool which modified the image starts here...
-    void Draw_Begin( Tool* tool );
+    void Draw_Begin( Tool* tool, int frame );
 
 	// inform the project that a change has been made - tool calls this
 	// as many times as required.
@@ -116,7 +121,10 @@ private:
     Palette* m_Palette;
     int m_FGPen;
     int m_BGPen;
-    IndexedImg* m_Img;
+//    IndexedImg* m_Img;
+
+    //
+    std::vector< IndexedImg* > m_Frames;
 
 	std::set< ProjectListener* > m_Listeners;
 
@@ -128,6 +136,7 @@ private:
 
     //
     Tool* m_DrawTool;
+    int m_DrawFrame;
 
     // backup copy of image, used for rollback or undo generation during
     // drawing operation

@@ -39,10 +39,11 @@ private:
 class Cmd_Draw : public Cmd
 {
 public:
-    Cmd_Draw( Project& proj, Box const& affected, IndexedImg const& undoimg );
+    Cmd_Draw( Project& proj, int frame, Box const& affected, IndexedImg const& undoimg );
     virtual void Do();
     virtual void Undo();
 private:
+    int m_Frame;
     IndexedImg m_Img;
     Box m_Affected;
 };
@@ -54,6 +55,7 @@ class Cmd_Resize : public Cmd
 {
 public:
     Cmd_Resize(Project& proj, Box const& new_area);
+    virtual ~Cmd_Resize();
     virtual void Do();
     virtual void Undo();
 private:
@@ -61,21 +63,6 @@ private:
 };
 
 
-#if 0
-class Cmd_PlonkBrush : public Cmd
-{
-public:
-    Cmd_PlonkBrush( Project& proj, Point const& pos, Brush const& b, BrushStyle style, uint8_t pen );
-    virtual void Do();
-    virtual void Undo();
-private:
-    IndexedImg m_Img;
-    Point m_Pos;
-    int m_Transparent;  // -1 = none
-    BrushStyle m_Style;
-    uint8_t m_Pen;
-};
-#endif
 
 #endif // CMD_H
 

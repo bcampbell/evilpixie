@@ -17,11 +17,15 @@ Project::Project( int w, int h, Palette* palette ) :
     m_Palette(palette),
     m_FGPen(1),
     m_BGPen(0),
-    m_Img(new IndexedImg(w,h)),
     m_DrawTool(0),
+    m_DrawFrame(0),
     m_DrawBackup(1,1),
     m_Modified( false )
 {
+    int i;
+    for( i=0;i<3;++i)
+        m_Frames.push_back(new IndexedImg(w,h));
+
     if(!m_Palette)
     {
         try
@@ -47,7 +51,9 @@ Project::Project( int w, int h, Palette* palette ) :
 Project::~Project()
 {
     delete m_Palette;
-    delete m_Img;
+    std::vector<IndexedImg*>::iterator it;
+    for( it=m_Frames.begin(); it!=m_Frames.end(); ++it )
+        delete (*it);
     DiscardUndoAndRedos();
 }
 
@@ -102,6 +108,7 @@ void Project::ReplacePalette(Palette* newpalette)
 
 void Project::Load( std::string const& filename )
 {
+#if 0
     int transparent_idx = -1;
     LoadImg( Img(), m_Palette->raw(), filename.c_str(), &transparent_idx );
 
@@ -118,24 +125,28 @@ void Project::Load( std::string const& filename )
     //printf( "transparent_idx: %d\n",transparent_idx);
     if(transparent_idx != -1)
         SetBGPen(transparent_idx);
+#endif
 }
 
 
 void Project::Save( std::string const& filename, bool savetransparency )
 {
+#if 0
     int transparent_idx = savetransparency ? BGPen():-1;
     SaveImg( ImgConst(), m_Palette->raw(), filename.c_str(), transparent_idx );
 
     SetModifiedFlag( false );
     m_Filename = filename;
+#endif
 }
 
 
-
+// NOTE: doesn't delete old image - just passes it back to the caller
+// TODO: frame number
 IndexedImg* Project:: ReplaceImg(IndexedImg* new_img)
 {
-    IndexedImg* old = m_Img;
-    m_Img = new_img;
+    IndexedImg* old = m_Frames.front();
+    m_Frames.front() = new_img;
 
     // tell listeners which bit needs a redraw...
     Box b(old->Bounds());
@@ -162,22 +173,24 @@ void Project::Damage( Box const& b )
 }
 
 
-void Project::Draw_Begin( Tool* tool )
+// TODO: get rid of this... build up the drawing operation in a Cmd_Draw object held by the tool instead.
+void Project::Draw_Begin( Tool* tool, int frame )
 {
     assert( m_DrawTool == 0 );
+    m_DrawFrame = frame;
 
     m_DrawTool = tool;
     m_DrawDamage.SetEmpty();
     // take a copy of the pristine image so we can
     // generate an undo buffer or roll back
-    m_DrawBackup.Copy(ImgConst());
+    m_DrawBackup.Copy(ImgConst(m_DrawFrame));
 }
 
 
 void Project::Draw_Damage( Box const& b )
 {
     assert( m_DrawTool != 0 );
-    assert( Img().Bounds().Contains(b) );
+    assert( Img(m_DrawFrame).Bounds().Contains(b) );
     m_DrawDamage.Merge(b);
 
     std::set<ProjectListener*>::iterator it;
@@ -191,7 +204,7 @@ void Project::Draw_Damage( Box const& b )
 void Project::Draw_Commit()
 {
     assert( m_DrawTool != 0 );
-    Cmd* c = new Cmd_Draw( *this, m_DrawDamage, m_DrawBackup );
+    Cmd* c = new Cmd_Draw( *this, m_DrawFrame, m_DrawDamage, m_DrawBackup );
     AddCmd( c );
     m_DrawTool = 0;
 }
@@ -203,7 +216,7 @@ void Project::Draw_Rollback()
 
     Box b( m_DrawDamage );
     BlitIndexed( m_DrawBackup, m_DrawDamage,
-        Img(), b );
+        Img(m_DrawFrame), b );
 
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )

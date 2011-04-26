@@ -461,6 +461,7 @@ void EditorWindow::do_togglesavebgastransparent( bool checked )
 
 void EditorWindow::do_resizeimage()
 {
+#if 0
     Box b = Proj().Img().Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
     if( dlg.exec() == QDialog::Accepted )
@@ -469,6 +470,7 @@ void EditorWindow::do_resizeimage()
         Cmd* c = new Cmd_Resize(Proj(), Box(0,0,area.width(),area.height()));
         Proj().AddCmd(c);
     }
+#endif
 }
 
 void EditorWindow::do_new()
@@ -711,11 +713,11 @@ void EditorWindow::RethinkWindowTitle()
     if( f.empty() )
         f = "Untitled";
 
-    int w = Proj().ImgConst().W();
-    int h = Proj().ImgConst().H();
+    int w = Proj().ImgConst(0).W();
+    int h = Proj().ImgConst(0).H();
 
     char dim[32];
-    sprintf( dim, " (%dx%d)", w,h );
+    sprintf( dim, " (%dx%d) %d frames", w,h,Proj().NumFrames() );
 
     std::string title = "[*]";
     title += f;

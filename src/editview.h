@@ -31,11 +31,13 @@ public:
 	// these will all cause listener RedrawAll request
 	void Resize( int w, int h );
 	void SetZoom( int zoom );
+	void SetFrame( int frame );
 	void SetOffset( Point const& projpos );	// in project coord (pixels)
     void AlignView( Point const& viewp, Point const& projp );
 
 	Point const& Offset() const { return m_Offset; }
 	int Zoom() const { return m_Zoom; }
+    int Frame() const { return m_Frame; }
 
 	void OnMouseDown( Point const& viewpos, Button button );
 	void OnMouseMove( Point const& viewpos );
@@ -73,6 +75,9 @@ private:
 	RGBImg* m_Canvas;
 //	RGB* m_Canvas;
 	Box m_ViewBox;	// x,y always 0
+
+    // current frame number
+    int m_Frame;
 
 	int m_Zoom;
 	// In project coords

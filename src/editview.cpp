@@ -61,6 +61,18 @@ void EditView::SetZoom( int zoom )
     Redraw(m_ViewBox);
 }
 
+void EditView::SetFrame( int frame )
+{
+    // TODO: bounds check
+
+    if(frame == m_Frame)
+        return;
+    m_Frame = frame;
+    ConfineView();
+    DrawView(m_ViewBox);
+    Redraw(m_ViewBox);
+}
+
 void EditView::SetOffset( Point const& projpos )
 {
     m_Offset = projpos;
@@ -86,7 +98,7 @@ void EditView::AlignView( Point const& viewp, Point const& projp )
 // confine the view to keep as much of the image onscreen as possible.
 void EditView::ConfineView()
 {
-    Box const& p = Proj().ImgConst().Bounds();
+    Box const& p = Proj().ImgConst(Frame()).Bounds();
     Box v = ViewToProj( m_ViewBox );
 
     if( p.W() < v.W() )
@@ -183,8 +195,9 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
     Box vb(viewbox);
     vb.ClipAgainst(m_ViewBox);
 
+    IndexedImg const& img = Proj().Img(Frame());
     // get project bounds in view coords (unclipped)
-    Box pbox(ProjToView(Proj().Img().Bounds()));
+    Box pbox(ProjToView(img.Bounds()));
 
     // step x,y through view coords of the area to draw
     int y;
@@ -208,7 +221,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 
             // on the canvas
             Point p( ViewToProj(Point(x,y)) );
-            uint8_t const* src = Proj().Img().PtrConst( p.x,p.y );
+            uint8_t const* src = img.PtrConst( p.x,p.y );
             while(x<=xmax)
             {
                 int cx = x + (m_Offset.x*m_Zoom);
@@ -260,7 +273,7 @@ void EditView::OnPaletteChanged( int, RGBx const& )
 void EditView::OnPaletteReplaced()
 {
     // redraw the whole project
-    Box area(ProjToView(Proj().Img().Bounds()));
+    Box area(ProjToView(Proj().Img(Frame()).Bounds()));
     Box affected;
     DrawView(area,&affected);
     Redraw(affected);

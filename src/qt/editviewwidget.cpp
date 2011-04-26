@@ -111,10 +111,19 @@ void EditViewWidget::Redraw( Box const& b )
 
 void EditViewWidget::zoomIn()
 {
-    SetZoom(Zoom()+1);
+//    SetZoom(Zoom()+1);
+    int n = Frame()+1;
+    if(n>=Proj().NumFrames())
+        n=Proj().NumFrames()-1;
+    SetFrame(n);
 }
 
 void EditViewWidget::zoomOut()
 {
-    SetZoom(Zoom()-1);
+//    SetZoom(Zoom()-1);
+
+    int n = Frame()-1;
+    if(n<0)
+        n=0;
+    SetFrame(n);
 }

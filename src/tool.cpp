@@ -195,10 +195,10 @@ void PlonkBrushToView( EditView& view, Point const& pos, Box& viewdmg, Button bu
 
 
 // helper to draw the current brush on the project
-void PlonkBrushToProj( Editor& ed, Point const& pos, Box& projdmg, Button button )
+void PlonkBrushToProj( EditView& view, Point const& pos, Box& projdmg, Button button )
 {
-    Project& proj = ed.Proj();
-    Brush const& brush = ed.CurrentBrush();
+    Project& proj = view.Proj();
+    Brush const& brush = view.Ed().CurrentBrush();
     Box dmg(
         pos.x - brush.Handle().x,
         pos.y - brush.Handle().y,
@@ -210,13 +210,13 @@ void PlonkBrushToProj( Editor& ed, Point const& pos, Box& projdmg, Button button
             maskcolour = proj.FGPen();
 
         BlitIndexed( brush, brush.Bounds(),
-            proj.Img(), dmg,
+            proj.Img(view.Frame()), dmg,
             brush.TransparentColour(), maskcolour );
     }
     else if( button == ERASE )
     {
         BlitIndexed( brush, brush.Bounds(),
-            proj.Img(), dmg,
+            proj.Img(view.Frame()), dmg,
             brush.TransparentColour(), proj.BGPen() );
     }
 
@@ -322,7 +322,7 @@ void PencilTool::OnDown( EditView& view, Point const& p, Button b )
 
     m_DownButton = b;
     m_View = &view;
-    view.Proj().Draw_Begin( this );
+    view.Proj().Draw_Begin( this, view.Frame() );
 
     // draw 1st pixel
     Plot_cb( p.x, p.y, (void*)this );
@@ -375,6 +375,7 @@ void PencilTool::Plot_cb( int x, int y, void* user )
     Editor& ed = that->Owner();
     Brush const& brush = ed.CurrentBrush();
     Project& proj = that->m_View->Proj();
+    EditView& view = *that->m_View;
 
     Box dmg(
         x - brush.Handle().x,
@@ -392,7 +393,7 @@ void PencilTool::Plot_cb( int x, int y, void* user )
     }
 
     BlitIndexed( brush, brush.Bounds(),
-        proj.Img(), dmg,
+        proj.Img(view.Frame()), dmg,
         brush.TransparentColour(), maskcolour );
     proj.Draw_Damage( dmg );
 }
@@ -438,7 +439,7 @@ void LineTool::OnUp( EditView& view, Point const& p, Button b )
 
     m_To = p;
 
-    view.Proj().Draw_Begin(this);
+    view.Proj().Draw_Begin(this,view.Frame());
     line( m_From.x, m_From.y, m_To.x, m_To.y, Plot_cb, this );
     view.Proj().Draw_Commit();
     m_DownButton = NONE;
@@ -453,6 +454,7 @@ void LineTool::Plot_cb( int x, int y, void* user )
     Editor& ed = that->Owner();
     Brush const& brush = ed.CurrentBrush();
     Project& proj = that->m_View->Proj();
+    EditView& view = *that->m_View;
 
     Box dmg(
         x - brush.Handle().x,
@@ -470,7 +472,7 @@ void LineTool::Plot_cb( int x, int y, void* user )
     }
 
     BlitIndexed( brush, brush.Bounds(),
-        proj.Img(), dmg,
+        proj.Img(view.Frame()), dmg,
         brush.TransparentColour(), maskcolour );
     proj.Draw_Damage( dmg );
 }
@@ -552,12 +554,12 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
     m_DownButton = NONE;
 
     Box pickup( m_Anchor, m_DragPoint );
-    pickup.ClipAgainst( proj.Img().Bounds() );
+    pickup.ClipAgainst( proj.Img(view.Frame()).Bounds() );
 
     if( pickup.Empty() )
         return;
 
-    Brush* brush = new Brush( FULLCOLOUR, proj.Img(), pickup, proj.BGPen() );
+    Brush* brush = new Brush( FULLCOLOUR, proj.Img(view.Frame()), pickup, proj.BGPen() );
 
     // copy in palette
     brush->SetPalette( proj.PaletteConst() );
@@ -571,8 +573,8 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
     // if picking up with right button, erase area after pickup
     if( erase )
     {
-        proj.Draw_Begin(this);
-        proj.Img().FillBox( proj.BGPen(), pickup );
+        proj.Draw_Begin(this,view.Frame());
+        proj.Img(view.Frame()).FillBox( proj.BGPen(), pickup );
         proj.Draw_Damage( pickup );
         proj.Draw_Commit();
     }
@@ -591,7 +593,7 @@ void BrushPickupTool::DrawCursor( EditView& view )
     }
 
     Box pickup( m_Anchor, m_DragPoint );
-    pickup.ClipAgainst( view.Proj().Img().Bounds() );
+    pickup.ClipAgainst( view.Proj().Img(view.Frame()).Bounds() );
 
     Box vb = view.ProjToView( pickup );
     RGBx white( RGBx(255,255,255) );
@@ -623,7 +625,7 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
 
     if( b != DRAW && b != ERASE )
         return;
-    if( !proj.Img().Bounds().Contains(p ) )
+    if( !proj.Img(view.Frame()).Bounds().Contains(p ) )
         return;
 
     int fillcolour = proj.FGPen();
@@ -631,8 +633,8 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
         fillcolour = proj.BGPen();
 
     Box dmg;
-    proj.Draw_Begin( this );
-    FloodFill( proj.Img(), p, fillcolour, dmg );
+    proj.Draw_Begin( this,view.Frame() );
+    FloodFill( proj.Img(view.Frame()), p, fillcolour, dmg );
     if( dmg.Empty() )
     {
         // no pixels changed.
@@ -708,7 +710,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     Box rect( m_From, m_To );
 
     int x,y;
-    view.Proj().Draw_Begin(this);
+    view.Proj().Draw_Begin(this,view.Frame());
 
     // top (including left and rightmost pixels)
     dmg.SetEmpty();
@@ -716,7 +718,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( x=rect.XMin(); x<=rect.XMax(); ++x )
     {
         Box tmp;
-        PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     view.Proj().Draw_Damage( dmg );
@@ -727,7 +729,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( y=rect.YMin()+1; y<=rect.YMax()-1; ++y )
     {
         Box tmp;
-        PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     view.Proj().Draw_Damage( dmg );
@@ -738,7 +740,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( x=rect.XMax(); x>=rect.XMin(); --x )
     {
         Box tmp;
-        PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     view.Proj().Draw_Damage( dmg );
@@ -749,7 +751,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( y=rect.YMax()-1; y>=rect.YMin()+1; --y )
     {
         Box tmp;
-        PlonkBrushToProj( Owner(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     view.Proj().Draw_Damage( dmg );
@@ -864,9 +866,9 @@ void FilledRectTool::OnUp( EditView& view, Point const& p, Button b )
     Project& proj = view.Proj();
 
     m_To = p;
-    IndexedImg& img = proj.Img();
+    IndexedImg& img = proj.Img(view.Frame());
     Box r( m_From, m_To );
-    proj.Draw_Begin(this);
+    proj.Draw_Begin(this,view.Frame());
 
     if( m_DownButton == DRAW )
         img.FillBox( proj.FGPen(),r );
@@ -947,7 +949,7 @@ void CircleTool::OnUp( EditView& view, Point const& p, Button b )
 
     m_To = p;
 
-    view.Proj().Draw_Begin(this);
+    view.Proj().Draw_Begin(this,view.Frame());
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
     EllipseBresenham( m_From.x, m_From.y, rx, ry, Plot_cb, this );
@@ -964,6 +966,7 @@ void CircleTool::Plot_cb( int x, int y, void* user )
     Editor& ed = that->Owner();
     Brush const& brush = ed.CurrentBrush();
     Project& proj = that->m_View->Proj();
+    EditView& view = *that->m_View;
 
     Box dmg(
         x - brush.Handle().x,
@@ -981,7 +984,7 @@ void CircleTool::Plot_cb( int x, int y, void* user )
     }
 
     BlitIndexed( brush, brush.Bounds(),
-        proj.Img(), dmg,
+        proj.Img(view.Frame()), dmg,
         brush.TransparentColour(), maskcolour );
     proj.Draw_Damage( dmg );
 }
@@ -1071,7 +1074,7 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
 
     m_To = p;
 
-    view.Proj().Draw_Begin(this);
+    view.Proj().Draw_Begin(this,view.Frame());
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
     FilledEllipseBresenham( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
@@ -1085,7 +1088,8 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
 void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
 {
     FilledCircleTool* that = (FilledCircleTool*)user;
-    Project& proj = that->m_View->Proj();
+    EditView& view = *that->m_View;
+    Project& proj = view.Proj();
 
     int c = -1;
     if( that->m_DownButton == DRAW )
@@ -1094,7 +1098,7 @@ void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
         c = proj.BGPen();
 
     Box b( x0,y,x1-x0,1 );
-    proj.Img().FillBox(c,b);
+    proj.Img(view.Frame()).FillBox(c,b);
     proj.Draw_Damage( b );
 }
 
@@ -1162,10 +1166,10 @@ void EyeDropperTool::OnDown( EditView& view, Point const& p, Button b )
     if( b != DRAW && b != ERASE )
         return;
     Project& proj = view.Proj();
-    if( !proj.Img().Bounds().Contains(p ) )
+    if( !proj.Img(view.Frame()).Bounds().Contains(p ) )
         return;
 
-    uint8_t c = proj.Img().GetPixel(p);
+    uint8_t c = proj.Img(view.Frame()).GetPixel(p);
     if( b == DRAW )
         proj.SetFGPen(c);
     else if( b == ERASE )
