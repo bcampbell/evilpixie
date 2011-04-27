@@ -36,7 +36,6 @@
 #include <QShortcut>
 #include <QTextEdit>
 
-extern bool LoadGIF( IndexedImg& img, RGBx* palette, const char* filename );
 
 
 void CurrentColourWidget::paintEvent(QPaintEvent *)
@@ -482,6 +481,9 @@ void EditorWindow::do_new()
         Project* p = new Project( sz.width(), sz.height() );
         EditorWindow* e = new EditorWindow(p);
         e->show();
+
+        if( Proj().Expendable() )
+            this->close();
     }
 }
 
@@ -521,8 +523,8 @@ void EditorWindow::do_loadpalette()
 
 void EditorWindow::do_open()
 {
-    if( !CheckZappingOK() )
-        return;
+//    if( !CheckZappingOK() )
+//        return;
     QString loadfilters = "Image files (*.bpl *.bmp *.dcx *.gif *.ico *.iff *.ilbm *.lif *.mdl *.pcx *.png *.psd *.psp *.ras *.sun *.tga *.tif *.tiff *.tpl *.wal);;Any files (*)";
 
     std::string startdir = Proj().Filename();
@@ -546,13 +548,18 @@ void EditorWindow::do_open()
 
     try
     {
-        Proj().Load( filename.toStdString() );
+        Project* new_proj = new Project(filename.toStdString());
+        EditorWindow* fenster = new EditorWindow(new_proj);
+        fenster->show();
+
+        if( Proj().Expendable() )
+            this->close();
+
     }
     catch( Wobbly const& e )
     {
         GUIShowError( e.what() );
     }
-    RethinkWindowTitle();
 }
 
 
@@ -717,7 +724,7 @@ void EditorWindow::RethinkWindowTitle()
     int h = Proj().ImgConst(0).H();
 
     char dim[32];
-    sprintf( dim, " (%dx%d) %d frames", w,h,Proj().NumFrames() );
+    sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->Frame()+1,Proj().NumFrames() );
 
     std::string title = "[*]";
     title += f;

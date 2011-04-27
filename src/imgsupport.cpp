@@ -62,6 +62,17 @@ void LoadImg( IndexedImg& img, RGBx* palette, const char* filename, int* transpa
             *transparent_idx = (int)ilGetInteger(IL_PNG_ALPHA_INDEX);
         }
     }
+    printf("IL_NUM_IMAGES: %d\n",ilGetInteger(IL_NUM_IMAGES));
+// ILuint ili;
+// for(i=0, ili=0; i<TotalAnimationFrames; i++, ili++)
+// {
+//   ilActiveImage(0);
+//   if(ilActiveImage(ili)==IL_FALSE)
+//      {error;}
+//   pAnimationDuration[i]=(sreal)ilGetInteger(IL_IMAGE_DURATION);
+//   pColorData[i*TotalColorDataWithPadding+j]=ilGetData();
+// }
+
 
     /* make sure everything is in the format we expect! */
     ilConvertImage( IL_COLOUR_INDEX, IL_UNSIGNED_BYTE );
@@ -163,4 +174,9 @@ void SaveImg( IndexedImg const& img, RGBx const* palette, const char* filename, 
     }
     ilDeleteImages(1,&im);
 }
+
+
+
+
+
 

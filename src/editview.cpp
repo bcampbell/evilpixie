@@ -8,6 +8,7 @@ EditView::EditView( Editor& editor, int w, int h ) :
     m_PrevPos(-1,-1),
     m_Canvas( new RGBImg( w,h ) ),
     m_ViewBox(0,0,w,h),
+    m_Frame(0),
     m_Zoom(4),
     m_Offset(0,0),
     m_Panning(false),

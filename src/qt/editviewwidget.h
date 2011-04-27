@@ -8,7 +8,7 @@
 #include <QWidget>
 
 
-class EditViewWidget : public QWidget, EditView
+class EditViewWidget : public QWidget, public EditView
 {
     Q_OBJECT
 public:
@@ -27,6 +27,8 @@ protected:
 public slots:
     void zoomIn();
     void zoomOut();
+    void nextFrame();
+    void prevFrame();
 
 private:
 

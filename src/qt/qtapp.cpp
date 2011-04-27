@@ -20,7 +20,7 @@ int QTApp::Run( int argc, char* argv[] )
 {
     QApplication app(argc, argv);
 
-    EditorWindow fenster( new Project( 256,256 ) );
+    EditorWindow fenster(new Project());
     fenster.show();
     return app.exec();
 }

@@ -11,10 +11,9 @@
 #include <cstdio>
 
 
-
-
-Project::Project( int w, int h, Palette* palette ) :
-    m_Palette(palette),
+Project::Project( std::string const& filename ) :
+    m_Expendable(false),
+    m_Palette(0),
     m_FGPen(1),
     m_BGPen(0),
     m_DrawTool(0),
@@ -22,9 +21,27 @@ Project::Project( int w, int h, Palette* palette ) :
     m_DrawBackup(1,1),
     m_Modified( false )
 {
-    int i;
-    for( i=0;i<3;++i)
-        m_Frames.push_back(new IndexedImg(w,h));
+    int transparent_idx = -1;
+//    LoadImg( Img(0), m_Palette->raw(), filename.c_str(), &transparent_idx );
+    m_Anim.Load( filename.c_str() );
+    if(transparent_idx != -1)
+        SetBGPen(transparent_idx);
+    m_Palette = new Palette(m_Anim.GetPaletteConst(0));
+}
+
+
+Project::Project() :
+    m_Expendable(true),
+    m_Palette(0),
+    m_FGPen(1),
+    m_BGPen(0),
+    m_DrawTool(0),
+    m_DrawFrame(0),
+    m_DrawBackup(1,1),
+    m_Modified( false )
+{
+    int w = 128;
+    int h = 128;
 
     if(!m_Palette)
     {
@@ -45,15 +62,46 @@ Project::Project( int w, int h, Palette* palette ) :
             SetColour( 3, RGBx(0,0,255) );
         }
     }
+    m_Anim.Append(new IndexedImg(w,h), new Palette(*m_Palette));
+}
+
+Project::Project( int w, int h, Palette* palette ) :
+    m_Expendable(false),
+    m_Palette(palette),
+    m_FGPen(1),
+    m_BGPen(0),
+    m_DrawTool(0),
+    m_DrawFrame(0),
+    m_DrawBackup(1,1),
+    m_Modified( false )
+{
+
+    if(!m_Palette)
+    {
+        try
+        {
+            m_Palette = Palette::Load("data/default.gpl");
+        }
+        catch(...)
+        {
+            m_Palette = new Palette();
+            int n;
+            for( n=0; n<256; ++n )
+            {
+                SetColour( n, RGBx(0,0,0) );
+            }
+            SetColour( 1, RGBx(255,0,0) );
+            SetColour( 2, RGBx(0,255,0) );
+            SetColour( 3, RGBx(0,0,255) );
+        }
+    }
+    m_Anim.Append(new IndexedImg(w,h), new Palette(*m_Palette));
 }
 
 
 Project::~Project()
 {
     delete m_Palette;
-    std::vector<IndexedImg*>::iterator it;
-    for( it=m_Frames.begin(); it!=m_Frames.end(); ++it )
-        delete (*it);
     DiscardUndoAndRedos();
 }
 
@@ -87,6 +135,7 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
     if( m_Modified == newmodifiedflag )
         return;
 
+    m_Expendable = false;
     m_Modified = newmodifiedflag;
 
     std::set<ProjectListener*>::iterator it;
@@ -106,28 +155,6 @@ void Project::ReplacePalette(Palette* newpalette)
         (*it)->OnPaletteReplaced();
 }
 
-void Project::Load( std::string const& filename )
-{
-#if 0
-    int transparent_idx = -1;
-    LoadImg( Img(), m_Palette->raw(), filename.c_str(), &transparent_idx );
-
-    SetModifiedFlag( false );
-    m_Filename = filename;
-
-    DiscardUndoAndRedos();
-    Damage( Img().Bounds() );
-
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-        (*it)->OnPaletteReplaced();
-
-    //printf( "transparent_idx: %d\n",transparent_idx);
-    if(transparent_idx != -1)
-        SetBGPen(transparent_idx);
-#endif
-}
-
 
 void Project::Save( std::string const& filename, bool savetransparency )
 {
@@ -145,6 +172,8 @@ void Project::Save( std::string const& filename, bool savetransparency )
 // TODO: frame number
 IndexedImg* Project:: ReplaceImg(IndexedImg* new_img)
 {
+    return new_img;
+#if 0
     IndexedImg* old = m_Frames.front();
     m_Frames.front() = new_img;
 
@@ -158,6 +187,7 @@ IndexedImg* Project:: ReplaceImg(IndexedImg* new_img)
     }
 
     return old;
+#endif
 }
 
 

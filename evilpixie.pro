@@ -1,9 +1,10 @@
 TARGET = evilpixie
-CONFIG += qt release
+CONFIG += qt debug
 win32:INCLUDEPATH = /c/mingw/gnuwin32/include
 win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
 unix:LIBS = -lgif -lXpm -lIL
-SOURCES += src/app.cpp \
+SOURCES += src/anim.cpp \
+    src/app.cpp \
     src/box.cpp \
     src/brush.cpp \
     src/cmd.cpp \
@@ -29,7 +30,8 @@ SOURCES += src/app.cpp \
     src/qt/rgbwidget.cpp \
     src/qt/main.cpp
 
-HEADERS += src/box.h \
+HEADERS += src/anim.h \
+    src/box.h \
     src/brush.h \
     src/cmd.h \
     src/colours.h \

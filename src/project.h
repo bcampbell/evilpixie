@@ -7,8 +7,8 @@
 #include <vector>
 #include <string>
 
+#include "anim.h"
 #include "point.h"
-
 #include "colours.h"
 #include "palette.h"
 #include "box.h"
@@ -21,7 +21,9 @@ class Cmd;
 class Project
 {
 public:
+    Project();
 	Project( int w, int h, Palette* palette=0 );
+    Project(std::string const& filename);
 	virtual ~Project();
 
 	void AddListener( ProjectListener* l )
@@ -43,20 +45,20 @@ public:
 	bool CanRedo() const;
 
     bool ModifiedFlag() const { return m_Modified; }
+    bool Expendable() const { return m_Expendable; }
 
     // replace palette, informing listeners. ownership is passed to proj.
     void ReplacePalette(Palette* newpalette);
 
-    void Load( std::string const& filename );
     void Save( std::string const& filename, bool savetransparency );
 
     // pixel access
-    IndexedImg& Img(int frame) { return *m_Frames[frame]; }
-    IndexedImg const& ImgConst(int frame) const { return *m_Frames[frame]; }
+    IndexedImg& Img(int frame) { return m_Anim.GetFrame(frame); }
+    IndexedImg const& ImgConst(int frame) const { return m_Anim.GetFrameConst(frame); }
 
     IndexedImg* ReplaceImg(IndexedImg* new_img);
 
-    int NumFrames() const { return m_Frames.size(); }
+    int NumFrames() const { return m_Anim.NumFrames(); }
 
     // kill!
     // palette manipulation
@@ -115,8 +117,9 @@ public:
 
 
 private:
-    Project();                  // disallowed
     Project( Project const& );  // disallowed
+
+    bool m_Expendable;
 
     Palette* m_Palette;
     int m_FGPen;
@@ -124,7 +127,8 @@ private:
 //    IndexedImg* m_Img;
 
     //
-    std::vector< IndexedImg* > m_Frames;
+//    std::vector< IndexedImg* > m_Frames;
+    Anim m_Anim;
 
 	std::set< ProjectListener* > m_Listeners;
 
