@@ -280,6 +280,22 @@ void EditView::OnPaletteReplaced()
     Redraw(affected);
 }
 
+void EditView::OnFramesAdded(int first, int last)
+{
+    if(Frame()>first)
+        SetFrame(Frame()+(last-first));
+}
+
+void EditView::OnFramesRemoved(int first, int last)
+{
+    if(Frame()>=first)
+    {
+        int newframe = Frame()-(last-first);
+        if(newframe<first)
+            newframe=first;
+        SetFrame(newframe);
+    }
+}
 
 void EditView::AddCursorDamage( Box const& viewdmg )
 {

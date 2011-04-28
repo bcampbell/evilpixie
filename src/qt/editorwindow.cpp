@@ -498,6 +498,36 @@ void EditorWindow::do_usebrushpalette()
 }
 
 
+void EditorWindow::do_addframe()
+{
+    int frame = m_ViewWidget->Frame();
+    Cmd* c = new Cmd_InsertFrames(Proj(), frame, 1);
+    Proj().AddCmd(c);
+}
+
+void EditorWindow::do_zapframe()
+{
+}
+
+void EditorWindow::do_prevframe()
+{
+    int n = m_ViewWidget->Frame()-1;
+    if(n<0)
+        n=Proj().NumFrames()-1;
+    m_ViewWidget->SetFrame(n);
+    RethinkWindowTitle();
+}
+
+void EditorWindow::do_nextframe()
+{
+    int n = m_ViewWidget->Frame()+1;
+    if(n>=Proj().NumFrames())
+        n=0;//Proj().NumFrames()-1;
+    m_ViewWidget->SetFrame(n);
+    RethinkWindowTitle();
+}
+
+
 void EditorWindow::do_loadpalette()
 {
     QString filename = QFileDialog::getOpenFileName(
@@ -678,6 +708,16 @@ QMenuBar* EditorWindow::CreateMenuBar()
         a = m->addAction( "&Close", this, SLOT( close()), QKeySequence::Close );
 
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
+    }
+
+    // ANIM menu
+    {
+        QMenu* m = menubar->addMenu("&Anim");
+        a = m->addAction( "Prev Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
+        a = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
+        m->addSeparator();
+        a = m->addAction( "&Add Frame", this, SLOT( do_addframe()) );
+        a = m->addAction( "&Delete Frame", this, SLOT( do_deleteframe()) );
     }
 
     // EDIT menu

@@ -29,6 +29,17 @@ void Anim::Zap()
 }
 
 
+void Anim::TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst)
+{
+    dest.m_Frames.insert( dest.m_Frames.begin()+destfirst, m_Frames.begin()+srcfirst, m_Frames.begin()+srclast );
+    m_Frames.erase(m_Frames.begin()+srcfirst, m_Frames.begin()+srclast);
+
+    dest.m_Palettes.insert( dest.m_Palettes.begin()+destfirst, m_Palettes.begin()+srcfirst, m_Palettes.begin()+srclast );
+    m_Palettes.erase(m_Palettes.begin()+srcfirst, m_Palettes.begin()+srclast);
+}
+
+
+
 void Anim::Load( const char* filename )
 {
     int transparent_idx = -1;

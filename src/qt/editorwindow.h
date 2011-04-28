@@ -72,6 +72,8 @@ public:
     virtual void OnModifiedFlagChanged( bool modified );
     virtual void OnPenChange();
     virtual void OnUndoRedoChanged() { update_menu_states(); }
+    virtual void OnFramesAdded(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
+    virtual void OnFramesRemoved(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
 
     void closeEvent(QCloseEvent *event);
 public slots:
@@ -98,6 +100,11 @@ public slots:
     void do_saveas();
     void do_loadpalette();
     void do_usebrushpalette();
+
+    void do_addframe();
+    void do_zapframe();
+    void do_prevframe();
+    void do_nextframe();
 
 private:
     EditViewWidget* m_ViewWidget;

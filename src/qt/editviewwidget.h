@@ -27,8 +27,6 @@ protected:
 public slots:
     void zoomIn();
     void zoomOut();
-    void nextFrame();
-    void prevFrame();
 
 private:
 

@@ -54,6 +54,7 @@ IndexedImg::IndexedImg( IndexedImg const& other ) :
     m_Bounds( other.m_Bounds ),
     m_Pixels( new uint8_t[ other.m_Bounds.w * other.m_Bounds.h ] )
 {
+//    printf("copy: %dx%d => %dx%d\n",other.m_Bounds.w, other.m_Bounds.h, m_Bounds.w, m_Bounds.h);
     memcpy( m_Pixels, other.m_Pixels, m_Bounds.w*m_Bounds.h );
 }
 

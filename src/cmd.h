@@ -5,6 +5,7 @@
 #include "img.h"
 #include "brush.h"
 
+
 class Project;
 
 class Cmd
@@ -60,6 +61,19 @@ public:
     virtual void Undo();
 private:
     IndexedImg* m_Img;
+};
+
+
+class Cmd_InsertFrames : public Cmd
+{
+public:
+    Cmd_InsertFrames(Project& proj, int position, int numframes);
+    virtual ~Cmd_InsertFrames();
+    virtual void Do();
+    virtual void Undo();
+private:
+    int m_Pos;
+    int m_Num;
 };
 
 

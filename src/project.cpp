@@ -202,6 +202,27 @@ void Project::Damage( Box const& b )
     }
 }
 
+void Project::Damage_FramesAdded(int first, int last)
+{
+    assert( m_DrawTool == 0 );  // not allowed during draw
+    std::set<ProjectListener*>::iterator it;
+    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
+    {
+        (*it)->OnFramesAdded( first,last );
+    }
+}
+
+void Project::Damage_FramesRemoved(int first, int last)
+{
+    assert( m_DrawTool == 0 );  // not allowed during draw
+    std::set<ProjectListener*>::iterator it;
+    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
+    {
+        (*it)->OnFramesRemoved( first,last );
+    }
+}
+
+
 
 // TODO: get rid of this... build up the drawing operation in a Cmd_Draw object held by the tool instead.
 void Project::Draw_Begin( Tool* tool, int frame )

@@ -21,6 +21,10 @@ public:
     void Load(const char* filename);
     void Append(IndexedImg* img, Palette* palette ) { m_Frames.push_back(img); m_Palettes.push_back(palette); }
     void Zap();
+
+    // transfer frames in range [srcfirst, srclast) to another animation
+    void TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst);
+
 private:
     std::vector< IndexedImg* > m_Frames;
     std::vector< Palette* > m_Palettes;

@@ -45,6 +45,9 @@ public:
 	bool CanRedo() const;
 
     bool ModifiedFlag() const { return m_Modified; }
+
+    // expendable is set if project is default and unmodified, and can be
+    // deleted without care (eg if user loads another project)
     bool Expendable() const { return m_Expendable; }
 
     // replace palette, informing listeners. ownership is passed to proj.
@@ -53,6 +56,8 @@ public:
     void Save( std::string const& filename, bool savetransparency );
 
     // pixel access
+    Anim& GetAnim() { return m_Anim; }
+    // shortcuts
     IndexedImg& Img(int frame) { return m_Anim.GetFrame(frame); }
     IndexedImg const& ImgConst(int frame) const { return m_Anim.GetFrameConst(frame); }
 
@@ -85,7 +90,8 @@ public:
     // tell project it's been modified
     // (within draw operation, use Draw_Damage() instead!)
 	void Damage( Box const& b );
-
+    void Damage_FramesAdded(int first, int last);
+    void Damage_FramesRemoved(int first, int last);
 
     //--------------------------------------
     // interface for tools to use, to enable the capturing of multiple

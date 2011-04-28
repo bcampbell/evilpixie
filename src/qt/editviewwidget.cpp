@@ -26,12 +26,6 @@ EditViewWidget::EditViewWidget( Editor& editor ) :
         s = new QShortcut( QKeySequence( "-" ), this );
         connect(s, SIGNAL( activated()), this, SLOT( zoomOut()));
 
-        s = new QShortcut( QKeySequence( "1" ), this );
-        connect(s, SIGNAL( activated()), this, SLOT( prevFrame()));
-
-        s = new QShortcut( QKeySequence( "2" ), this );
-        connect(s, SIGNAL( activated()), this, SLOT( nextFrame()));
-
     }
 
 }
@@ -123,21 +117,5 @@ void EditViewWidget::zoomIn()
 void EditViewWidget::zoomOut()
 {
     SetZoom(Zoom()-1);
-}
-
-void EditViewWidget::prevFrame()
-{
-    int n = Frame()-1;
-    if(n<0)
-        n=0;
-    SetFrame(n);
-}
-
-void EditViewWidget::nextFrame()
-{
-    int n = Frame()+1;
-    if(n>=Proj().NumFrames())
-        n=Proj().NumFrames()-1;
-    SetFrame(n);
 }
 

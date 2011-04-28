@@ -27,6 +27,8 @@ public:
 	virtual void OnDamaged( Box const& projdmg );
     virtual void OnPaletteChanged( int n, RGBx const& c );
     virtual void OnPaletteReplaced();
+    virtual void OnFramesAdded(int first, int last);
+    virtual void OnFramesRemoved(int first, int last);
 
 	// these will all cause listener RedrawAll request
 	void Resize( int w, int h );
