@@ -93,7 +93,7 @@ public slots:
     void do_redo();
     void do_gridonoff( bool checked );
     void do_togglesavebgastransparent( bool checked );
-    void do_resizeimage();
+    void do_resize();
     void do_new();
     void do_open();
     void do_save();

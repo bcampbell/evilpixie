@@ -56,12 +56,15 @@ private:
 class Cmd_Resize : public Cmd
 {
 public:
-    Cmd_Resize(Project& proj, Box const& new_area);
+    Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast);
     virtual ~Cmd_Resize();
     virtual void Do();
     virtual void Undo();
 private:
-    IndexedImg* m_Img;
+    void Swap();
+    int m_First;
+    int m_Last;
+    Anim m_FrameSwap;
 };
 
 

@@ -458,18 +458,19 @@ void EditorWindow::do_togglesavebgastransparent( bool checked )
     m_SaveBGAsTransparent = checked;
 }
 
-void EditorWindow::do_resizeimage()
+void EditorWindow::do_resize()
 {
-#if 0
-    Box b = Proj().Img().Bounds();
+    Box b = Proj().Img(m_ViewWidget->Frame()).Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
     if( dlg.exec() == QDialog::Accepted )
     {
         QRect area = dlg.GetArea();
-        Cmd* c = new Cmd_Resize(Proj(), Box(0,0,area.width(),area.height()));
+        Cmd* c = new Cmd_Resize(Proj(),
+            Box(0,0,area.width(),area.height()),
+            0,
+            Proj().GetAnim().NumFrames() );
         Proj().AddCmd(c);
     }
-#endif
 }
 
 void EditorWindow::do_new()
@@ -714,15 +715,6 @@ QMenuBar* EditorWindow::CreateMenuBar()
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 
-    // ANIM menu
-    {
-        QMenu* m = menubar->addMenu("&Anim");
-        a = m->addAction( "&Add Frame", this, SLOT( do_addframe()) );
-        a = m->addAction( "&Delete Frame", this, SLOT( do_zapframe()) );
-        m->addSeparator();
-        a = m->addAction( "Previous Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
-        a = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
-    }
 
     // EDIT menu
     {
@@ -742,8 +734,18 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionSaveBGAsTransparent = a = m->addAction( "Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)));
         a->setCheckable(true);
 
-        a = m->addAction( "Resize Image...", this, SLOT(do_resizeimage()));
+        a = m->addAction( "Resize...", this, SLOT(do_resize()));
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
+    }
+
+    // ANIM menu
+    {
+        QMenu* m = menubar->addMenu("&Anim");
+        a = m->addAction( "&Add Frame", this, SLOT( do_addframe()) );
+        a = m->addAction( "&Delete Frame", this, SLOT( do_zapframe()) );
+        m->addSeparator();
+        a = m->addAction( "Previous Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
+        a = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
     }
 
     // Help menu

@@ -34,47 +34,55 @@ void Cmd_Draw::Undo()
 
 
 
-Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area) :
+Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast) :
     Cmd(proj,NOT_DONE),
-    m_Img(new IndexedImg(new_area.W(), new_area.H()))
+    m_First(framefirst),
+    m_Last(framelast)
 {
-#if 0
-    //
-    Box foo(m_Img->Bounds());
-    m_Img->FillBox(Proj().BGPen(), foo);
+    // populate frameswap with the resized frames
+    int n;
+    for(n=m_First; n<m_Last; ++n)
+    {
+        IndexedImg* dest_img = new IndexedImg(new_area.w, new_area.h);
+        Box foo(dest_img->Bounds());
+        dest_img->FillBox(Proj().BGPen(),foo);
+        IndexedImg const& src_img = Proj().GetAnim().GetFrameConst(n);
+        Box src_area(src_img.Bounds());
+        Box dest_area(src_area);
+        dest_area -= new_area.TopLeft();
 
-    Box src_area(Proj().Img().Bounds());
-    Box dest_area(src_area);
-    dest_area -= new_area.TopLeft();
-
-    BlitIndexed(Proj().Img(), src_area, *m_Img, dest_area, -1, -1);
-#endif
+        BlitIndexed(src_img, src_area, *dest_img, dest_area, -1, -1);
+        m_FrameSwap.Append(dest_img, 0);
+    }
 }
 
 
 Cmd_Resize::~Cmd_Resize()
 {
-    delete m_Img;
 }
 
 
+void Cmd_Resize::Swap()
+{
+    Anim tmp;
+    Proj().GetAnim().TransferFrames(m_First, m_Last, tmp, 0);
+    m_FrameSwap.TransferFrames(0,m_FrameSwap.NumFrames(), Proj().GetAnim(), m_First);
+    assert(m_FrameSwap.NumFrames()==0);
+    tmp.TransferFrames(0,tmp.NumFrames(),m_FrameSwap,0);
+}
+
 void Cmd_Resize::Do()
 {
-#if 0
-    assert( State() == NOT_DONE );
-    m_Img = Proj().ReplaceImg(m_Img);
-    Proj().Damage(Proj().Img().Bounds());
+    Swap();
+    Proj().Damage(Proj().Img(m_First).Bounds());
     SetState( DONE );
-#endif
 }
 
 void Cmd_Resize::Undo()
 {
-#if 0
-    assert( State() == DONE );
-    // BLAH BLAH
+    Swap();
+    Proj().Damage(Proj().Img(m_First).Bounds());
     SetState( NOT_DONE );
-#endif
 }
 
 

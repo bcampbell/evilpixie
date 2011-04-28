@@ -1,6 +1,7 @@
 #include "editview.h"
 #include "editor.h"
 #include <cstdio>
+#include <cassert>
 
 
 EditView::EditView( Editor& editor, int w, int h ) :
@@ -64,7 +65,8 @@ void EditView::SetZoom( int zoom )
 
 void EditView::SetFrame( int frame )
 {
-    // TODO: bounds check
+    assert( frame>=0);
+    assert( frame<Proj().GetAnim().NumFrames());
 
     if(frame == m_Frame)
         return;
