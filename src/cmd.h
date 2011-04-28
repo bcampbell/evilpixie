@@ -1,6 +1,7 @@
 #ifndef CMD_H
 #define CMD_H
 
+#include "anim.h"
 #include "point.h"
 #include "img.h"
 #include "brush.h"
@@ -74,6 +75,19 @@ public:
 private:
     int m_Pos;
     int m_Num;
+};
+
+class Cmd_DeleteFrames : public Cmd
+{
+public:
+    Cmd_DeleteFrames(Project& proj, int first, int last);
+    virtual ~Cmd_DeleteFrames();
+    virtual void Do();
+    virtual void Undo();
+private:
+    int m_First;
+    int m_Last;
+    Anim m_FrameSwap;
 };
 
 

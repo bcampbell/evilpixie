@@ -507,6 +507,10 @@ void EditorWindow::do_addframe()
 
 void EditorWindow::do_zapframe()
 {
+    assert(Proj().GetAnim().NumFrames() > 1);
+    int frame = m_ViewWidget->Frame();
+    Cmd* c= new Cmd_DeleteFrames(Proj(), frame, frame+1);
+    Proj().AddCmd(c);
 }
 
 void EditorWindow::do_prevframe()
@@ -713,11 +717,11 @@ QMenuBar* EditorWindow::CreateMenuBar()
     // ANIM menu
     {
         QMenu* m = menubar->addMenu("&Anim");
-        a = m->addAction( "Prev Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
-        a = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
-        m->addSeparator();
         a = m->addAction( "&Add Frame", this, SLOT( do_addframe()) );
-        a = m->addAction( "&Delete Frame", this, SLOT( do_deleteframe()) );
+        a = m->addAction( "&Delete Frame", this, SLOT( do_zapframe()) );
+        m->addSeparator();
+        a = m->addAction( "Previous Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
+        a = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
     }
 
     // EDIT menu

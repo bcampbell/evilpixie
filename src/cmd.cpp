@@ -116,3 +116,35 @@ void Cmd_InsertFrames::Undo()
     SetState( NOT_DONE );
 }
 
+
+
+
+
+Cmd_DeleteFrames::Cmd_DeleteFrames(Project& proj, int first, int last) :
+    Cmd(proj,NOT_DONE),
+    m_First(first),
+    m_Last(last)
+{
+}
+
+Cmd_DeleteFrames::~Cmd_DeleteFrames()
+{
+}
+
+
+
+void Cmd_DeleteFrames::Do()
+{
+    Proj().GetAnim().TransferFrames(m_First, m_Last, m_FrameSwap,0);
+    Proj().Damage_FramesRemoved(m_First,m_Last);
+    SetState( DONE );
+}
+
+
+void Cmd_DeleteFrames::Undo()
+{
+    m_FrameSwap.TransferFrames( 0,m_FrameSwap.NumFrames(), Proj().GetAnim(), m_First);
+    Proj().Damage_FramesAdded(m_First,m_Last);
+    SetState( NOT_DONE );
+}
+
