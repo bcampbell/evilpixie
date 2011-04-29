@@ -434,6 +434,11 @@ void EditorWindow::update_menu_states()
     m_ActionGridOnOff->setChecked( GridActive() );
     m_ActionSaveBGAsTransparent->setChecked( m_SaveBGAsTransparent );
     m_ActionUseBrushPalette->setEnabled( GetBrush() == -1 );
+
+    int nframes= Proj().GetAnim().NumFrames();
+    m_ActionZapFrame->setEnabled(nframes>1);
+    m_ActionNextFrame->setEnabled(nframes>1);
+    m_ActionPrevFrame->setEnabled(nframes>1);
 }
 
 void EditorWindow::do_undo()
@@ -742,10 +747,10 @@ QMenuBar* EditorWindow::CreateMenuBar()
     {
         QMenu* m = menubar->addMenu("&Anim");
         a = m->addAction( "&Add Frame", this, SLOT( do_addframe()) );
-        a = m->addAction( "&Delete Frame", this, SLOT( do_zapframe()) );
+        m_ActionZapFrame = m->addAction( "&Delete Frame", this, SLOT( do_zapframe()) );
         m->addSeparator();
-        a = m->addAction( "Previous Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
-        a = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
+        m_ActionPrevFrame = m->addAction( "Previous Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
+        m_ActionNextFrame = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
     }
 
     // Help menu

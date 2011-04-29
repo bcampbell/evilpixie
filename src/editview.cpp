@@ -68,8 +68,6 @@ void EditView::SetFrame( int frame )
     assert( frame>=0);
     assert( frame<Proj().GetAnim().NumFrames());
 
-    if(frame == m_Frame)
-        return;
     m_Frame = frame;
     ConfineView();
     DrawView(m_ViewBox);
@@ -295,6 +293,8 @@ void EditView::OnFramesRemoved(int first, int last)
         int newframe = Frame()-(last-first);
         if(newframe<first)
             newframe=first;
+        if(newframe>Proj().GetAnim().NumFrames()-1)
+            newframe = Proj().GetAnim().NumFrames()-1;
         SetFrame(newframe);
     }
 }

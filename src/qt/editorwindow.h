@@ -130,8 +130,10 @@ private:
     QAction* m_ActionGridOnOff;
     QAction* m_ActionSaveBGAsTransparent;
     QAction* m_ActionUseBrushPalette;
-
-    
+    QAction* m_ActionZapFrame;
+    QAction* m_ActionPrevFrame;
+    QAction* m_ActionNextFrame;
+ 
     // status bar items
     QLabel* m_StatusViewInfo;
 
