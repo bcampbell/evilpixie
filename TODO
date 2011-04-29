@@ -62,11 +62,13 @@ public API.
 No gif saving.
 
 No way to get supported load/save formats at runtime.
+No way to figure out which formats support animation
+No way to figure out which formats support indexed images
+
+Colour key setting is per format (one for png, another for gif)
 
 ilRegisterPal name is misleading (not really part of register fns).
 Should be ilSetPal() or something.
-
-No key colour support for indexed images.
 
 IFF loading: unify frontend for ILBM and CIMG because they share .iff
 filename extension

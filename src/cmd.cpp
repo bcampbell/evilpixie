@@ -52,7 +52,7 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
         dest_area -= new_area.TopLeft();
 
         BlitIndexed(src_img, src_area, *dest_img, dest_area, -1, -1);
-        m_FrameSwap.Append(dest_img, 0);
+        m_FrameSwap.Append(dest_img);
     }
 }
 
@@ -106,7 +106,7 @@ void Cmd_InsertFrames::Do()
     Anim tmp;
     int i;
     for(i=0;i<m_Num;++i)
-        tmp.Append( new IndexedImg(srcimg), 0 );
+        tmp.Append(new IndexedImg(srcimg));
 
     tmp.TransferFrames(0,tmp.NumFrames(), Proj().GetAnim(),m_Pos+1);
 

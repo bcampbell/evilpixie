@@ -67,12 +67,11 @@ public:
 
     // kill!
     // palette manipulation
-	RGBx const& GetColour(int n ) { return m_Palette->GetColour(n); }
-	void SetColour( int n, RGBx const& c ) { m_Palette->SetColour(n,c); }
-    RGBx const* GetPaletteConst() const { return m_Palette->rawconst(); }
-//    RGBx* GetPalette() { return m_Palette.raw(); }
+	RGBx const& GetColour(int n ) { return Anim().GetPaletteConst().GetColour(n); }
+	void SetColour( int n, RGBx const& c ) { Anim().GetPalette().SetColour(n,c); }
+    RGBx const* GetPaletteConst() const { return Anim().GetPaletteConst().rawconst(); }
 
-    Palette const& PaletteConst() const { return *m_Palette; }
+    Palette const& PaletteConst() const { return m_Anim.GetPaletteConst(); }
 
     // project holds FG and BG pens
 	int FGPen() const { return m_FGPen; }
@@ -128,7 +127,6 @@ private:
 
     bool m_Expendable;
 
-    Palette* m_Palette;
     int m_FGPen;
     int m_BGPen;
 //    IndexedImg* m_Img;
