@@ -1,6 +1,5 @@
 #include "project.h"
 #include "projectlistener.h"
-#include "imgsupport.h"
 #include "editview.h"
 #include "cmd.h"
 #include "editor.h"

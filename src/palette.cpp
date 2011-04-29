@@ -11,6 +11,7 @@
 
 static void LoadGimpPalette( RGBx* palette, FILE* fp );
 
+
 // TODO: BUG: not quite right off-by-one error...
 //
 void Palette::LerpRange( int n0, RGBx const& c0, int n1, RGBx const& c1 )

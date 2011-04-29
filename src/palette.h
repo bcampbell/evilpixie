@@ -23,6 +23,7 @@ public:
 
     static Palette* Load(const char* filename);
 
+
 private:
     int m_NumColours;
     RGBx m_Colours[256];

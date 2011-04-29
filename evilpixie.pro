@@ -12,7 +12,6 @@ SOURCES += src/anim.cpp \
     src/editview.cpp \
     src/gifsupport.cpp \
     src/img.cpp \
-    src/imgsupport.cpp \
     src/palette.cpp \
     src/project.cpp \
     src/tool.cpp \
@@ -39,7 +38,6 @@ HEADERS += src/anim.h \
     src/editview.h \
     src/global.h \
     src/img.h \
-    src/imgsupport.h \
     src/palette.h \
     src/point.h \
     src/project.h \

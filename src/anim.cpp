@@ -125,7 +125,7 @@ void Anim::Load( const char* filename )
         }
 
         int num_cols = (int)ilGetInteger( IL_PALETTE_NUM_COLS );
-   int palette_type = (int)ilGetInteger( IL_PALETTE_TYPE );
+   //int palette_type = (int)ilGetInteger( IL_PALETTE_TYPE );
 //    printf("palette: %d colours, bpp=%d, type=0x%x\n", num_cols, pal_bytesperpixel, palette_type );
 
         uint8_t const* p = ilGetPalette();

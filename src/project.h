@@ -57,6 +57,7 @@ public:
 
     // pixel access
     Anim& GetAnim() { return m_Anim; }
+    Anim const& GetAnimConst() const { return m_Anim; }
     // shortcuts
     IndexedImg& Img(int frame) { return m_Anim.GetFrame(frame); }
     IndexedImg const& ImgConst(int frame) const { return m_Anim.GetFrameConst(frame); }
@@ -67,9 +68,9 @@ public:
 
     // kill!
     // palette manipulation
-	RGBx const& GetColour(int n ) { return Anim().GetPaletteConst().GetColour(n); }
-	void SetColour( int n, RGBx const& c ) { Anim().GetPalette().SetColour(n,c); }
-    RGBx const* GetPaletteConst() const { return Anim().GetPaletteConst().rawconst(); }
+	RGBx const& GetColour(int n ) { return GetAnim().GetPaletteConst().GetColour(n); }
+	void SetColour( int n, RGBx const& c ) { GetAnim().GetPalette().SetColour(n,c); }
+    RGBx const* GetPaletteConst() const { return GetAnimConst().GetPaletteConst().rawconst(); }
 
     Palette const& PaletteConst() const { return m_Anim.GetPaletteConst(); }
 

@@ -139,7 +139,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         int i;
         for( i=0; i<=255; ++i )
         {
-            RGBx const& c = Proj().GetColour(i);
+            RGBx c = Proj().GetColour(i);
             m_PaletteWidget->SetColour( i, QColor( c.r, c.g, c.b ) );
         }
 
