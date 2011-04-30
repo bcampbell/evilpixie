@@ -135,13 +135,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         connect(m_CurrentColourWidget, SIGNAL(left_clicked()), this, SLOT( useeyedroppertool()));
         connect(m_CurrentColourWidget, SIGNAL(right_clicked()), this, SLOT( togglepaletteeditor()));
 
-        m_PaletteWidget = new PaletteWidget();
-        int i;
-        for( i=0; i<=255; ++i )
-        {
-            RGBx c = Proj().GetColour(i);
-            m_PaletteWidget->SetColour( i, QColor( c.r, c.g, c.b ) );
-        }
+        m_PaletteWidget = new PaletteWidget(Proj().PaletteConst());
 
         connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
         connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
@@ -307,7 +301,7 @@ void EditorWindow::OnPenChange()
 void EditorWindow::OnPaletteChanged( int n, RGBx const& c )
 {
     // make sure the gui reflects any palette changes
-    m_PaletteWidget->SetColour( n, QColor( c.r, c.g, c.b ) );
+    m_PaletteWidget->SetColour(n,c);
 
     if( n==Proj().FGPen() || n==Proj().BGPen() )
     {
@@ -323,8 +317,8 @@ void EditorWindow::OnPaletteReplaced()
     int n;
     for( n=0; n<=255; ++n )
     {
-        RGBx c = Proj().GetColour( n );
-        m_PaletteWidget->SetColour( n, QColor( c.r, c.g, c.b ) );
+        RGBx c = Proj().GetColour(n);
+        m_PaletteWidget->SetColour(n,c);
     }
 
     RGBx fg = Proj().GetColour( Proj().FGPen() );

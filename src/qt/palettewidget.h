@@ -6,16 +6,17 @@
 
 #include <cstdio>
 
-class Project;
+#include "../palette.h"
+
 
 class PaletteWidget : public QWidget
 {
     Q_OBJECT
 public:
-	PaletteWidget();
+	PaletteWidget(Palette const& src);
 
-    void SetColour( int n, QColor const& c )
-        { m_Colours[n]=c; update(); }
+    void SetColour( int n, RGBx c )
+        { m_Palette.SetColour(n,c); update(); }
 
     void EnableRangePicking( bool yesno )
         { m_RangePickingEnabled=yesno; }
@@ -49,13 +50,15 @@ protected:
     QSize minimumSizeHint () const;
 
 private:
-	int m_Hover;
+    PaletteWidget();    // disallowed
 
-    QColor m_Colours[256];
+    Palette m_Palette;
+	int m_Hover;
 
     void CalcCellRect( int n, QRect& r ) const;
     QRect CellRect( int n ) const;
 
+    QColor GetQColor(int n) const;
 	void DrawCell( QPainter& painter, int n );
     void DrawOverlays( QPainter& painter );
     void DrawRangeOverlay( QPainter& painter, int from, int to, bool strong );

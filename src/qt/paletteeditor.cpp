@@ -16,7 +16,7 @@ PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :
     m_Selected( 1 )
 {
     m_RGBWidget = new RGBWidget();
-    m_PaletteWidget = new PaletteWidget();
+    m_PaletteWidget = new PaletteWidget(proj.PaletteConst());
     m_PaletteWidget->EnableRangePicking( true );
     resize( QSize(500,400) );
 
@@ -31,14 +31,6 @@ PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :
     h->addWidget( m_PaletteWidget );
     h->setStretchFactor(m_PaletteWidget,1);
     setLayout( h );
-
-
-    int n;
-    for( n=0; n<=255; ++n )
-    {
-        RGBx c( m_Proj.GetColour( n ) );
-        m_PaletteWidget->SetColour( n, QColor( c.r, c.g, c.b ) );
-    }
 
     {
         RGBx c( m_Proj.GetColour( m_Selected ) );
@@ -71,7 +63,7 @@ void PaletteEditor::OnDamaged( Box const& )
 
 void PaletteEditor::OnPaletteChanged( int n, RGBx const& c )
 {
-    m_PaletteWidget->SetColour( n, QColor( c.r, c.g, c.b ) );
+    m_PaletteWidget->SetColour(n,c);
 }
 
 void PaletteEditor::OnPenChange()
@@ -89,7 +81,7 @@ void PaletteEditor::OnPaletteReplaced()
     for( n=0; n<=255; ++n )
     {
         RGBx c = m_Proj.GetColour( n );
-        m_PaletteWidget->SetColour( n, QColor( c.r, c.g, c.b ) );
+        m_PaletteWidget->SetColour(n, c);
     }
 }
 

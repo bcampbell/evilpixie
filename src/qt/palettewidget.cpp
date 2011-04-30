@@ -9,7 +9,8 @@
 #include <QMouseEvent>
 
 
-PaletteWidget::PaletteWidget() :
+PaletteWidget::PaletteWidget(Palette const& src) :
+    m_Palette(src),
     m_Hover(-1),
     m_RangePickingEnabled(false),
     m_DragAnchor(-1),
@@ -19,13 +20,17 @@ PaletteWidget::PaletteWidget() :
     m_LeftSelected(-1),
     m_RightSelected(-1)
 {
-    int i;
-    for( i=0; i<256; ++i )
-        m_Colours[i] = QColor(0,0,0);
-
     setMouseTracking(true);
 
     setMinimumSize( N_COLS*8, N_ROWS*8 );
+}
+
+
+
+QColor PaletteWidget::GetQColor(int n) const
+{
+    RGBx c(m_Palette.GetColour(n));
+    return QColor(c.r, c.g, c.b);
 }
 
 void PaletteWidget::SetLeftSelected( int n )
@@ -184,7 +189,7 @@ void PaletteWidget::DrawCell( QPainter& painter, int n )
  //   outline.adjust(-1,-1,-1,-1);
     cellrect.adjust(0,0,-1,-1);
 
-    painter.setBrush( m_Colours[n] );
+    painter.setBrush( GetQColor(n) );
     painter.setPen(Qt::NoPen);
     painter.drawRect( cellrect );
 
