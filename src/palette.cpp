@@ -9,7 +9,7 @@
 #include <vector>
 
 
-static void LoadGimpPalette( RGBx* palette, FILE* fp );
+static void LoadGimpPalette(FILE* fp, Palette& pal);
 
 
 // TODO: BUG: not quite right off-by-one error...
@@ -42,7 +42,7 @@ Palette* Palette::Load( const char* filename )
         throw Wobbly( "fopen failed" );
     try
     {
-        LoadGimpPalette( palette->raw(), fp );
+        LoadGimpPalette(fp,*palette);
     }
     catch( Wobbly const& e )
     {
@@ -59,9 +59,8 @@ Palette* Palette::Load( const char* filename )
 
 
 
-static void LoadGimpPalette( RGBx* palette, FILE* fp )
+static void LoadGimpPalette(FILE* fp, Palette& pal)
 {
-    RGBx scratch[256];
     int idx=0;
 
     char line[256];
@@ -71,16 +70,16 @@ static void LoadGimpPalette( RGBx* palette, FILE* fp )
     {
         ++linenum;
         std::vector< std::string > args;
-        SplitLine( line, args );
+        SplitLine(line, args);
         if( args.empty() )
             continue;
 
         if( !gotcookie )
         {
-            if( args.size()==2 && args[0] == "GIMP" && args[1] == "Palette" )
+            if(args.size()==2 && args[0] == "GIMP" && args[1] == "Palette")
                 gotcookie = true;
             else
-                throw Wobbly( "not a GIMP palette" );
+                throw Wobbly("not a GIMP palette");
         }
 
         if( args[0] == "Name:" )
@@ -95,12 +94,13 @@ static void LoadGimpPalette( RGBx* palette, FILE* fp )
 
         if( args.size() >= 3 && idx <=255 )
         {
-            RGBx& c = scratch[idx];
+            RGBx c;
             c.r = atoi( args[0].c_str() );
             c.g = atoi( args[1].c_str() );
             c.b = atoi( args[2].c_str() );
             // ignore name, if there is one
-            //
+
+            pal.SetColour(idx,c);
             ++idx;
         }
     }
@@ -111,9 +111,7 @@ static void LoadGimpPalette( RGBx* palette, FILE* fp )
     }
 
     while( idx<=255 )
-        scratch[idx++] = RGBx(0,0,0);
-    for( idx=0; idx<=255; ++idx )
-        palette[idx] = scratch[idx];
+        pal.SetColour(idx, RGBx(0,0,0));
 }
 
 

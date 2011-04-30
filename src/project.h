@@ -70,7 +70,7 @@ public:
     // palette manipulation
 	RGBx const& GetColour(int n ) { return GetAnim().GetPaletteConst().GetColour(n); }
 	void SetColour( int n, RGBx const& c ) { GetAnim().GetPalette().SetColour(n,c); }
-    RGBx const* GetPaletteConst() const { return GetAnimConst().GetPaletteConst().rawconst(); }
+//    RGBx const* GetPaletteConst() const { return GetAnimConst().GetPaletteConst().rawconst(); }
 
     Palette const& PaletteConst() const { return m_Anim.GetPaletteConst(); }
 

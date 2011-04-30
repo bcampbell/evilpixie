@@ -118,7 +118,7 @@ void PaletteEditor::spreadColours()
     if( !m_PaletteWidget->RangeValid() )
         return;
 
-    Palette newpalette( m_Proj.GetPaletteConst() );
+    Palette newpalette( m_Proj.PaletteConst() );
 
     int n0 = m_PaletteWidget->RangeFirst();
     int n1 = m_PaletteWidget->RangeLast();
