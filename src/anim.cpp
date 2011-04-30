@@ -127,22 +127,19 @@ void Anim::Load( const char* filename )
         int num_cols = (int)ilGetInteger( IL_PALETTE_NUM_COLS );
    //int palette_type = (int)ilGetInteger( IL_PALETTE_TYPE );
 //    printf("palette: %d colours, bpp=%d, type=0x%x\n", num_cols, pal_bytesperpixel, palette_type );
-
+        if( num_cols>256)
+            num_cols=256;
+        m_Palette.SetNumColours(num_cols);
         uint8_t const* p = ilGetPalette();
         assert( p );
         int i=0;
-        while( i<num_cols && i<=255 )
+        while(i<num_cols)
         {
             RGBx c;
             c.r = *p++;
             c.g = *p++;
             c.b = *p++;
             m_Palette.SetColour(i,c);
-            ++i;
-        }
-        while( i<=255 )
-        {
-            m_Palette.SetColour(i,RGBx(0,0,0));
             ++i;
         }
  
@@ -180,15 +177,11 @@ void Anim::LoadGif( const char* filename )
 
     int i=0;
     ColorMapObject* cm = f->SColorMap;
+    m_Palette.SetNumColours(cm->ColorCount);
     while(i<cm->ColorCount)
     {
         GifColorType const& c = cm->Colors[i];
         m_Palette.SetColour(i,RGBx( c.Red, c.Green, c.Blue ));
-        ++i;
-    }
-    while(i<256)
-    {
-        m_Palette.SetColour(i,RGBx(0,0,0));
         ++i;
     }
 
@@ -258,17 +251,17 @@ void Anim::Save( const char* filename )
 
 
 
-    uint8_t tmp_palette[3*256];
+    uint8_t tmp_palette[3*m_Palette.NumColours()];
     int i;
     uint8_t* p = tmp_palette;
-    for( i=0; i<=255; ++i )
+    for( i=0; i<=m_Palette.NumColours(); ++i )
     {
         RGBx c = m_Palette.GetColour(i);
         *p++ = c.r;
         *p++ = c.g;
         *p++ = c.b;
     }
-    ilRegisterPal( tmp_palette, 3*256, IL_PAL_RGB24 );
+    ilRegisterPal( tmp_palette, 3*m_Palette.NumColours(), IL_PAL_RGB24 );
 
     ilEnable(IL_FILE_OVERWRITE);
     if( !ilSaveImage( filename ) )
@@ -305,9 +298,9 @@ void Anim::SaveGif( const char* filename )
             throw Wobbly( "couldn't open '%s' (gif code %d)", filename, GifLastError() );
 
         // TODO: per-frame palette support
-        ColorMapObject* cmap = MakeMapObject( 256, NULL);
+        ColorMapObject* cmap = MakeMapObject( m_Palette.NumColours(), NULL);
         int i;
-        for( i=0;i<256;++i)
+        for( i=0; i<m_Palette.NumColours(); ++i)
         {
             GifColorType& c = cmap->Colors[i];
             RGBx rgb = m_Palette.GetColour(i);
