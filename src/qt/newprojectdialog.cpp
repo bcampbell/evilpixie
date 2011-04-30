@@ -20,7 +20,8 @@ NewProjectDialog::NewProjectDialog(QWidget *parent)
 
     {
         QSpinBox* w = new QSpinBox(this);
-        w->setValue(1);
+        num_frames=1;
+        w->setValue(num_frames);
         w->setRange(1,65536);
         connect(w, SIGNAL(valueChanged(int)), this, SLOT(framesChanged(int)));
         l->addRow("Frames", w);
