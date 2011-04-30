@@ -12,6 +12,16 @@
 static void LoadGimpPalette(FILE* fp, Palette& pal);
 
 
+Palette::Palette(int numcolours) :
+    m_NumColours(numcolours)
+{
+    int i;
+    RGBx black(0,0,0);
+    for( i=0;i<256;++i)
+        SetColour(i,black);
+}
+
+
 // TODO: BUG: not quite right off-by-one error...
 //
 void Palette::LerpRange( int n0, RGBx const& c0, int n1, RGBx const& c1 )
@@ -110,8 +120,7 @@ static void LoadGimpPalette(FILE* fp, Palette& pal)
         throw Wobbly( "read error" );
     }
 
-    while( idx<=255 )
-        pal.SetColour(idx, RGBx(0,0,0));
+    pal.SetNumColours(idx);
 }
 
 

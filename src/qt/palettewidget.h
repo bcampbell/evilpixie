@@ -15,6 +15,9 @@ class PaletteWidget : public QWidget
 public:
 	PaletteWidget(Palette const& src);
 
+    void SetPalette( Palette const& pal )
+        { m_Palette = pal; update(); }
+
     void SetColour( int n, RGBx c )
         { m_Palette.SetColour(n,c); update(); }
 
@@ -58,13 +61,15 @@ private:
     void CalcCellRect( int n, QRect& r ) const;
     QRect CellRect( int n ) const;
 
-    QColor GetQColor(int n) const;
 	void DrawCell( QPainter& painter, int n );
     void DrawOverlays( QPainter& painter );
     void DrawRangeOverlay( QPainter& painter, int from, int to, bool strong );
 	int PickCell( int x, int y );
-	enum {N_COLS=8};
-	enum {N_ROWS=32};
+//	enum {N_COLS=8};
+//	enum {N_ROWS=32};
+
+    int Cols() const;
+    int Rows() const;
 
     bool m_RangePickingEnabled;
 

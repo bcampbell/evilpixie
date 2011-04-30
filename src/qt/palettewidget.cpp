@@ -22,16 +22,10 @@ PaletteWidget::PaletteWidget(Palette const& src) :
 {
     setMouseTracking(true);
 
-    setMinimumSize( N_COLS*8, N_ROWS*8 );
+    setMinimumSize( Cols()*8, Rows()*8 );
 }
 
 
-
-QColor PaletteWidget::GetQColor(int n) const
-{
-    RGBx c(m_Palette.GetColour(n));
-    return QColor(c.r, c.g, c.b);
-}
 
 void PaletteWidget::SetLeftSelected( int n )
 {
@@ -50,10 +44,10 @@ void PaletteWidget::SetRightSelected( int n )
 }
 
 QSize PaletteWidget::sizeHint () const
-    { return QSize( N_COLS*10, N_ROWS*12 ); }
+    { return QSize( Cols()*10, Rows()*12 ); }
 
 QSize PaletteWidget::minimumSizeHint () const
-    { return QSize( N_COLS*8, N_ROWS*8 ); }
+    { return QSize( Cols()*8, Rows()*8 ); }
 
 void PaletteWidget::mousePressEvent(QMouseEvent *event)
 {
@@ -153,13 +147,13 @@ void PaletteWidget::paintEvent(QPaintEvent *)
 
 void PaletteWidget::CalcCellRect( int n, QRect& r ) const
 {
-    int row = n%N_ROWS;
-    int col = n/N_ROWS;
+    int row = n%Rows();
+    int col = n/Rows();
 
     // cell size is not uniform - use noddy fixedpoint to calculate it
     const int S = 4096;
-    int cw = size().width()*S / N_COLS;
-    int ch = size().height()*S / N_ROWS;
+    int cw = size().width()*S / Cols();
+    int ch = size().height()*S / Rows();
 
     int x = (col*cw)/S;
     int xnext = ((col+1)*cw)/S;
@@ -180,6 +174,7 @@ QRect PaletteWidget::CellRect( int n ) const
 }
 
 
+
 void PaletteWidget::DrawCell( QPainter& painter, int n )
 {
     QRect cellrect;
@@ -189,33 +184,51 @@ void PaletteWidget::DrawCell( QPainter& painter, int n )
  //   outline.adjust(-1,-1,-1,-1);
     cellrect.adjust(0,0,-1,-1);
 
-    painter.setBrush( GetQColor(n) );
+    RGBx c(m_Palette.GetColour(n));
+    painter.setBrush(QColor(c.r, c.g, c.b));
     painter.setPen(Qt::NoPen);
     painter.drawRect( cellrect );
 
 }
 
 
+int PaletteWidget::Cols() const
+{
+    int n=m_Palette.NumColours();
+    if(n<=8)
+        return 1;
+    if(n<=16)
+        return 2;
+    if(n<=32)
+        return 4;
+    return 8;
+}
+
+int PaletteWidget::Rows() const
+{
+    int n=m_Palette.NumColours();
+    return n/Cols();
+}
 
 
 int PaletteWidget::PickCell( int x, int y )
 {
     // cell size is not uniform - use noddy fixedpoint to calculate it
     const int S = 4096;
-    const int cw = size().width()*S/N_COLS;
-    const int ch = size().height()*S/N_ROWS;
+    const int cw = size().width()*S/Cols();
+    const int ch = size().height()*S/Rows();
     int col = (x*S/cw);
     int row = (y*S/ch);
     if( col < 0 )
         col=0;
-    if(col>=N_COLS )
-        col=N_COLS-1;
+    if(col>=Cols() )
+        col=Cols()-1;
     if( row < 0 )
         row=0;
-    if(row>=N_ROWS )
-        row=N_ROWS-1;
+    if(row>=Rows() )
+        row=Rows()-1;
 
-    int cell = col*N_ROWS + row;
+    int cell = col*Rows() + row;
     return cell;
 }
 
@@ -312,10 +325,10 @@ void PaletteWidget::DrawOverlays( QPainter& painter )
 
 void PaletteWidget::DrawRangeOverlay( QPainter& painter, int from, int to, bool strong )
 {
-    int from_col = from / N_ROWS;
+    int from_col = from / Rows();
 //    int from_row = from % N_ROWS;
 
-    int to_col = to / N_ROWS;
+    int to_col = to / Rows();
 //    int to_row = to % N_ROWS;
 
     assert( to>=from );
@@ -327,8 +340,8 @@ void PaletteWidget::DrawRangeOverlay( QPainter& painter, int from, int to, bool 
     int c;
     for( c=from_col; c<=to_col; ++c )
     {
-        int top = std::max( from, c*N_ROWS );
-        int bot = std::min( to, (c*N_ROWS)+(N_ROWS-1));
+        int top = std::max( from, c*Rows() );
+        int bot = std::min( to, (c*Rows())+(Rows()-1));
 
         QRect rtop = CellRect(top);
         rtop.adjust(-1,-1,-1,-1);

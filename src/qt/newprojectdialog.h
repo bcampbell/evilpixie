@@ -6,6 +6,7 @@
 //class QDialogButtonBox;
 //class QLabel;
 class QLineEdit;
+class QString;
 
 class NewProjectDialog : public QDialog
 {
@@ -15,6 +16,11 @@ public:
     NewProjectDialog(QWidget *parent = 0);
 
     QSize GetSize();
+    int num_colours;
+    int num_frames;
+private slots:
+    void numcoloursChanged( QString const& txt );
+    void framesChanged(int n) {num_frames=n;}
 private:
     QLineEdit *m_WidthEdit;
     QLineEdit *m_HeightEdit;

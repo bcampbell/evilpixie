@@ -77,12 +77,7 @@ void PaletteEditor::OnPenChange()
 
 void PaletteEditor::OnPaletteReplaced()
 {
-    int n;
-    for( n=0; n<=255; ++n )
-    {
-        RGBx c = m_Proj.GetColour( n );
-        m_PaletteWidget->SetColour(n, c);
-    }
+    m_PaletteWidget->SetPalette(m_Proj.PaletteConst());
 }
 
 void PaletteEditor::colourChanged()

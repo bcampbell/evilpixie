@@ -45,7 +45,7 @@ Project::Project() :
 }
 
 
-Project::Project( int w, int h, Palette* palette ) :
+Project::Project( int w, int h, Palette* palette, int num_frames ) :
     m_Expendable(false),
     m_FGPen(1),
     m_BGPen(0),
@@ -54,10 +54,14 @@ Project::Project( int w, int h, Palette* palette ) :
     m_DrawBackup(1,1),
     m_Modified( false )
 {
-    Palette* tmp = Palette::Load("data/default.gpl");
-    m_Anim.SetPalette(*tmp);
-    delete tmp;
-    m_Anim.Append(new IndexedImg(w,h));
+    assert(num_frames>=1);
+    if(!palette)
+        palette = Palette::Load("data/default.gpl");
+    m_Anim.SetPalette(*palette);
+    delete palette;
+    int i;
+    for(i=0;i<num_frames;++i)
+        m_Anim.Append(new IndexedImg(w,h));
 }
 
 

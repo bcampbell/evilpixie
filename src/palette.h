@@ -17,15 +17,11 @@ public:
 
     static Palette* Load(const char* filename);
 
+    void SetNumColours(int ncolours) {m_NumColours=ncolours;}
 private:
     int m_NumColours;
     RGBx m_Colours[256];
 };
-
-inline Palette::Palette(int numcolours) :
-    m_NumColours(numcolours)
-{
-}
 
 
 #endif // PALETTE_H

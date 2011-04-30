@@ -478,7 +478,10 @@ void EditorWindow::do_new()
     if( dlg.exec() == QDialog::Accepted )
     {
         QSize sz = dlg.GetSize();
-        Project* p = new Project( sz.width(), sz.height() );
+        Palette* pal = Palette::Load("data/default.gpl");
+        pal->SetNumColours(dlg.num_colours);
+        Project* p = new Project( sz.width(), sz.height(), pal, dlg.num_frames );
+//        printf("%d frames, %d colours\n",dlg.num_frames,dlg.num_colours);
         EditorWindow* e = new EditorWindow(p);
         e->show();
 

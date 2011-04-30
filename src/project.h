@@ -22,7 +22,7 @@ class Project
 {
 public:
     Project();
-	Project( int w, int h, Palette* palette=0 );
+	Project( int w, int h, Palette* palette=0, int num_frames=1 );
     Project(std::string const& filename);
 	virtual ~Project();
 
