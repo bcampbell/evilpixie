@@ -109,11 +109,6 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_ViewWidget->setCursor( *m_MouseCursors[MOUSESTYLE_DEFAULT] );
 
     layout->addWidget( m_ViewWidget, 1,0,5,1 );
-    layout->setRowStretch( 1,1 );   // brushes
-    layout->setRowStretch( 3,1 );   // tools
-    layout->setRowStretch( 4,0 );   // currentcolour
-    layout->setRowStretch( 5,2 );   // palette
-    layout->setColumnStretch( 0,1 );
 
 
     QFrame* hr = new QFrame();  // this, "<hr>", 0 );
@@ -164,6 +159,12 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         connect(s, SIGNAL( activated()), this, SLOT( prevColour()));
 
     }
+
+    layout->setRowStretch( 1,0 );   // brushes
+    layout->setRowStretch( 3,1 );   // tools
+    layout->setRowStretch( 4,0 );   // currentcolour
+    layout->setRowStretch( 5,2 );   // palette
+    layout->setColumnStretch( 0,1 );
 
 
     setLayout(layout);
