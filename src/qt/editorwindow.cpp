@@ -99,8 +99,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     resize( 700,500 );
 
     QGridLayout* layout = new QGridLayout();
-    layout->setSpacing(1);
-    layout->setMargin(1);
+    layout->setSpacing(0);
+    layout->setMargin(0);
 
     QMenuBar* menubar = CreateMenuBar();
     layout->addWidget( menubar,0,0,1,2 );
@@ -118,7 +118,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
 
     QFrame* hr = new QFrame();  // this, "<hr>", 0 );
     hr->setFrameStyle( QFrame::Sunken + QFrame::HLine );
-    hr->setFixedHeight( 12 );
+    hr->setFixedHeight( 8 );
 
 //    QLabel* hr = new QLabel( "Hello" );
 
@@ -186,7 +186,7 @@ EditorWindow::~EditorWindow()
 QLayout* EditorWindow::CreateToolButtons()
 {
     QGridLayout *tb = new QGridLayout();
-    tb->setSpacing(1);
+    tb->setSpacing(0);
 
     QButtonGroup* grp = new QButtonGroup( tb );
     m_ToolButtons = grp;
@@ -220,7 +220,8 @@ QLayout* EditorWindow::CreateToolButtons()
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
-        b->setIconSize(QSize(32,32));
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        //b->setIconSize(QSize(32,32));
         b->setCheckable( true );
         if( i==0 )
             b->setChecked(true);
@@ -239,7 +240,7 @@ QLayout* EditorWindow::CreateToolButtons()
 QLayout* EditorWindow::CreateBrushButtons()
 {
     QGridLayout *tb = new QGridLayout();
-    tb->setSpacing(1);
+    tb->setSpacing(0);
 
     QButtonGroup* grp = new QButtonGroup( tb );
     m_BrushButtons = grp;
@@ -268,7 +269,7 @@ QLayout* EditorWindow::CreateBrushButtons()
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
-        b->setIconSize(QSize(32,32));
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         b->setCheckable( true );
         if( i==0 )
             b->setChecked(true);
