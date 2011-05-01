@@ -69,19 +69,23 @@ void Cmd_Resize::Swap()
     m_FrameSwap.TransferFrames(0,m_FrameSwap.NumFrames(), Proj().GetAnim(), m_First);
     assert(m_FrameSwap.NumFrames()==0);
     tmp.TransferFrames(0,tmp.NumFrames(),m_FrameSwap,0);
+
+    Box b1,b2;
+    Proj().GetAnim().CalcBounds(b1, m_First, m_Last);
+    m_FrameSwap.CalcBounds(b2, 0, m_FrameSwap.NumFrames());
+    b1.Merge(b2);
+    Proj().Damage(b1);
 }
 
 void Cmd_Resize::Do()
 {
     Swap();
-    Proj().Damage(Proj().Img(m_First).Bounds());
     SetState( DONE );
 }
 
 void Cmd_Resize::Undo()
 {
     Swap();
-    Proj().Damage(Proj().Img(m_First).Bounds());
     SetState( NOT_DONE );
 }
 

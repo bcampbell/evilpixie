@@ -36,6 +36,13 @@ void Anim::TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst)
     m_Frames.erase(m_Frames.begin()+srcfirst, m_Frames.begin()+srclast);
 }
 
+void Anim::CalcBounds(Box& bound, int first, int last)
+{
+    int n;
+    bound = GetFrameConst(first).Bounds();
+    for(n=first+1;n<last; ++n)
+        bound.Merge(GetFrameConst(n).Bounds());
+}
 
 
 void Anim::Load( const char* filename )
@@ -308,11 +315,8 @@ void Anim::SaveGif( const char* filename )
             c.Green = rgb.g;
             c.Blue = rgb.b;
         }
-
-        int n;
-        Box screen = GetFrameConst(0).Bounds();
-        for(n=1;n<NumFrames(); ++n)
-            screen.Merge(GetFrameConst(n).Bounds());
+        Box screen;
+        CalcBounds(screen,0,NumFrames());
 
         if( EGifPutScreenDesc(f,
             screen.w, screen.h,
@@ -342,6 +346,7 @@ void Anim::SaveGif( const char* filename )
             EGifPutExtensionLast(f, APPLICATION_EXT_FUNC_CODE, 3, buf);
         }
 
+        int n;
         for(n=0; n<NumFrames(); ++n)
         {
             IndexedImg const& img = GetFrameConst(n);

@@ -5,6 +5,7 @@
 #include "palette.h"
 
 class IndexedImg;
+class Box;
 
 class Anim
 {
@@ -26,6 +27,8 @@ public:
 
     // transfer frames in range [srcfirst, srclast) to another animation
     void TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst);
+    // work out bounds of selection of anim (ie union of frames)
+    void CalcBounds(Box& bound, int first, int last);
 
     // which palette index is transparent (-1=none)
     int TransparentIdx() const { return m_TransparentIdx; }
