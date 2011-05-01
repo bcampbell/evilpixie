@@ -101,7 +101,7 @@ void EditView::ConfineView()
 {
     Box const& p = Proj().ImgConst(Frame()).Bounds();
     Box v = ViewToProj( m_ViewBox );
-
+#if 0
     if( p.W() < v.W() )
         m_Offset.x = -(v.W()-p.W())/2;   // center
     else if( v.XMin() < 0 )
@@ -115,6 +115,41 @@ void EditView::ConfineView()
         m_Offset.y = 0;
     else if( v.YMax() > p.YMax() )
         m_Offset.y = (p.y+p.H()) - v.H();
+#endif
+
+    if( p.W() < v.W() )
+    {
+        // view is wider than proj
+        if( v.XMin() > p.XMin() )
+            m_Offset.x = p.XMin();
+        if( v.XMax() < p.XMax() )
+            m_Offset.x = (p.x + p.W())-v.W();
+    }
+    else
+    {
+        // proj is wider than view
+        if( v.XMin() < 0 )
+            m_Offset.x = 0;
+        else if( v.XMax() > p.XMax() )
+            m_Offset.x = (p.x + p.W()) - v.W();
+    }
+
+    if( p.H() < v.H() )
+    {
+        // view is taller than proj
+        if( v.YMin() > p.YMin() )
+            m_Offset.y = p.YMin();
+        if( v.YMax() < p.YMax() )
+            m_Offset.y = (p.y + p.H())-v.H();
+    }
+    else
+    {
+        // proj is taller than view
+        if( v.YMin() < 0 )
+            m_Offset.y = 0;
+        else if( v.YMax() > p.YMax() )
+            m_Offset.y = (p.y+p.H()) - v.H();
+    }
 
 }
 
