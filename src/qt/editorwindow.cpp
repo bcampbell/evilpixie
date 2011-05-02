@@ -57,7 +57,7 @@ QSize CurrentColourWidget::sizeHint () const
     { return QSize( 64,32 ); }
 
 QSize CurrentColourWidget::minimumSizeHint () const
-    { return QSize( 64,32 ); }
+    { return QSize( 32,32 ); }
 
 void CurrentColourWidget::mousePressEvent(QMouseEvent *event )
 {

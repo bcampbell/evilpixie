@@ -22,7 +22,7 @@ PaletteWidget::PaletteWidget(Palette const& src) :
 {
     setMouseTracking(true);
 
-    setMinimumSize( Cols()*8, Rows()*8 );
+    setMinimumSize( Cols()*4, Rows()*4 );
 }
 
 
