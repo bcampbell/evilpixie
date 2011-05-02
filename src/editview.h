@@ -90,7 +90,7 @@ private:
     bool m_Panning;
     Point m_PanAnchor;
 
-    //
+    // list of view rects affected by cursor drawing
     std::vector<Box> m_CursorDamage;
 
     void DrawView( Box const& viewbox, Box* affectedview=0  );

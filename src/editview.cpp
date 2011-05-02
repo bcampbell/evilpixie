@@ -353,9 +353,7 @@ void EditView::OnFramesRemoved(int first, int last)
 
 void EditView::AddCursorDamage( Box const& viewdmg )
 {
-    Box projdmg = ViewToProj( viewdmg );
-    m_CursorDamage.push_back( projdmg );
-    // tell GUI to show it
+    m_CursorDamage.push_back( viewdmg );
     Redraw( viewdmg );
 }
 
@@ -365,7 +363,12 @@ void EditView::EraseCursor()
     std::vector<Box>::const_iterator it;
     std::vector<Box>::const_iterator itend = m_CursorDamage.end();
     for( it=m_CursorDamage.begin(); it!=itend; ++it )
-        OnDamaged( *it );
+    {
+        Box clipped;
+        DrawView(*it, &clipped );
+        Redraw( clipped );
+    }
+
     m_CursorDamage.clear();
 }
 
