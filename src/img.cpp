@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
+#include <algorithm>    // for reverse()
 
 void RGBImg::FillBox( RGBx c, Box& b )
 {
@@ -105,6 +106,29 @@ void IndexedImg::FillBox( uint8_t c, Box& b )
         {
             *dest++ = c;
         }
+    }
+}
+
+
+void IndexedImg::XFlip()
+{
+    int y;
+    for(y=0; y<H(); ++y)
+    {
+        uint8_t* begin = Ptr(0,y);
+        uint8_t* end = begin + W();
+        std::reverse(begin,end);
+    }
+}
+
+void IndexedImg::YFlip()
+{
+    int y;
+    for(y=0; y<H()/2; ++y)
+    {
+        uint8_t* a = Ptr(0,y);
+        uint8_t* b = Ptr(0,(H()-1)-y);
+        std::swap_ranges(a,a+W(),b);
     }
 }
 

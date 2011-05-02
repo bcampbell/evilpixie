@@ -502,6 +502,24 @@ void EditorWindow::do_usebrushpalette()
     Proj().PaletteChange_Commit();
 }
 
+void EditorWindow::do_xflipbrush()
+{
+    if( GetBrush() != -1 )
+        return; // std brush - do nothing
+    HideToolCursor();
+    CurrentBrush().XFlip();
+    ShowToolCursor();
+}
+
+void EditorWindow::do_yflipbrush()
+{
+    if( GetBrush() != -1 )
+        return; // std brush - do nothing
+    HideToolCursor();
+    CurrentBrush().YFlip();
+    ShowToolCursor();
+}
+
 
 void EditorWindow::do_addframe()
 {
@@ -731,6 +749,10 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette", this, SLOT(do_usebrushpalette()) );
         a = m->addAction( "&Load Palette...", this, SLOT( do_loadpalette()) );
         m->addSeparator();
+        m->addAction( "X-Flip Brush", this, SLOT(do_xflipbrush()),QKeySequence("x") );
+        m->addAction( "Y-Flip Brush", this, SLOT(do_yflipbrush()),QKeySequence("y") );
+        m->addSeparator();
+
 
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
         a->setCheckable(true);

@@ -82,6 +82,8 @@ public:
 
     void Copy( IndexedImg const& other );
 
+    void XFlip();
+    void YFlip();
 
 private:
     Box m_Bounds;   // only w,h used. x,y always 0

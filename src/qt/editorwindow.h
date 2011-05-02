@@ -100,6 +100,8 @@ public slots:
     void do_saveas();
     void do_loadpalette();
     void do_usebrushpalette();
+    void do_xflipbrush();
+    void do_yflipbrush();
 
     void do_addframe();
     void do_zapframe();
