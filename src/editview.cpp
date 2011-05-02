@@ -15,6 +15,7 @@ EditView::EditView( Editor& editor, int w, int h ) :
     m_Panning(false),
     m_PanAnchor(0,0)
 {
+    CenterView();
     DrawView(m_ViewBox);
     Proj().AddListener( this );
     editor.AddView( this );
@@ -33,7 +34,7 @@ EditView::~EditView()
 
 void EditView::Resize( int w, int h )
 {
-    if( !m_Canvas )
+    if(m_Canvas)
     {
         delete m_Canvas;
         m_Canvas = 0;
@@ -43,8 +44,16 @@ void EditView::Resize( int w, int h )
     m_ViewBox.h = h;
 
     m_Canvas = new RGBImg( w,h );
-
     ConfineView();
+
+    // if view is wider/taller than image, center it
+    Box const& p = Proj().ImgConst(Frame()).Bounds();
+    Box v = ViewToProj( m_ViewBox );
+    if( v.w>p.w)
+        m_Offset.x = -(v.w - p.w) / 2;
+    if( v.h>p.h)
+        m_Offset.y = -(v.h - p.h) / 2;
+
     DrawView(m_ViewBox);
     Redraw(m_ViewBox);
 }
@@ -151,6 +160,14 @@ void EditView::ConfineView()
             m_Offset.y = (p.y+p.H()) - v.H();
     }
 
+}
+
+void EditView::CenterView()
+{
+    Box const& p = Proj().ImgConst(Frame()).Bounds();
+    Box v = ViewToProj( m_ViewBox );
+    m_Offset.x = -(v.w - p.w) / 2;
+    m_Offset.y = -(v.h - p.h) / 2;
 }
 
 

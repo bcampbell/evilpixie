@@ -36,6 +36,7 @@ public:
 	void SetFrame( int frame );
 	void SetOffset( Point const& projpos );	// in project coord (pixels)
     void AlignView( Point const& viewp, Point const& projp );
+    void CenterView();
 
 	Point const& Offset() const { return m_Offset; }
 	int Zoom() const { return m_Zoom; }
