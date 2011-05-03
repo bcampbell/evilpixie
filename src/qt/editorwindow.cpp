@@ -173,6 +173,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     OnPenChange();
 
     RethinkWindowTitle();
+
+    show();
 }
 
 EditorWindow::~EditorWindow()
@@ -484,8 +486,10 @@ void EditorWindow::do_new()
         pal->SetNumColours(dlg.num_colours);
         Project* p = new Project( sz.width(), sz.height(), pal, dlg.num_frames );
 //        printf("%d frames, %d colours\n",dlg.num_frames,dlg.num_colours);
-        EditorWindow* e = new EditorWindow(p);
-        e->show();
+        EditorWindow* fenster = new EditorWindow(p);
+        fenster->show();
+        fenster->raise();
+        fenster->activateWindow();
 
         if( Proj().Expendable() )
             this->close();
@@ -605,9 +609,12 @@ void EditorWindow::do_open()
 
     try
     {
+
         Project* new_proj = new Project(filename.toStdString());
         EditorWindow* fenster = new EditorWindow(new_proj);
         fenster->show();
+        fenster->activateWindow();
+        fenster->raise();
 
         if( Proj().Expendable() )
             this->close();
