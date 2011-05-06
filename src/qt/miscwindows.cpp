@@ -12,7 +12,7 @@ HelpWindow::HelpWindow()
     QTextEdit* content = new QTextEdit();
     content->setReadOnly(true);
     {
-        QFile file("data/help.html");
+        QFile file( EVILPIXIE_DATA_DIR "/help.html");
         if(file.open(QIODevice::ReadOnly | QIODevice::Text))
         {
             QString help_txt;
@@ -40,10 +40,11 @@ AboutBox::AboutBox(QWidget* parent) :
     QTextEdit* content = new QTextEdit();
     content->setReadOnly(true);
     QString txt = "<h1>Evilpixie</h1>"
-        "version 0.0000000000001  -  The TCE build (2011-04-22)<br/><br/>"
+        "version 0.1<br/><br/>"
         "By Ben Campbell (ben@scumways.com)<br/><br/>"
         "Licensed under GPLv3<br/>"
-        "Source at <a href=\"http://github.com/bcampbell/evilpixie\">http://github.com/bcampbell/evilpixie</a>";
+        "Homepage: <a href=\"http://evilpixie.scumways.com\">http://evilpixie.scumways.com</a><br/>"
+        "Source: <a href=\"http://github.com/bcampbell/evilpixie\">http://github.com/bcampbell/evilpixie</a>";
 
     content->setHtml(txt);
 

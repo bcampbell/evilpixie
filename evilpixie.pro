@@ -1,8 +1,10 @@
 TARGET = evilpixie
-CONFIG += qt debug
+CONFIG += qt
 win32:INCLUDEPATH = /c/mingw/gnuwin32/include
 win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
 unix:LIBS = -lgif -lXpm -lIL
+
+
 SOURCES += src/anim.cpp \
     src/app.cpp \
     src/box.cpp \
@@ -52,3 +54,21 @@ HEADERS += src/anim.h \
     src/qt/resizeprojectdialog.h \
     src/qt/rgbwidget.h \
     src/qt/editviewwidget.h
+
+!win32 {
+    isEmpty( PREFIX ) {
+      PREFIX = /usr/local
+    }
+
+    DATA_DIR = $${PREFIX}/share
+    EVILPIXIE_DATA_DIR = $${DATA_DIR}/$${TARGET}
+    DEFINES += EVILPIXIE_DATA_DIR=\\\"$${EVILPIXIE_DATA_DIR}\\\"
+
+    datafiles.files = data/help.html data/default.gpl data/examples data/icons
+    datafiles.path = $$EVILPIXIE_DATA_DIR
+
+    target.path = $${PREFIX}/bin
+    INSTALLS += target datafiles
+}
+
+

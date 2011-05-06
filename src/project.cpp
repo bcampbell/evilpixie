@@ -38,7 +38,7 @@ Project::Project() :
     int w = 128;
     int h = 128;
 
-    Palette* tmp = Palette::Load("data/default.gpl");
+    Palette* tmp = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
     m_Anim.SetPalette(*tmp);
     delete tmp;
     m_Anim.Append(new IndexedImg(w,h));
@@ -56,7 +56,7 @@ Project::Project( int w, int h, Palette* palette, int num_frames ) :
 {
     assert(num_frames>=1);
     if(!palette)
-        palette = Palette::Load("data/default.gpl");
+        palette = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
     m_Anim.SetPalette(*palette);
     delete palette;
     int i;

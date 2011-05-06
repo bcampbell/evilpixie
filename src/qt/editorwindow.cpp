@@ -38,6 +38,9 @@
 
 
 
+#define ICONDIR EVILPIXIE_DATA_DIR "/icons"
+
+
 void CurrentColourWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
@@ -88,8 +91,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         int i;
         for( i=0;i<MOUSESTYLE_NUM; ++i )
             m_MouseCursors[i]=0;
-        m_MouseCursors[MOUSESTYLE_CROSSHAIR] = new QCursor( QPixmap( "icons/cursor_crosshair.png" ),15,15 );
-        m_MouseCursors[MOUSESTYLE_EYEDROPPER] = new QCursor( QPixmap( "icons/cursor_eyedropper.png" ),9,22 );
+        m_MouseCursors[MOUSESTYLE_CROSSHAIR] = new QCursor( QPixmap( ICONDIR "/cursor_crosshair.png" ),15,15 );
+        m_MouseCursors[MOUSESTYLE_EYEDROPPER] = new QCursor( QPixmap( ICONDIR "/cursor_eyedropper.png" ),9,22 );
         assert( MOUSESTYLE_NUM==2 );
     }
 
@@ -202,15 +205,15 @@ QLayout* EditorWindow::CreateToolButtons()
         QString tooltip;
         QKeySequence shortcut;
      } inf[] = {
-        { TOOL_PENCIL, "icons/penciltool.png", tr("Draw"), QKeySequence("d") },
-        { TOOL_LINE, "icons/linetool.png", tr("Line"), QKeySequence("l")},
-        { TOOL_BRUSH_PICKUP, "icons/brushpickuptool.png", tr("Pick up brush"), QKeySequence("b")},
-        { TOOL_FLOODFILL, "icons/filltool.png", tr("Flood Fill"), QKeySequence("f")},
-        { TOOL_RECT, "icons/recttool.png", tr("Rectangle"), QKeySequence("r")},
-        { TOOL_FILLEDRECT, "icons/filledrecttool.png", tr("Filled Rectangle"), QKeySequence("shift+r")},
-        { TOOL_CIRCLE, "icons/circletool.png", tr("Circle"), QKeySequence("c")},
-        { TOOL_FILLEDCIRCLE, "icons/filledcircletool.png", tr("Filled Circle"), QKeySequence("shift+c")},
-        { TOOL_EYEDROPPER, "icons/eyedroppertool.png", tr("Pick up colour"), QKeySequence(",")},
+        { TOOL_PENCIL, ICONDIR "/penciltool.png", tr("Draw"), QKeySequence("d") },
+        { TOOL_LINE, ICONDIR "/linetool.png", tr("Line"), QKeySequence("l")},
+        { TOOL_BRUSH_PICKUP, ICONDIR "/brushpickuptool.png", tr("Pick up brush"), QKeySequence("b")},
+        { TOOL_FLOODFILL, ICONDIR "/filltool.png", tr("Flood Fill"), QKeySequence("f")},
+        { TOOL_RECT, ICONDIR "/recttool.png", tr("Rectangle"), QKeySequence("r")},
+        { TOOL_FILLEDRECT, ICONDIR "/filledrecttool.png", tr("Filled Rectangle"), QKeySequence("shift+r")},
+        { TOOL_CIRCLE, ICONDIR "/circletool.png", tr("Circle"), QKeySequence("c")},
+        { TOOL_FILLEDCIRCLE, ICONDIR "/filledcircletool.png", tr("Filled Circle"), QKeySequence("shift+c")},
+        { TOOL_EYEDROPPER, ICONDIR "/eyedroppertool.png", tr("Pick up colour"), QKeySequence(",")},
     };
     const int n = sizeof(inf) / sizeof(inf[0]);
 
@@ -219,7 +222,7 @@ QLayout* EditorWindow::CreateToolButtons()
     {
         QIcon icon;
         icon.addFile( inf[i].icon, QSize(), QIcon::Normal, QIcon::Off );
-//            icon.addFile( "icons/linetool.xpm", QSize(), QIcon::Normal, QIcon::On );
+//            icon.addFile( ICONDIR "/linetool.xpm", QSize(), QIcon::Normal, QIcon::On );
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
@@ -255,11 +258,11 @@ QLayout* EditorWindow::CreateBrushButtons()
         const char* icon;
         QKeySequence shortcut;
      } inf[] = {
-        { 0, "icons/brush1.xpm",QKeySequence(".") },
-        { 1, "icons/brush2.xpm",QKeySequence() },
-        { 2, "icons/brush3.xpm",QKeySequence() },
-        { 3, "icons/brush4.xpm",QKeySequence() },
-        { -1, "icons/brushcustom.png",QKeySequence("shift+B") },
+        { 0, ICONDIR "/brush1.xpm",QKeySequence(".") },
+        { 1, ICONDIR "/brush2.xpm",QKeySequence() },
+        { 2, ICONDIR "/brush3.xpm",QKeySequence() },
+        { 3, ICONDIR "/brush4.xpm",QKeySequence() },
+        { -1, ICONDIR "/brushcustom.png",QKeySequence("shift+B") },
     };
     const int n = sizeof(inf) / sizeof(inf[0]);
 
@@ -268,7 +271,7 @@ QLayout* EditorWindow::CreateBrushButtons()
     {
         QIcon icon;
         icon.addFile( inf[i].icon, QSize(), QIcon::Normal, QIcon::Off );
-//            icon.addFile( "icons/linetool.xpm", QSize(), QIcon::Normal, QIcon::On );
+//            icon.addFile( ICONDIR "/linetool.xpm", QSize(), QIcon::Normal, QIcon::On );
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
@@ -482,7 +485,7 @@ void EditorWindow::do_new()
     if( dlg.exec() == QDialog::Accepted )
     {
         QSize sz = dlg.GetSize();
-        Palette* pal = Palette::Load("data/default.gpl");
+        Palette* pal = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
         pal->SetNumColours(dlg.num_colours);
         Project* p = new Project( sz.width(), sz.height(), pal, dlg.num_frames );
 //        printf("%d frames, %d colours\n",dlg.num_frames,dlg.num_colours);
