@@ -1,8 +1,0 @@
-
-
-install:
-mingw
-qt
-GifLib (http://gnuwin32.sourceforge.net/)
-Xpm
-simx.h http://derekslager.com/blog/attachment.ashx/emacs-hack-3-compile-emacs-from-cvs-on-windows/simx.h

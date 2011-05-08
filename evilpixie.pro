@@ -1,7 +1,13 @@
 TARGET = evilpixie
 CONFIG += qt
-win32:INCLUDEPATH = /c/mingw/gnuwin32/include
-win32:LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
+
+win32 {
+    INCLUDEPATH = /c/mingw/gnuwin32/include
+    LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
+    ; to make sure we don't compile a console app:
+    CONFIG += windows
+}
+
 unix:LIBS = -lgif -lXpm -lIL
 
 

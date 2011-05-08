@@ -1,4 +1,5 @@
 #include "miscwindows.h"
+#include "../global.h"
 #include <QFile>
 #include <QString>
 #include <QTextEdit>
