@@ -6,6 +6,7 @@ win32 {
     LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
     ; to make sure we don't compile a console app:
     CONFIG += windows
+    RC_FILE = win32/evilpixie.rc
 }
 
 unix:LIBS = -lgif -lXpm -lIL
