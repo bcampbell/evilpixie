@@ -554,6 +554,14 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
     m_DownButton = NONE;
 
     Box pickup( m_Anchor, m_DragPoint );
+
+    // if grid on, exclude right and bottom edge of selection
+    if( Owner().GridActive() )
+    {
+        pickup.w -=1;
+        pickup.h -=1;
+    }
+
     pickup.ClipAgainst( proj.Img(view.Frame()).Bounds() );
 
     if( pickup.Empty() )
