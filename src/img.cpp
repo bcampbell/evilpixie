@@ -6,6 +6,74 @@
 #include <cassert>
 #include <algorithm>    // for reverse()
 
+Img::Img( Fmt pixel_format, int w, int h, uint8_t const* initial ) :
+    m_Format(pixel_format),
+    m_BytesPerPixel(0),
+    m_BytesPerRow(0),
+    m_Bounds(0,0,w,h),
+    m_Pixels(0)
+{
+    init();
+    if(initial) {
+        memcpy( m_Pixels, initial, H()*m_BytesPerRow );
+    } else {
+        memset( m_Pixels, 0, H()*m_BytesPerRow );
+    }
+}
+
+Img::Img( Img const& other ) :
+    m_Format(other.m_Format),
+    m_BytesPerPixel(0),
+    m_BytesPerRow(0),
+    m_Bounds(other.m_Bounds),
+    m_Pixels(0)
+{
+    init();
+}
+    
+Img::Img( Img const& other, Box const& otherarea ) :
+    m_Format(other.m_Format),
+    m_BytesPerPixel(0),
+    m_BytesPerRow(0),
+    m_Bounds(0,0,otherarea.w,otherarea.h),
+    m_Pixels(0)
+{
+    init();
+    Box b(m_Bounds);
+    Blit(other, otherarea, *this, b);
+}
+
+
+// set up stuff that depends on pixelformat 
+void Img::init()
+{
+    assert(m_Bounds.x==0 && m_Bounds.y==0);
+
+    switch(m_Format)
+    {
+        case INDEXED8BIT: m_BytesPerPixel=1; break;
+        case RGBx: m_BytesPerPixel=4; break;
+    }
+    assert(m_BytesPerPixel>0);
+    m_BytesPerRow = m_Bounds.w*m_BytesPerPixel;
+    m_Pixels = new uint8_t[m_BytesPerRow*m_Bounds.h];
+}
+
+
+void Img::Copy( Img const& other )
+{
+    delete [] m_Pixels;
+    m_Format = other.m_Format;
+    m_Bounds = other.m_Bounds;
+    init();
+    Box b(m_Bounds);
+    Blit(other, other.Bounds(), *this, b);
+}
+
+
+
+
+
 void RGBImg::FillBox( RGBx c, Box& b )
 {
     b.ClipAgainst( Bounds() );
@@ -51,47 +119,13 @@ void RGBImg::OutlineBox( RGBx c, Box& b )
 
 //-----------------------
 
-IndexedImg::IndexedImg( IndexedImg const& other ) :
-    m_Bounds( other.m_Bounds ),
-    m_Pixels( new uint8_t[ other.m_Bounds.w * other.m_Bounds.h ] )
+IndexedImg::IndexedImg(int w, int h, uint8_t const* initial) :
+    Img(INDEXED8BIT, w, h, initial)
 {
-//    printf("copy: %dx%d => %dx%d\n",other.m_Bounds.w, other.m_Bounds.h, m_Bounds.w, m_Bounds.h);
-    memcpy( m_Pixels, other.m_Pixels, m_Bounds.w*m_Bounds.h );
 }
 
 
-// initialise from a sub-area of another image
-IndexedImg::IndexedImg( IndexedImg const& other, Box const& otherarea ) :
-    m_Bounds( 0,0,otherarea.w, otherarea.h ),
-    m_Pixels( new uint8_t[ otherarea.w * otherarea.h ] )
-{
-    Box b( m_Bounds );
-    BlitIndexed( other, otherarea, *this, b );
-}
 
-
-IndexedImg::IndexedImg( int w, int h, uint8_t const* initial ) :
-    m_Bounds(0,0,w,h),
-    m_Pixels( new uint8_t[w*h] )
-{
-    if( initial )
-        memcpy( m_Pixels, initial, w*h );
-    else
-        memset( m_Pixels, 0, w*h );
-}
-
-IndexedImg::~IndexedImg()
-{
-    delete [] m_Pixels;
-}
-
-void IndexedImg::Copy( IndexedImg const& other )
-{
-    delete [] m_Pixels;
-    m_Bounds = other.Bounds();
-    m_Pixels = new uint8_t[ m_Bounds.w*m_Bounds.h ];
-    memcpy( m_Pixels, other.m_Pixels, W()*H() );
-}
 
 void IndexedImg::FillBox( uint8_t c, Box& b )
 {
@@ -295,6 +329,33 @@ void BlitZoomIndexedToRGBx(
             }
         }
     }
+}
+
+
+void Blit(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox)
+{
+    assert( srcimg.Format() == destimg.Format());
+
+    Box destclipped( destbox );
+    Box srcclipped( srcbox );
+    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
+
+
+    int y;
+    for( y=0; y<destclipped.h; ++y )
+    {
+        uint8_t const* src = srcimg.PtrConst( srcclipped.x+0, srcclipped.y+y );
+        uint8_t* dest = destimg.Ptr( destclipped.x+0, destclipped.y+y );
+//            int x;
+//            for( x=0; x<destclipped.w; ++x )
+//                *dest++ = *src++;
+
+        memcpy( dest, src, destclipped.w * srcimg.m_BytesPerPixel);
+    }
+
+    destbox = destclipped;
 }
 
 
