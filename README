@@ -39,3 +39,11 @@ The app assumes that the data files are installed at $PREFIX/share/evilpixie
 where $PREFIX defaults to /usr/local. To use the ./data dir in place, hack
 src/global.h to unconditionally set EVILPIXIE_DATA_DIR is "./data"
 
+The type of build is set in evilpixie.pro:
+CONFIG += qt debug
+CONFIG += qt release
+CONFIG += qt
+  (release build if none specified? unsure. Maybe it's an unoptimised build
+   with no debug info...)
+
+

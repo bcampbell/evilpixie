@@ -1,5 +1,6 @@
 TARGET = evilpixie
-CONFIG += qt
+CONFIG += qt debug
+;CONFIG += qt
 
 win32 {
     INCLUDEPATH = /c/mingw/gnuwin32/include
