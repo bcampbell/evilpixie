@@ -22,6 +22,9 @@ libdevil
 libgif
 (more?)
 
+eg on ubuntu (and probably debian):
+$ apt-get install qt4-qmake libdevil-dev libqt4-dev libgif-dev libxpm-dev
+
 
 All QT code is kept inside src/qt. All the core stuff (in src/) is pretty
 abstracted and could be used on any GUI system (eg I was thinking of doing
@@ -31,4 +34,8 @@ To build:
 
 $ qmake evilpixie.pro
 $ make
+
+The app assumes that the data files are installed at $PREFIX/share/evilpixie
+where $PREFIX defaults to /usr/local. To use the ./data dir in place, hack
+src/global.h to unconditionally set EVILPIXIE_DATA_DIR is "./data"
 
