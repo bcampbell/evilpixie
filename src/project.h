@@ -59,10 +59,8 @@ public:
     Anim& GetAnim() { return m_Anim; }
     Anim const& GetAnimConst() const { return m_Anim; }
     // shortcuts
-    IndexedImg& Img(int frame) { return m_Anim.GetFrame(frame); }
-    IndexedImg const& ImgConst(int frame) const { return m_Anim.GetFrameConst(frame); }
-
-    IndexedImg* ReplaceImg(IndexedImg* new_img);
+    //Img& Img(int frame) { return m_Anim.GetFrame(frame); }
+    Img const& ImgConst(int frame) const { return m_Anim.GetFrameConst(frame); }
 
     int NumFrames() const { return m_Anim.NumFrames(); }
 
@@ -130,10 +128,8 @@ private:
 
     int m_FGPen;
     int m_BGPen;
-//    IndexedImg* m_Img;
 
-    //
-//    std::vector< IndexedImg* > m_Frames;
+    // anim stores all the image data (even if it's a single frame anim :-)
     Anim m_Anim;
 
 	std::set< ProjectListener* > m_Listeners;
@@ -150,7 +146,7 @@ private:
 
     // backup copy of image, used for rollback or undo generation during
     // drawing operation
-    IndexedImg m_DrawBackup;
+    Img m_DrawBackup;
     Box m_DrawDamage;
 
     // has project been modified?

@@ -5,6 +5,7 @@
 #include <X11/xpm.h>
 #include "img.h"
 
+// NOTE: Not actually included in build right now, but left in for easy reference
 
 bool LoadXPM( IndexedImg& img, RGBx* palette, const char* filename )
 {

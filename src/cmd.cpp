@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <cstdio>
 
-Cmd_Draw::Cmd_Draw( Project& proj, int frame, Box const& affected, IndexedImg const& undoimg ) :
+Cmd_Draw::Cmd_Draw( Project& proj, int frame, Box const& affected, Img const& undoimg ) :
     Cmd( proj, DONE ),
     m_Frame(frame),
     m_Img( undoimg, affected ),
@@ -17,7 +17,7 @@ void Cmd_Draw::Do()
 {
     assert( State() == NOT_DONE );
     Box dirty( m_Affected );
-    BlitSwapIndexed( m_Img, m_Img.Bounds(), Proj().Img(m_Frame), dirty );
+    BlitSwap( m_Img, m_Img.Bounds(), Proj().GetAnim().GetFrame(m_Frame), dirty );
     Proj().Damage( dirty );
     SetState( DONE );
 }
@@ -26,7 +26,7 @@ void Cmd_Draw::Undo()
 {
     assert( State() == DONE );
     Box dirty( m_Affected );
-    BlitSwapIndexed( m_Img, m_Img.Bounds(), Proj().Img(m_Frame), dirty );
+    BlitSwap( m_Img, m_Img.Bounds(), Proj().GetAnim().GetFrame(m_Frame), dirty );
     Proj().Damage( dirty );
     SetState( NOT_DONE );
 }
@@ -43,15 +43,15 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
     int n;
     for(n=m_First; n<m_Last; ++n)
     {
-        IndexedImg* dest_img = new IndexedImg(new_area.w, new_area.h);
+        Img const& src_img = Proj().GetAnim().GetFrameConst(n);
+        Img* dest_img = new Img(src_img.Format(), new_area.w, new_area.h);
         Box foo(dest_img->Bounds());
         dest_img->FillBox(Proj().BGPen(),foo);
-        IndexedImg const& src_img = Proj().GetAnim().GetFrameConst(n);
         Box src_area(src_img.Bounds());
         Box dest_area(src_area);
         dest_area -= new_area.TopLeft();
 
-        BlitIndexed(src_img, src_area, *dest_img, dest_area, -1, -1);
+        Blit(src_img, src_area, *dest_img, dest_area);
         m_FrameSwap.Append(dest_img);
     }
 }
@@ -106,11 +106,11 @@ Cmd_InsertFrames::~Cmd_InsertFrames()
 
 void Cmd_InsertFrames::Do()
 {
-    IndexedImg const& srcimg(Proj().GetAnim().GetFrameConst(m_Pos));
+    Img const& srcimg(Proj().GetAnim().GetFrameConst(m_Pos));
     Anim tmp;
     int i;
     for(i=0;i<m_Num;++i)
-        tmp.Append(new IndexedImg(srcimg));
+        tmp.Append(new Img(srcimg));
 
     tmp.TransferFrames(0,tmp.NumFrames(), Proj().GetAnim(),m_Pos+1);
 

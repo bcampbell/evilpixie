@@ -12,7 +12,6 @@ win32 {
 
 unix:LIBS = -lgif -lXpm -lIL
 
-
 SOURCES += src/anim.cpp \
     src/app.cpp \
     src/box.cpp \
@@ -20,14 +19,12 @@ SOURCES += src/anim.cpp \
     src/cmd.cpp \
     src/editor.cpp \
     src/editview.cpp \
-    src/gifsupport.cpp \
     src/img.cpp \
     src/palette.cpp \
     src/project.cpp \
     src/tool.cpp \
     src/wobbly.cpp \
     src/util.cpp \
-    src/xpmsupport.cpp \
     src/qt/editorwindow.cpp \
     src/qt/editviewwidget.cpp \
     src/qt/palettewidget.cpp \

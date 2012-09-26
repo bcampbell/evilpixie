@@ -466,7 +466,7 @@ void EditorWindow::do_togglesavebgastransparent( bool checked )
 
 void EditorWindow::do_resize()
 {
-    Box b = Proj().Img(m_ViewWidget->Frame()).Bounds();
+    Box b = Proj().GetAnim().GetFrame(m_ViewWidget->Frame()).Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
     if( dlg.exec() == QDialog::Accepted )
     {

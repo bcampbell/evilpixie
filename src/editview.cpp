@@ -248,7 +248,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
     Box vb(viewbox);
     vb.ClipAgainst(m_ViewBox);
 
-    IndexedImg const& img = Proj().Img(Frame());
+    Img const& img = Proj().GetAnim().GetFrame(Frame());
     // get project bounds in view coords (unclipped)
     Box pbox(ProjToView(img.Bounds()));
 
@@ -275,6 +275,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
             // on the canvas
             Point p( ViewToProj(Point(x,y)) );
             uint8_t const* src = img.PtrConst( p.x,p.y );
+            assert(img.Format()==Img::INDEXED8BIT);
             while(x<=xmax)
             {
                 int cx = x + (m_Offset.x*m_Zoom);
@@ -326,7 +327,7 @@ void EditView::OnPaletteChanged( int, RGBx const& )
 void EditView::OnPaletteReplaced()
 {
     // redraw the whole project
-    Box area(ProjToView(Proj().Img(Frame()).Bounds()));
+    Box area(ProjToView(Proj().GetAnim().GetFrame(Frame()).Bounds()));
     Box affected;
     DrawView(area,&affected);
     Redraw(affected);

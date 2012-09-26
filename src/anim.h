@@ -4,7 +4,7 @@
 #include <vector>
 #include "palette.h"
 
-class IndexedImg;
+class Img;
 class Box;
 
 class Anim
@@ -14,15 +14,15 @@ public:
     ~Anim();
 
     int NumFrames() const { return m_Frames.size(); }
-    IndexedImg& GetFrame(int n) { return *m_Frames[n]; }
-    IndexedImg const& GetFrameConst(int n) const { return *m_Frames[n]; }
+    Img& GetFrame(int n) { return *m_Frames[n]; }
+    Img const& GetFrameConst(int n) const { return *m_Frames[n]; }
     Palette& GetPalette() { return m_Palette; }
     void SetPalette( Palette const& pal ) { m_Palette=pal; }
     Palette const& GetPaletteConst() const { return m_Palette; }
 
     void Load(const char* filename);
     void Save(const char* filename);
-    void Append(IndexedImg* img) { m_Frames.push_back(img); }
+    void Append(Img* img) { m_Frames.push_back(img); }
     void Zap();
 
     // transfer frames in range [srcfirst, srclast) to another animation
@@ -41,7 +41,7 @@ private:
     void LoadGif(const char* filename);
     void SaveGif(const char* filename);
 
-    std::vector< IndexedImg* > m_Frames;
+    std::vector< Img* > m_Frames;
     int m_TransparentIdx;   // -1 for none
     int m_FPS;
     Palette m_Palette;

@@ -5,8 +5,10 @@
 #include "img.h"
 #include "wobbly.h"
 
+// NOTE: Not actually included in build right now, but left in for easy reference
 
-void LoadGIF( IndexedImg& img, RGBx* palette, const char* filename )
+
+void LoadGIF( Img& img, RGBx* palette, const char* filename )
 {
     GifFileType* f = DGifOpenFileName( filename );
     if( !f )
@@ -38,16 +40,16 @@ void LoadGIF( IndexedImg& img, RGBx* palette, const char* filename )
         palette[i] = RGBx( c.Red, c.Green, c.Blue );
     }
 
-    IndexedImg tmp( si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits );
+    Img tmp( Img::INDEXED8BIT, si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits );
 
     img.Copy( tmp );
 }
 
 
-void SaveGIF( IndexedImg const& img, RGBx const* palette, const char* filename )
+void SaveGIF( Img const& img, RGBx const* palette, const char* filename )
 {
     int status;
-
+    assert(img.Format()==Img::IndexedImg);
     GifFileType* gif = EGifOpenFileName(filename, 0 );
     if( gif == NULL )
     {

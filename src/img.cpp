@@ -70,9 +70,51 @@ void Img::Copy( Img const& other )
     Blit(other, other.Bounds(), *this, b);
 }
 
+void Img::FillBox( uint8_t c, Box& b )
+{
+    assert(Format()==INDEXED8BIT);
+    b.ClipAgainst( Bounds() );
+
+    int y;
+    for( y=b.YMin(); y<=b.YMax(); ++y )
+    {
+        int x;
+        uint8_t* dest = Ptr(b.XMin(),y);
+        for( x=b.XMin(); x<=b.XMax(); ++x )
+        {
+            *dest++ = c;
+        }
+    }
+}
+
+
+void Img::XFlip()
+{
+    assert(Format()==INDEXED8BIT);
+    int y;
+    for(y=0; y<H(); ++y)
+    {
+        uint8_t* begin = Ptr(0,y);
+        uint8_t* end = begin + W();
+        std::reverse(begin,end);
+    }
+}
+
+void Img::YFlip()
+{
+    assert(Format()==INDEXED8BIT);
+    int y;
+    for(y=0; y<H()/2; ++y)
+    {
+        uint8_t* a = Ptr(0,y);
+        uint8_t* b = Ptr(0,(H()-1)-y);
+        std::swap_ranges(a,a+W(),b);
+    }
+}
 
 
 
+//-----------------------
 
 void RGBImg::FillBox( RGBx c, Box& b )
 {
@@ -119,52 +161,7 @@ void RGBImg::OutlineBox( RGBx c, Box& b )
 
 //-----------------------
 
-IndexedImg::IndexedImg(int w, int h, uint8_t const* initial) :
-    Img(INDEXED8BIT, w, h, initial)
-{
-}
 
-
-
-
-void IndexedImg::FillBox( uint8_t c, Box& b )
-{
-    b.ClipAgainst( Bounds() );
-
-    int y;
-    for( y=b.YMin(); y<=b.YMax(); ++y )
-    {
-        int x;
-        uint8_t* dest = Ptr(b.XMin(),y);
-        for( x=b.XMin(); x<=b.XMax(); ++x )
-        {
-            *dest++ = c;
-        }
-    }
-}
-
-
-void IndexedImg::XFlip()
-{
-    int y;
-    for(y=0; y<H(); ++y)
-    {
-        uint8_t* begin = Ptr(0,y);
-        uint8_t* end = begin + W();
-        std::reverse(begin,end);
-    }
-}
-
-void IndexedImg::YFlip()
-{
-    int y;
-    for(y=0; y<H()/2; ++y)
-    {
-        uint8_t* a = Ptr(0,y);
-        uint8_t* b = Ptr(0,(H()-1)-y);
-        std::swap_ranges(a,a+W(),b);
-    }
-}
 
 
 // clips a blit against the destination boundary.
@@ -192,12 +189,16 @@ static void clip_blit(
 }
 
 
-void BlitIndexed(
-    IndexedImg const& srcimg, Box const& srcbox,
-    IndexedImg& destimg, Box& destbox,
+void BlitFancy(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
     int transparentcolour,
     int maskcolour )
 {
+    // TODO
+    assert(srcimg.Format()==Img::INDEXED8BIT);
+    assert(destimg.Format()==Img::INDEXED8BIT);
+
     Box destclipped( destbox );
     Box srcclipped( srcbox );
     clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
@@ -238,51 +239,32 @@ void BlitIndexed(
 
 
 
-void BlitSwapIndexed(
-    IndexedImg& srcimg, Box const& srcbox,
-    IndexedImg& destimg, Box& destbox,
-    int transparentcolour,
-    int maskcolour )
+void BlitSwap(
+    Img& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox )
 {
     Box destclipped( destbox );
     Box srcclipped( srcbox );
     clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
 
+
+    // TODO - support other formats
+    assert( srcimg.Format()==Img::INDEXED8BIT);
+    assert( destimg.Format()==Img::INDEXED8BIT);
     int y;
     for( y=0; y<destclipped.h; ++y )
     {
         uint8_t* src = srcimg.Ptr( srcclipped.x+0, srcclipped.y+y );
         uint8_t* dest = destimg.Ptr( destclipped.x+0, destclipped.y+y );
 
-        // different innerloops depending on transparency/mask
-        if( transparentcolour == -1 )
-        {
-            // straight blit (maskcolour not supported)
-            int x;
-            for( x=0; x<destclipped.w; ++x )
-            {
-                uint8_t tmp = *dest;
-                *dest++ = *src;
-                *src++ = tmp;
-            }
-        }
-        else
-        {
-            int x;
-            for( x=0; x<destclipped.w; ++x )
-            {
-                uint8_t tmp = *dest;
-                uint8_t c = *src;
-                if( c != (uint8_t)transparentcolour )
-                {
-                    if( maskcolour != -1 )
-                        c= (uint8_t)maskcolour;
-                    *dest = c;
-                }
-                *src++ = tmp;
-                ++dest;
-            }
-        }
+         // straight blit (maskcolour not supported)
+         int x;
+         for( x=0; x<destclipped.w; ++x )
+         {
+            uint8_t tmp = *dest;
+            *dest++ = *src;
+            *src++ = tmp;
+         }
     }
 
     destbox = destclipped;
@@ -290,13 +272,14 @@ void BlitSwapIndexed(
 
 
 void BlitZoomIndexedToRGBx(
-    IndexedImg const& srcimg, Box const& srcbox,
+    Img const& srcimg, Box const& srcbox,
     RGBImg& destimg, Box& destbox,
     Palette const& palette,
     int zoom,
     int transparentcolour,
     int maskcolour )
 {
+    assert( srcimg.Format()==Img::INDEXED8BIT);
     assert( srcimg.Bounds().Contains( srcbox ) );
     assert( zoom >= 1 );
 

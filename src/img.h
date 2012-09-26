@@ -38,16 +38,21 @@ public:
 		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
     Box const& Bounds() const
         { return m_Bounds; }
-#if 0
-	void SetPixel( int x, int y, RGBx c )
-		{ RGBx* p=Ptr(x,y); *p=c; }
 
-    // FillBox & Outlinebox handle clipping.
-    // b will return area affected after clipping.
-	void FillBox( RGBx c, Box& b );
-    void OutlineBox( RGBx c, Box& b );
-#endif
+    // TODO: move all drawing ops out to somewhere else...
     void Copy( Img const& other );
+    // b will return area affected after clipping.
+	void FillBox( uint8_t c, Box& b );
+    void XFlip();
+    void YFlip();
+	void SetPixel( int x, int y, uint8_t c )
+		{ assert(Format()==INDEXED8BIT); uint8_t* p=Ptr(x,y); *p=c; }
+	uint8_t GetPixel( int x, int y ) const
+		{ assert(Format()==INDEXED8BIT); return *PtrConst(x,y); }
+	void SetPixel( const Point& p, uint8_t c )
+		{ assert(Format()==INDEXED8BIT); *Ptr(p.x,p.y) = c; }
+	uint8_t GetPixel( const Point& p ) const
+		{ assert(Format()==INDEXED8BIT); return *PtrConst(p.x,p.y); }
 
     friend void ::Blit(
         Img const& srcimg,
@@ -104,35 +109,6 @@ private:
 };
 
 
-// an indexed image
-class IndexedImg : public Img
-{
-public:
-    IndexedImg();   // disallowed
-	IndexedImg( int w, int h, uint8_t const* initial=0 );
-    IndexedImg( IndexedImg const& other, Box const& otherarea ) : Img(other,otherarea) {}
-
-    // disallowed (use Copy() instead!)
-    IndexedImg& operator=( IndexedImg const& other );
-
-	void SetPixel( int x, int y, uint8_t c )
-		{ uint8_t* p=Ptr(x,y); *p=c; }
-	uint8_t GetPixel( int x, int y ) const
-		{ return *PtrConst(x,y); }
-	void SetPixel( const Point& p, uint8_t c )
-		{ *Ptr(p.x,p.y) = c; }
-	uint8_t GetPixel( const Point& p ) const
-		{ return *PtrConst(p.x,p.y); }
-
-    // b will return area affected after clipping.
-	void FillBox( uint8_t c, Box& b );
-
-
-    void XFlip();
-    void YFlip();
-private:
-};
-
 
 
 void Blit(
@@ -143,23 +119,20 @@ void Blit(
 
 
 // destbox is changed to reflect the final clipped area on the dest Img
-void BlitIndexed(
-    IndexedImg const& srcimg, Box const& srcbox,
-    IndexedImg& destimg, Box& destbox,
+void BlitFancy(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
     int transparentcolour = -1,
     int maskcolour = -1 );
 
 
-// Same as BlitIndexed, except that srcimg is replaced by destimg
-// (all pixels, not just the non-transparent ones)
-void BlitSwapIndexed(
-    IndexedImg& srcimg, Box const& srcbox,
-    IndexedImg& destimg, Box& destbox,
-    int transparentcolour = -1,
-    int maskcolour = -1 );
+// Same as Blit, except that srcimg is replaced by destimg
+void BlitSwap(
+    Img& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox);
 
 void BlitZoomIndexedToRGBx(
-    IndexedImg const& srcimg, Box const& srcbox,
+    Img const& srcimg, Box const& srcbox,
     RGBImg& destimg, Box& destbox,
     Palette const& palette,
     int zoom,

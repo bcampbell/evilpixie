@@ -16,7 +16,7 @@ Project::Project( std::string const& filename ) :
     m_BGPen(0),
     m_DrawTool(0),
     m_DrawFrame(0),
-    m_DrawBackup(1,1),
+    m_DrawBackup(Img::INDEXED8BIT,1,1),
     m_Modified( false )
 {
     m_Anim.Load( filename.c_str() );
@@ -32,7 +32,7 @@ Project::Project() :
     m_BGPen(0),
     m_DrawTool(0),
     m_DrawFrame(0),
-    m_DrawBackup(1,1),
+    m_DrawBackup(Img::INDEXED8BIT,1,1), // ugh
     m_Modified( false )
 {
     int w = 128;
@@ -41,7 +41,7 @@ Project::Project() :
     Palette* tmp = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
     m_Anim.SetPalette(*tmp);
     delete tmp;
-    m_Anim.Append(new IndexedImg(w,h));
+    m_Anim.Append(new Img(Img::INDEXED8BIT,w,h));
 }
 
 
@@ -51,7 +51,7 @@ Project::Project( int w, int h, Palette* palette, int num_frames ) :
     m_BGPen(0),
     m_DrawTool(0),
     m_DrawFrame(0),
-    m_DrawBackup(1,1),
+    m_DrawBackup(Img::INDEXED8BIT,1,1), // ugh
     m_Modified( false )
 {
     assert(num_frames>=1);
@@ -61,7 +61,7 @@ Project::Project( int w, int h, Palette* palette, int num_frames ) :
     delete palette;
     int i;
     for(i=0;i<num_frames;++i)
-        m_Anim.Append(new IndexedImg(w,h));
+        m_Anim.Append(new Img(Img::INDEXED8BIT,w,h));
 }
 
 
@@ -130,29 +130,6 @@ void Project::Save( std::string const& filename, bool savetransparency )
 }
 
 
-// NOTE: doesn't delete old image - just passes it back to the caller
-// TODO: frame number
-IndexedImg* Project:: ReplaceImg(IndexedImg* new_img)
-{
-    return new_img;
-#if 0
-    IndexedImg* old = m_Frames.front();
-    m_Frames.front() = new_img;
-
-    // tell listeners which bit needs a redraw...
-    Box b(old->Bounds());
-    b.Merge(new_img->Bounds());
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnDamaged( b );
-    }
-
-    return old;
-#endif
-}
-
-
 
 void Project::Damage( Box const& b )
 {
@@ -203,7 +180,7 @@ void Project::Draw_Begin( Tool* tool, int frame )
 void Project::Draw_Damage( Box const& b )
 {
     assert( m_DrawTool != 0 );
-    assert( Img(m_DrawFrame).Bounds().Contains(b) );
+    assert( m_Anim.GetFrameConst(m_DrawFrame).Bounds().Contains(b) );
     m_DrawDamage.Merge(b);
 
     std::set<ProjectListener*>::iterator it;
@@ -228,8 +205,8 @@ void Project::Draw_Rollback()
     m_DrawTool = 0;
 
     Box b( m_DrawDamage );
-    BlitIndexed( m_DrawBackup, m_DrawDamage,
-        Img(m_DrawFrame), b );
+    Blit( m_DrawBackup, m_DrawDamage,
+        m_Anim.GetFrame(m_DrawFrame), b );
 
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )

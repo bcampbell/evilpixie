@@ -151,7 +151,7 @@ void Anim::Load( const char* filename )
         }
  
         const uint8_t* pixels = ilGetData();
-        IndexedImg* img = new IndexedImg(w,h,pixels);
+        Img* img = new Img(Img::INDEXED8BIT,w,h,pixels);
         m_Frames.push_back(img);
     }
 
@@ -213,7 +213,7 @@ void Anim::LoadGif( const char* filename )
             pal->SetColour(i,RGBx( c.Red, c.Green, c.Blue ));
         }
 */
-        IndexedImg* tmp = new IndexedImg(si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits);
+        Img* tmp = new Img(Img::INDEXED8BIT, si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits);
 
         Append(tmp);
     }
@@ -234,7 +234,9 @@ void Anim::Save( const char* filename )
         throw Wobbly("Sorry... to save anims you need to use GIF format (for now)");
 
     // OK then... just save first frame
-    IndexedImg const& img = GetFrameConst(0);
+    Img const& img = GetFrameConst(0);
+    if(img.Format() != Img::INDEXED8BIT)
+        throw Wobbly("Sorry... only paletted images supported right now...");
 
     ilSetInteger(IL_PNG_ALPHA_INDEX,TransparentIdx());
 
@@ -349,7 +351,9 @@ void Anim::SaveGif( const char* filename )
         int n;
         for(n=0; n<NumFrames(); ++n)
         {
-            IndexedImg const& img = GetFrameConst(n);
+            Img const& img = GetFrameConst(n);
+            if(img.Format() != Img::INDEXED8BIT)
+                throw Wobbly("Sorry... must be paletted image (for now)");
 /*
  * anim delay and transparent colour in extension?
             int EGifPutExtension(

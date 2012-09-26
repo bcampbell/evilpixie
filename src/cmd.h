@@ -41,12 +41,12 @@ private:
 class Cmd_Draw : public Cmd
 {
 public:
-    Cmd_Draw( Project& proj, int frame, Box const& affected, IndexedImg const& undoimg );
+    Cmd_Draw( Project& proj, int frame, Box const& affected, Img const& undoimg );
     virtual void Do();
     virtual void Undo();
 private:
     int m_Frame;
-    IndexedImg m_Img;
+    Img m_Img;
     Box m_Affected;
 };
 
