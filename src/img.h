@@ -50,9 +50,12 @@ public:
         { return m_Bounds; }
 
     // TODO: move all drawing ops out to somewhere else...
+    void HLine( VColour pen, int xbegin, int xend, int y);
     void Copy( Img const& other );
     // b will return area affected after clipping.
-	void FillBox( uint8_t c, Box& b );
+	void FillBox( VColour pen, Box& b );
+    void OutlineBox( VColour pen, Box& b );
+
     void XFlip();
     void YFlip();
 	void SetPixel( int x, int y, uint8_t c )
@@ -82,44 +85,6 @@ protected:
 };
 
 
-// An RGB bitmap
-class RGBImg
-{
-public:
-	RGBImg( int w, int h ) :
-		m_Bounds(0,0,w,h),
-		m_Pixels( new RGBx[w*h] )
-		{}
-
-	~RGBImg()
-		{ delete [] m_Pixels; }
-
-	int W() const
-		{ return m_Bounds.w; }
-	int H() const
-		{ return m_Bounds.h; }
-	RGBx* Ptr( int x, int y )
-		{ return m_Pixels + y*W() + x; }
-	RGBx const* PtrConst( int x, int y ) const
-		{ return m_Pixels + y*W() + x; }
-    Box const& Bounds() const
-        { return m_Bounds; }
-
-	void SetPixel( int x, int y, RGBx c )
-		{ RGBx* p=Ptr(x,y); *p=c; }
-
-    // FillBox & Outlinebox handle clipping.
-    // b will return area affected after clipping.
-	void FillBox( RGBx c, Box& b );
-    void OutlineBox( RGBx c, Box& b );
-
-private:
-    Box m_Bounds;
-	RGBx* m_Pixels;
-};
-
-
-
 
 void Blit(
     Img const& srcimg,
@@ -143,7 +108,7 @@ void BlitSwap(
 
 void BlitZoomIndexedToRGBx(
     Img const& srcimg, Box const& srcbox,
-    RGBImg& destimg, Box& destbox,
+    Img& destimg, Box& destbox,
     Palette const& palette,
     int zoom,
     int transparentcolour=-1,

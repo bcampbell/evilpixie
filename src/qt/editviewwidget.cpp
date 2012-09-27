@@ -87,7 +87,7 @@ void EditViewWidget::wheelEvent(QWheelEvent *event)
 
 void EditViewWidget::paintEvent(QPaintEvent * /* event */)
 {
-    RGBImg const& src = Canvas();
+    Img const& src = Canvas();
     QImage image( (const uchar *)src.PtrConst(0,0), Canvas().W(), Canvas().H(), QImage::Format_RGB32 );
 
     QPainter painter(this);

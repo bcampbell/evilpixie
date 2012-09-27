@@ -46,7 +46,7 @@ public:
 	void OnMouseMove( Point const& viewpos );
 	void OnMouseUp( Point const& viewpos, Button button );
 
-	RGBImg const& CanvasConst() const { return *m_Canvas; }
+	Img const& CanvasConst() const { return *m_Canvas; }
 	int Width() const { return m_ViewBox.w; }
 	int Height() const { return m_ViewBox.h; }
 
@@ -58,7 +58,7 @@ public:
 
 	// For tools...
 	void AddCursorDamage( Box const& viewdmg );
-	RGBImg& Canvas() { return *m_Canvas; }
+	Img& Canvas() { return *m_Canvas; }
 
     Project& Proj() { return m_Editor.Proj(); }
     Editor& Ed() { return m_Editor; }
@@ -75,7 +75,7 @@ private:
     Point m_PrevPos;  // proj coords of last mouse action (-1,-1)=none
 
     // TODO: canvas should probably be held by the gui layer... (editviewwidget)
-	RGBImg* m_Canvas;
+	Img* m_Canvas;
 //	RGB* m_Canvas;
 	Box m_ViewBox;	// x,y always 0
 

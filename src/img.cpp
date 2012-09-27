@@ -70,21 +70,38 @@ void Img::Copy( Img const& other )
     Blit(other, other.Bounds(), *this, b);
 }
 
-void Img::FillBox( uint8_t c, Box& b )
-{
-    assert(Fmt()==FMT_I8);
-    b.ClipAgainst( Bounds() );
 
+void Img::HLine( VColour pen, int xbegin, int xend, int y)
+{
+    int x;
+    switch(Fmt())
+    {
+        case FMT_I8:
+            {
+                I8* dest = Ptr_I8(xbegin,y);
+                for( x=xbegin; x<xend; ++x )
+                    *dest++ = pen.i;
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8* dest = Ptr_RGBX8(xbegin,y);
+                for( x=xbegin; x<xend; ++x )
+                    *dest++ = pen.rgbx;
+            }
+            break;
+        default: assert(false); // not implemented
+    }
+}
+
+
+
+void Img::FillBox( VColour pen, Box& b )
+{
+    b.ClipAgainst( Bounds() );
     int y;
     for( y=b.YMin(); y<=b.YMax(); ++y )
-    {
-        int x;
-        uint8_t* dest = Ptr(b.XMin(),y);
-        for( x=b.XMin(); x<=b.XMax(); ++x )
-        {
-            *dest++ = c;
-        }
-    }
+        HLine(pen,b.XMin(),b.XMax()+1,y);
 }
 
 
@@ -116,45 +133,29 @@ void Img::YFlip()
 
 //-----------------------
 
-void RGBImg::FillBox( RGBx c, Box& b )
+
+void Img::OutlineBox( VColour pen, Box& b )
 {
     b.ClipAgainst( Bounds() );
 
-    int y;
-    for( y=b.YMin(); y<=b.YMax(); ++y )
+    if( Fmt()==FMT_RGBX8)
     {
-        int x;
-        RGBx* dest = Ptr(b.XMin(),y);
-        for( x=b.XMin(); x<=b.XMax(); ++x )
+        HLine(pen, b.XMin(), b.XMax()+1, b.YMin());
+        HLine(pen, b.XMin(), b.XMax()+1, b.YMax());
+
+        // draw sides (note: already draw top & bottom pixels)
+        RGBX8* pleft = Ptr_RGBX8(b.XMin(),b.YMin()+1);
+        RGBX8* pright = Ptr_RGBX8(b.XMax(),b.YMin()+1);
+        int y;
+        for( y=b.YMin()+1; y<=b.YMax()-1; ++y )
         {
-            *dest++ = c;
+            *pleft = pen.rgbx;
+            pleft += W();
+            *pright = pen.rgbx;
+            pright += W();
         }
-    }
-}
-
-void RGBImg::OutlineBox( RGBx c, Box& b )
-{
-    b.ClipAgainst( Bounds() );
-    // draw top & bottom
-    int x;
-    RGBx* ptop = Ptr(b.XMin(),b.YMin());
-    RGBx* pbot = Ptr(b.XMin(),b.YMax());
-    for( x=b.XMin(); x<=b.XMax(); ++x )
-    {
-        *ptop++ = c;
-        *pbot++ = c;
-    }
-
-    // draw sides (note: already draw top & bottom pixels)
-    RGBx* pleft = Ptr(b.XMin(),b.YMin()+1);
-    RGBx* pright = Ptr(b.XMax(),b.YMin()+1);
-    int y;
-    for( y=b.YMin()+1; y<=b.YMax()-1; ++y )
-    {
-        *pleft = c;
-        pleft += W();
-        *pright = c;
-        pright += W();
+    } else {
+        assert(false);// not implemented yet
     }
 }
 
@@ -273,13 +274,15 @@ void BlitSwap(
 
 void BlitZoomIndexedToRGBx(
     Img const& srcimg, Box const& srcbox,
-    RGBImg& destimg, Box& destbox,
+    Img& destimg, Box& destbox,
     Palette const& palette,
     int zoom,
     int transparentcolour,
     int maskcolour )
 {
+    // TODO: generalise
     assert( srcimg.Fmt()==FMT_I8);
+    assert( destimg.Fmt()==FMT_RGBX8);
     assert( srcimg.Bounds().Contains( srcbox ) );
     assert( zoom >= 1 );
 
@@ -291,8 +294,8 @@ void BlitZoomIndexedToRGBx(
     for( y=0; y<destclipped.H(); ++y )
     {
         int x;
-        RGBx* dest = destimg.Ptr( destclipped.XMin() + 0, destclipped.YMin() + y );
-        uint8_t const* src = srcimg.PtrConst( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+        RGBX8* dest = destimg.Ptr_RGBX8( destclipped.XMin() + 0, destclipped.YMin() + y );
+        uint8_t const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
         int n=0;
         for( x=0; x<destclipped.W(); ++x )
         {

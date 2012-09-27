@@ -4,25 +4,6 @@
 #include <stdint.h>
 
 
-// TODO: rename
-struct RGBx
-{
-    RGBx(uint8_t red=0, uint8_t green=0, uint8_t blue=8 ) :
-        b(blue),
-        g(green),
-        r(red),
-        pad(255)
-    {
-    }
-
-    // this order for QT version (QImage ARGB fmt assumes native byte order...)
-	uint8_t b;
-	uint8_t g;
-	uint8_t r;
-	uint8_t pad;
-
-};
-
 
 // Raw pixel types:
 enum PixelFormat {
@@ -55,6 +36,31 @@ union VColour
         rgbx.b=blue;
         rgbx.pad=255;
     }
+};
+
+
+// higher-level colour handling:
+// TODO: rename to Colour or something
+struct RGBx
+{
+    RGBx(uint8_t red=0, uint8_t green=0, uint8_t blue=8 ) :
+        b(blue),
+        g(green),
+        r(red),
+        pad(255)
+    {
+    }
+
+    // this order for QT version (QImage ARGB fmt assumes native byte order...)
+	uint8_t b;
+	uint8_t g;
+	uint8_t r;
+	uint8_t pad;
+
+    operator RGBX8() const
+        { RGBX8 tmp; tmp.r=r; tmp.g=g; tmp.b=b; tmp.pad=255; return tmp; }
+    operator VColour() const
+        { VColour tmp; tmp.rgbx = (RGBX8)*this; return tmp; }
 };
 
 #endif // COLOURS_H

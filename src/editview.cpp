@@ -7,7 +7,7 @@
 EditView::EditView( Editor& editor, int w, int h ) :
     m_Editor(editor),
     m_PrevPos(-1,-1),
-    m_Canvas( new RGBImg( w,h ) ),
+    m_Canvas( new Img(FMT_RGBX8,w,h ) ),
     m_ViewBox(0,0,w,h),
     m_Frame(0),
     m_Zoom(4),
@@ -43,7 +43,7 @@ void EditView::Resize( int w, int h )
     m_ViewBox.w = w;
     m_ViewBox.h = h;
 
-    m_Canvas = new RGBImg( w,h );
+    m_Canvas = new Img( FMT_RGBX8, w,h );
     ConfineView();
 
     // if view is wider/taller than image, center it
@@ -256,7 +256,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
     int y;
     for(y=vb.YMin(); y<=vb.YMax(); ++y)
     {
-        RGBx* dest = m_Canvas->Ptr(vb.x,y);
+        RGBX8* dest = m_Canvas->Ptr_RGBX8(vb.x,y);
         int x=vb.XMin();
 
         // scanline intersects canvas?
