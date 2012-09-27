@@ -16,7 +16,10 @@ Palette::Palette(int numcolours) :
     m_NumColours(numcolours)
 {
     int i;
-    RGBx black(0,0,0);
+    RGBx black;
+    black.r=0;
+    black.g=0;
+    black.b=0;
     for( i=0;i<256;++i)
         SetColour(i,black);
 }
@@ -35,10 +38,10 @@ void Palette::LerpRange( int n0, RGBx const& c0, int n1, RGBx const& c1 )
     {
 
         int t = ((n-n0)*S) / (n1-n0);
-        m_Colours[n] = RGBx(
-            c0.r + ((c1.r-c0.r)*t)/S,
-            c0.g + ((c1.g-c0.g)*t)/S,
-            c0.b + ((c1.b-c0.b)*t)/S );
+        RGBx& c = m_Colours[n];
+        c.r = c0.r + ((c1.r-c0.r)*t)/S;
+        c.g = c0.g + ((c1.g-c0.g)*t)/S;
+        c.b = c0.b + ((c1.b-c0.b)*t)/S;
     }
 }
 

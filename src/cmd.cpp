@@ -44,7 +44,7 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
     for(n=m_First; n<m_Last; ++n)
     {
         Img const& src_img = Proj().GetAnim().GetFrameConst(n);
-        Img* dest_img = new Img(src_img.Format(), new_area.w, new_area.h);
+        Img* dest_img = new Img(src_img.Fmt(), new_area.w, new_area.h);
         Box foo(dest_img->Bounds());
         dest_img->FillBox(Proj().BGPen(),foo);
         Box src_area(src_img.Bounds());

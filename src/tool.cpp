@@ -244,7 +244,7 @@ void DrawCrossHairCursor( EditView& view, Point const& centre, RGBx const& c )
 // helper
 void FloodFill( Img& img, Point const& start, int newcolour, Box& damage )
 {
-    assert(img.Format()==Img::INDEXED8BIT);
+    assert(img.Fmt()==FMT_I8);
 
     damage.SetEmpty();
     int oldcolour = img.GetPixel( start );
@@ -596,9 +596,12 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
 
 void BrushPickupTool::DrawCursor( EditView& view )
 {
+    RGBx white(255,255,255);
+    RGBx black(0,0,0);
+
     if( m_DownButton == NONE )
     {
-        DrawCrossHairCursor( view, m_DragPoint, RGBx(255,255,255) );
+        DrawCrossHairCursor( view, m_DragPoint, white );
         return;
     }
 
@@ -606,8 +609,6 @@ void BrushPickupTool::DrawCursor( EditView& view )
     pickup.ClipAgainst( view.Proj().GetAnim().GetFrame(view.Frame()).Bounds() );
 
     Box vb = view.ProjToView( pickup );
-    RGBx white( RGBx(255,255,255) );
-    RGBx black( RGBx(0,0,0) );
     view.Canvas().OutlineBox( white,vb );
     vb.Expand(-1);
     view.Canvas().OutlineBox( black,vb );
@@ -668,10 +669,10 @@ void FloodFillTool::OnUp( EditView& , Point const& , Button )
 
 void FloodFillTool::DrawCursor( EditView& view )
 {
+    RGBx white(255,255,255);
+    RGBx black(0,0,0);
     Box c( m_Pos, 1,1 );
     Box vb = view.ProjToView( c );
-    RGBx white( RGBx(255,255,255) );
-    RGBx black( RGBx(0,0,0) );
     view.Canvas().OutlineBox( white,vb );
     vb.Expand(-1);
     view.Canvas().OutlineBox( black,vb );
@@ -779,7 +780,8 @@ void RectTool::DrawCursor( EditView& view )
     if( m_DownButton == NONE )
     {
         // not rubberbanding
-        DrawCrossHairCursor( view, m_From, RGBx(255,255,255) );
+        RGBx white(255,255,255);
+        DrawCrossHairCursor( view, m_From, white );
         PlonkBrushToView( view, m_From, dmg, DRAW );
         view.AddCursorDamage( dmg );
         return;
@@ -898,8 +900,9 @@ void FilledRectTool::DrawCursor( EditView& view )
 {
     if( m_DownButton == NONE )
     {
+        RGBx white(255,255,255);
         // not rubberbanding
-        DrawCrossHairCursor( view, m_From, RGBx(255,255,255) );
+        DrawCrossHairCursor( view, m_From, white );
         return;
     }
 
@@ -1006,7 +1009,8 @@ void CircleTool::DrawCursor( EditView& view )
     m_CursorDamage.SetEmpty();
     if( m_DownButton == NONE )
     {
-        DrawCrossHairCursor( view, m_From, RGBx(255,255,255) );
+        RGBx white(255,255,255);
+        DrawCrossHairCursor( view, m_From, white );
         PlonkBrushToViewFG( view, m_From, m_CursorDamage );
     }
     else
@@ -1119,7 +1123,8 @@ void FilledCircleTool::DrawCursor( EditView& view )
     m_CursorDamage.SetEmpty();
     if( m_DownButton == NONE )
     {
-        DrawCrossHairCursor( view, m_From, RGBx(255,255,255) );
+        RGBx white(255,255,255);
+        DrawCrossHairCursor( view, m_From, white );
         PlonkBrushToViewFG( view, m_From, m_CursorDamage );
     }
     else

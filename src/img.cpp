@@ -6,7 +6,7 @@
 #include <cassert>
 #include <algorithm>    // for reverse()
 
-Img::Img( Fmt pixel_format, int w, int h, uint8_t const* initial ) :
+Img::Img( PixelFormat pixel_format, int w, int h, uint8_t const* initial ) :
     m_Format(pixel_format),
     m_BytesPerPixel(0),
     m_BytesPerRow(0),
@@ -51,8 +51,8 @@ void Img::init()
 
     switch(m_Format)
     {
-        case INDEXED8BIT: m_BytesPerPixel=1; break;
-        case RGBx: m_BytesPerPixel=4; break;
+        case FMT_I8: m_BytesPerPixel=1; break;
+        case FMT_RGBX8: m_BytesPerPixel=4; break;
     }
     assert(m_BytesPerPixel>0);
     m_BytesPerRow = m_Bounds.w*m_BytesPerPixel;
@@ -72,7 +72,7 @@ void Img::Copy( Img const& other )
 
 void Img::FillBox( uint8_t c, Box& b )
 {
-    assert(Format()==INDEXED8BIT);
+    assert(Fmt()==FMT_I8);
     b.ClipAgainst( Bounds() );
 
     int y;
@@ -90,7 +90,7 @@ void Img::FillBox( uint8_t c, Box& b )
 
 void Img::XFlip()
 {
-    assert(Format()==INDEXED8BIT);
+    assert(Fmt()==FMT_I8);
     int y;
     for(y=0; y<H(); ++y)
     {
@@ -102,7 +102,7 @@ void Img::XFlip()
 
 void Img::YFlip()
 {
-    assert(Format()==INDEXED8BIT);
+    assert(Fmt()==FMT_I8);
     int y;
     for(y=0; y<H()/2; ++y)
     {
@@ -196,8 +196,8 @@ void BlitFancy(
     int maskcolour )
 {
     // TODO
-    assert(srcimg.Format()==Img::INDEXED8BIT);
-    assert(destimg.Format()==Img::INDEXED8BIT);
+    assert(srcimg.Fmt()==FMT_I8);
+    assert(destimg.Fmt()==FMT_I8);
 
     Box destclipped( destbox );
     Box srcclipped( srcbox );
@@ -249,8 +249,8 @@ void BlitSwap(
 
 
     // TODO - support other formats
-    assert( srcimg.Format()==Img::INDEXED8BIT);
-    assert( destimg.Format()==Img::INDEXED8BIT);
+    assert( srcimg.Fmt()==FMT_I8);
+    assert( destimg.Fmt()==FMT_I8);
     int y;
     for( y=0; y<destclipped.h; ++y )
     {
@@ -279,7 +279,7 @@ void BlitZoomIndexedToRGBx(
     int transparentcolour,
     int maskcolour )
 {
-    assert( srcimg.Format()==Img::INDEXED8BIT);
+    assert( srcimg.Fmt()==FMT_I8);
     assert( srcimg.Bounds().Contains( srcbox ) );
     assert( zoom >= 1 );
 
@@ -319,7 +319,7 @@ void Blit(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox)
 {
-    assert( srcimg.Format() == destimg.Format());
+    assert( srcimg.Fmt() == destimg.Fmt());
 
     Box destclipped( destbox );
     Box srcclipped( srcbox );

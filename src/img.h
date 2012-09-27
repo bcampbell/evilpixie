@@ -10,32 +10,42 @@
 class Palette;
 
 
+
 class Img
 {
 public:
-    enum Fmt {
-        INDEXED8BIT=0,
-        RGBx
-    };
     Img();   // disallowed
     Img( Img const& other );
     Img( Img const& other, Box const& otherarea );
 
-	Img( Fmt pixel_format, int w, int h, uint8_t const* initial=0 );
+	Img( PixelFormat pixel_format, int w, int h, uint8_t const* initial=0 );
     // disallowed (use Copy() instead!)
     Img& operator=( Img const& other );
 
 	~Img()
 		{ delete [] m_Pixels; }
-    Fmt Format() const { return m_Format; }
+    PixelFormat Fmt() const { return m_Format; }
 	int W() const
 		{ return m_Bounds.w; }
 	int H() const
 		{ return m_Bounds.h; }
+    // TODO: Kill or hide
 	uint8_t* Ptr( int x, int y )
 		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
+    // TODO: Kill or hide
 	uint8_t const* PtrConst( int x, int y ) const
 		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
+
+	I8* Ptr_I8( int x, int y )
+		{ assert(Fmt()==FMT_I8); return (I8*)Ptr(x,y); }
+	I8 const* PtrConst_I8( int x, int y ) const
+		{ assert(Fmt()==FMT_I8); return (I8*)PtrConst(x,y); }
+
+	RGBX8* Ptr_RGBX8( int x, int y )
+		{ assert(Fmt()==FMT_RGBX8); return (RGBX8*)Ptr(x,y); }
+	RGBX8 const* PtrConst_RGBX8( int x, int y ) const
+		{ assert(Fmt()==FMT_RGBX8); return (RGBX8*)PtrConst(x,y); }
+
     Box const& Bounds() const
         { return m_Bounds; }
 
@@ -46,13 +56,13 @@ public:
     void XFlip();
     void YFlip();
 	void SetPixel( int x, int y, uint8_t c )
-		{ assert(Format()==INDEXED8BIT); uint8_t* p=Ptr(x,y); *p=c; }
+		{ assert(Fmt()==FMT_I8); uint8_t* p=Ptr(x,y); *p=c; }
 	uint8_t GetPixel( int x, int y ) const
-		{ assert(Format()==INDEXED8BIT); return *PtrConst(x,y); }
+		{ assert(Fmt()==FMT_I8); return *PtrConst(x,y); }
 	void SetPixel( const Point& p, uint8_t c )
-		{ assert(Format()==INDEXED8BIT); *Ptr(p.x,p.y) = c; }
+		{ assert(Fmt()==FMT_I8); *Ptr(p.x,p.y) = c; }
 	uint8_t GetPixel( const Point& p ) const
-		{ assert(Format()==INDEXED8BIT); return *PtrConst(p.x,p.y); }
+		{ assert(Fmt()==FMT_I8); return *PtrConst(p.x,p.y); }
 
     friend void ::Blit(
         Img const& srcimg,
@@ -64,7 +74,7 @@ public:
 protected:
     void init();
 
-    Fmt m_Format;
+    PixelFormat m_Format;
     int m_BytesPerPixel;
     int m_BytesPerRow;
     Box m_Bounds;

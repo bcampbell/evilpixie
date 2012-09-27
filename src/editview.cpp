@@ -243,7 +243,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 {
     // note: projbox can be outside the project boundary
 
-    RGBx checkerboard[2] = { RGBx(192,192,192),RGBx(224,224,224) }; 
+    RGBx checkerboard[2] = { RGBx(192,192,192), RGBx(224,224,224) }; 
 
     Box vb(viewbox);
     vb.ClipAgainst(m_ViewBox);
@@ -275,7 +275,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
             // on the canvas
             Point p( ViewToProj(Point(x,y)) );
             uint8_t const* src = img.PtrConst( p.x,p.y );
-            assert(img.Format()==Img::INDEXED8BIT);
+            assert(img.Fmt()==FMT_I8);
             while(x<=xmax)
             {
                 int cx = x + (m_Offset.x*m_Zoom);

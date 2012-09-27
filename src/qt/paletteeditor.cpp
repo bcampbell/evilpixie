@@ -85,7 +85,8 @@ void PaletteEditor::colourChanged()
     QColor qc = m_RGBWidget->colour();
 
     m_Proj.PaletteChange_Begin();
-    m_Proj.PaletteChange_Alter(m_Selected, RGBx( qc.red(), qc.green(), qc.blue() ) );
+    RGBx c( qc.red(), qc.green(), qc.blue() );
+    m_Proj.PaletteChange_Alter(m_Selected, c );
     m_Proj.PaletteChange_Commit();
 }
 
