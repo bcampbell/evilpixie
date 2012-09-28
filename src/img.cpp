@@ -111,9 +111,22 @@ void Img::XFlip()
     int y;
     for(y=0; y<H(); ++y)
     {
-        uint8_t* begin = Ptr(0,y);
-        uint8_t* end = begin + W();
-        std::reverse(begin,end);
+        switch(Fmt())
+        {
+        case FMT_I8:
+            {
+                I8* begin = Ptr_I8(0,y);
+                std::reverse(begin,begin+W());
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8* begin = Ptr_RGBX8(0,y);
+                std::reverse(begin,begin+W());
+            }
+            break;
+        default: assert(false); // not implemented
+        }
     }
 }
 
@@ -123,9 +136,24 @@ void Img::YFlip()
     int y;
     for(y=0; y<H()/2; ++y)
     {
-        uint8_t* a = Ptr(0,y);
-        uint8_t* b = Ptr(0,(H()-1)-y);
-        std::swap_ranges(a,a+W(),b);
+        switch(Fmt())
+        {
+        case FMT_I8:
+            {
+                I8* a = Ptr_I8(0,y);
+                I8* b = Ptr_I8(0,(H()-1)-y);
+                std::swap_ranges(a,a+W(),b);
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8* a = Ptr_RGBX8(0,y);
+                RGBX8* b = Ptr_RGBX8(0,(H()-1)-y);
+                std::swap_ranges(a,a+W(),b);
+            }
+            break;
+        default: assert(false); // not implemented
+        }
     }
 }
 
@@ -190,6 +218,9 @@ static void clip_blit(
 }
 
 
+
+// blit with optional transparency and mask colour
+// TODO: split into two: 1) transparency  2) mask blit  (mask implies transparency)
 void BlitFancy(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
@@ -300,7 +331,7 @@ void BlitZoomIndexedToRGBx(
         for( x=0; x<destclipped.W(); ++x )
         {
 
-            RGBx c;// = *dest;
+            RGBX8 c;// = *dest;
             if( maskcolour != -1 )
                 c = palette.GetColour(maskcolour);
             else
