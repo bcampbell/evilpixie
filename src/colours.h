@@ -21,6 +21,8 @@ struct RGBX8
 	uint8_t r;
 	uint8_t pad;
 };
+inline bool operator==(const RGBX8& a, const RGBX8& b){ return a.r==b.r && a.g==b.g && a.b==b.b; } 
+inline bool operator!=(const RGBX8& a, const RGBX8& b){return !operator==(a,b);}
 
 // indexed, 8-bit
 typedef uint8_t I8;
@@ -47,6 +49,13 @@ struct RGBx
         b(blue),
         g(green),
         r(red),
+        pad(255)
+    {
+    }
+    RGBx(RGBX8 raw) :
+        b(raw.b),
+        g(raw.g),
+        r(raw.r),
         pad(255)
     {
     }

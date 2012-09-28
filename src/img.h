@@ -67,12 +67,6 @@ public:
 	uint8_t GetPixel( const Point& p ) const
 		{ assert(Fmt()==FMT_I8); return *PtrConst(p.x,p.y); }
 
-    friend void ::Blit(
-        Img const& srcimg,
-        Box const& srcbox,
-        Img& destimg,
-        Box& destbox);
-
 
 protected:
     void init();
@@ -98,8 +92,18 @@ void BlitFancy(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
     int transparentcolour = -1,
-    int maskcolour = -1 );
+    int mattecolour = -1 );
 
+void BlitMatte(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    VColour transparentcolour,
+    VColour mattecolour );
+
+void BlitTransparent(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    VColour transparentcolour );
 
 // Same as Blit, except that srcimg is replaced by destimg
 void BlitSwap(
@@ -112,7 +116,7 @@ void BlitZoomIndexedToRGBx(
     Palette const& palette,
     int zoom,
     int transparentcolour=-1,
-    int maskcolour=-1 );
+    int mattecolour=-1 );
 
 #endif // IMG_H
 

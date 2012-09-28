@@ -154,7 +154,7 @@ void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
 
     int maskcolour = -1;
     if( b.Style() == MASK )
-        maskcolour = view.Proj().FGPen();
+        maskcolour = view.Proj().FGPen().i;
 
     BlitZoomIndexedToRGBx( b, b.Bounds(),
         view.Canvas(), viewdmg,
@@ -173,7 +173,7 @@ void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
 
     viewdmg = view.ProjToView( pb );
 
-    int maskcolour = view.Proj().BGPen();
+    int maskcolour = view.Proj().BGPen().i;
 
     BlitZoomIndexedToRGBx( b, b.Bounds(),
         view.Canvas(), viewdmg,
@@ -203,20 +203,26 @@ void PlonkBrushToProj( EditView& view, Point const& pos, Box& projdmg, Button bu
         pos.x - brush.Handle().x,
         pos.y - brush.Handle().y,
         0,0);
+    Img& target = proj.GetAnim().GetFrame(view.Frame()); 
     if( button == DRAW )
     {
-        int maskcolour = -1;
         if( brush.Style() == MASK )
-            maskcolour = proj.FGPen();
-
-        BlitFancy( brush, brush.Bounds(),
-            proj.GetAnim().GetFrame(view.Frame()), dmg,
-            brush.TransparentColour(), maskcolour );
+        {
+            BlitMatte( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour(), proj.FGPen() );
+        }
+        else
+        {
+            BlitTransparent( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour() );
+        }
     }
     else if( button == ERASE )
     {
-        BlitFancy( brush, brush.Bounds(),
-            proj.GetAnim().GetFrame(view.Frame()), dmg,
+        BlitMatte( brush, brush.Bounds(),
+            target, dmg,
             brush.TransparentColour(), proj.BGPen() );
     }
 
@@ -242,13 +248,13 @@ void DrawCrossHairCursor( EditView& view, Point const& centre, RGBx const& c )
 
 
 // helper
-void FloodFill( Img& img, Point const& start, int newcolour, Box& damage )
+void FloodFill( Img& img, Point const& start, VColour newcolour, Box& damage )
 {
     assert(img.Fmt()==FMT_I8);
 
     damage.SetEmpty();
     int oldcolour = img.GetPixel( start );
-    if( oldcolour == newcolour )
+    if( oldcolour == newcolour.i )
         return;
 
     std::vector< Point > q;
@@ -270,10 +276,10 @@ void FloodFill( Img& img, Point const& start, int newcolour, Box& damage )
             ++r;
 
         // fill the span
-        uint8_t* dest = img.Ptr( l,y );
+        I8* dest = img.Ptr_I8( l,y );
         int x;
         for( x=l; x<=r; ++x )
-            *dest++ = newcolour;
+            *dest++ = newcolour.i;
         // expand the damage box to include the affected span
         damage.Merge( Box( l,y, (r+1)-l,1) );
         // add pixels above the span to the queue 
@@ -379,24 +385,33 @@ void PencilTool::Plot_cb( int x, int y, void* user )
     Project& proj = that->m_View->Proj();
     EditView& view = *that->m_View;
 
+    Img& target = proj.GetAnim().GetFrame(view.Frame());
     Box dmg(
         x - brush.Handle().x,
         y - brush.Handle().y,
         0,0);
-    int maskcolour = -1;
     if( that->m_DownButton == DRAW )
     {
         if( brush.Style() == MASK )
-            maskcolour = proj.FGPen();
+        {
+            BlitMatte( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour(), proj.FGPen() );
+        }
+        else
+        {
+            BlitTransparent( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour() );
+        }
     }
     else if( that->m_DownButton == ERASE )
     {
-        maskcolour = proj.BGPen();
+        BlitMatte( brush, brush.Bounds(),
+            target, dmg,
+            brush.TransparentColour(), proj.BGPen());
     }
 
-    BlitFancy( brush, brush.Bounds(),
-        proj.GetAnim().GetFrame(view.Frame()), dmg,
-        brush.TransparentColour(), maskcolour );
     proj.Draw_Damage( dmg );
 }
 
@@ -462,20 +477,29 @@ void LineTool::Plot_cb( int x, int y, void* user )
         x - brush.Handle().x,
         y - brush.Handle().y,
         0,0);
-    int maskcolour = -1;
+    Img& target = proj.GetAnim().GetFrame(view.Frame());
     if( that->m_DownButton == DRAW )
     {
         if( brush.Style() == MASK )
-            maskcolour = proj.FGPen();
+        {
+            BlitMatte( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour(), proj.FGPen());
+        }
+        else
+        {
+            BlitTransparent( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour());
+        }
     }
     else if( that->m_DownButton == ERASE )
     {
-        maskcolour = proj.BGPen();
+        BlitMatte( brush, brush.Bounds(),
+            target, dmg,
+            brush.TransparentColour(), proj.BGPen());
     }
 
-    BlitFancy( brush, brush.Bounds(),
-        proj.GetAnim().GetFrame(view.Frame()), dmg,
-        brush.TransparentColour(), maskcolour );
     proj.Draw_Damage( dmg );
 }
 
@@ -569,7 +593,7 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
     if( pickup.Empty() )
         return;
 
-    Brush* brush = new Brush( FULLCOLOUR, proj.GetAnim().GetFrame(view.Frame()), pickup, proj.BGPen() );
+    Brush* brush = new Brush( FULLCOLOUR, proj.GetAnim().GetFrame(view.Frame()), pickup, proj.BGPen().i );
 
     // copy in palette
     brush->SetPalette( proj.PaletteConst() );
@@ -639,7 +663,7 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
     if( !proj.GetAnim().GetFrame(view.Frame()).Bounds().Contains(p ) )
         return;
 
-    int fillcolour = proj.FGPen();
+    VColour fillcolour = proj.FGPen();
     if( b == ERASE )
         fillcolour = proj.BGPen();
 
@@ -911,11 +935,15 @@ void FilledRectTool::DrawCursor( EditView& view )
     // rubberbanding
     Box r = view.ProjToView( Box( m_From, m_To ) );
 
+
+    // TODO
+    assert(proj.GetAnim().GetFrame(view.Frame()).Fmt() == FMT_I8);
+
     RGBx c;
     if( m_DownButton == DRAW )
-        c = proj.GetColour( proj.FGPen() );
+        c = proj.GetColour( proj.FGPen().i );
     else
-        c = proj.GetColour( proj.BGPen() );
+        c = proj.GetColour( proj.BGPen().i );
 
     view.Canvas().FillBox(c,r );
     view.AddCursorDamage( r );
@@ -985,20 +1013,29 @@ void CircleTool::Plot_cb( int x, int y, void* user )
         x - brush.Handle().x,
         y - brush.Handle().y,
         0,0);
-    int maskcolour = -1;
+    Img& target = proj.GetAnim().GetFrame(view.Frame());
     if( that->m_DownButton == DRAW )
     {
         if( brush.Style() == MASK )
-            maskcolour = proj.FGPen();
+        {
+            BlitMatte( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour(), proj.FGPen());
+        }
+        else
+        {
+            BlitTransparent( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour());
+        }
     }
     else if( that->m_DownButton == ERASE )
     {
-        maskcolour = proj.BGPen();
+        BlitMatte( brush, brush.Bounds(),
+            target, dmg,
+            brush.TransparentColour(), proj.BGPen());
     }
 
-    BlitFancy( brush, brush.Bounds(),
-        proj.GetAnim().GetFrame(view.Frame()), dmg,
-        brush.TransparentColour(), maskcolour );
     proj.Draw_Damage( dmg );
 }
 
@@ -1105,14 +1142,11 @@ void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
     EditView& view = *that->m_View;
     Project& proj = view.Proj();
 
-    int c = -1;
-    if( that->m_DownButton == DRAW )
-        c = proj.FGPen();
-    else if( that->m_DownButton == ERASE )
-        c = proj.BGPen();
-
     Box b( x0,y,x1-x0,1 );
-    proj.GetAnim().GetFrame(view.Frame()).FillBox(c,b);
+    if( that->m_DownButton == DRAW )
+        proj.GetAnim().GetFrame(view.Frame()).FillBox(proj.FGPen(),b);
+    else if( that->m_DownButton == ERASE )
+        proj.GetAnim().GetFrame(view.Frame()).FillBox(proj.BGPen(),b);
     proj.Draw_Damage( b );
 }
 
@@ -1146,11 +1180,14 @@ void FilledCircleTool::Cursor_hline_cb( int x0, int x1, int y, void* user )
     EditView& view = *that->m_View;
     Project& proj = view.Proj();
 
+    // TODO
+    assert(proj.GetAnim().GetFrame(view.Frame()).Fmt() == FMT_I8);
+
     RGBx c;
     if( that->m_DownButton == DRAW )
-        c = proj.GetColour( proj.FGPen() );
+        c = proj.GetColour( proj.FGPen().i );
     else
-        c = proj.GetColour( proj.BGPen() );
+        c = proj.GetColour( proj.BGPen().i );
 
     Box projb( x0,y,x1-x0,1 );
     Box viewb = view.ProjToView( projb );

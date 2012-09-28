@@ -295,13 +295,14 @@ void EditorWindow::OnPenChange()
 {
     // new fg or bg pen
     {
-        RGBx fg = Proj().GetColour( Proj().FGPen() );
-        RGBx bg = Proj().GetColour( Proj().BGPen() );
+        RGBx fg = Proj().FGPenRGB();
+        RGBx bg = Proj().BGPenRGB();
         m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
         m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
 
-        m_PaletteWidget->SetLeftSelected( Proj().FGPen() );
-        m_PaletteWidget->SetRightSelected( Proj().BGPen() );
+        assert(Proj().GetAnimConst().Fmt()==FMT_I8);
+        m_PaletteWidget->SetLeftSelected( Proj().FGPen().i );
+        m_PaletteWidget->SetRightSelected( Proj().BGPen().i );
     }
 }
 
@@ -310,10 +311,11 @@ void EditorWindow::OnPaletteChanged( int n, RGBx const& c )
     // make sure the gui reflects any palette changes
     m_PaletteWidget->SetColour(n,c);
 
-    if( n==Proj().FGPen() || n==Proj().BGPen() )
+    assert(Proj().GetAnimConst().Fmt()==FMT_I8);
+    if( n==Proj().FGPen().i || n==Proj().BGPen().i )
     {
-        RGBx fg = Proj().GetColour( Proj().FGPen() );
-        RGBx bg = Proj().GetColour( Proj().BGPen() );
+        RGBx fg = Proj().FGPenRGB();
+        RGBx bg = Proj().BGPenRGB();
         m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
         m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
     }
@@ -328,8 +330,8 @@ void EditorWindow::OnPaletteReplaced()
         m_PaletteWidget->SetColour(n,c);
     }
 
-    RGBx fg = Proj().GetColour( Proj().FGPen() );
-    RGBx bg = Proj().GetColour( Proj().BGPen() );
+    RGBx fg = Proj().FGPenRGB();
+    RGBx bg = Proj().BGPenRGB();
     m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
     m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
 }
@@ -413,7 +415,8 @@ void EditorWindow::useeyedroppertool()
 
 void EditorWindow::nextColour()
 {
-    int c = Proj().FGPen() + 1;
+    assert(Proj().GetAnimConst().Fmt()==FMT_I8);
+    int c = Proj().FGPen().i + 1;
     if( c>255 )
         return;
     Proj().SetFGPen( c );
@@ -421,7 +424,8 @@ void EditorWindow::nextColour()
 
 void EditorWindow::prevColour()
 {
-    int c = Proj().FGPen() -1;
+    assert(Proj().GetAnimConst().Fmt()==FMT_I8);
+    int c = Proj().FGPen().i -1;
     if( c<0 )
         return;
     Proj().SetFGPen( c );

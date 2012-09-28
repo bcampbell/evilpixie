@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "palette.h"
+#include "colours.h"
 
 class Img;
 class Box;
@@ -37,6 +38,9 @@ public:
     // frame rate control (in fps)
     int FPS() const { return m_FPS; }
     void SetFPS(int fps) { m_FPS=fps; }
+
+
+    PixelFormat Fmt() const;
 private:
     void LoadGif(const char* filename);
     void SaveGif(const char* filename);

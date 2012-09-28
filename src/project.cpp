@@ -2,6 +2,7 @@
 #include "projectlistener.h"
 #include "editview.h"
 #include "cmd.h"
+#include "colours.h"
 #include "editor.h"
 #include "util.h"
 #include "wobbly.h"
@@ -123,7 +124,7 @@ void Project::ReplacePalette(Palette* newpalette)
 
 void Project::Save( std::string const& filename, bool savetransparency )
 {
-    m_Anim.SetTransparentIdx(savetransparency ? BGPen() : -1);
+    m_Anim.SetTransparentIdx(savetransparency ? BGPen().i : -1);
     m_Anim.Save(filename.c_str());
     SetModifiedFlag(false);
     m_Filename = filename;
@@ -330,7 +331,7 @@ void Project::PaletteChange_Rollback()
 
 void Project::SetFGPen( int c )
 {
-    m_FGPen=c;
+    m_FGPen.i=c;
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
@@ -340,11 +341,39 @@ void Project::SetFGPen( int c )
 
 void Project::SetBGPen( int c )
 {
-    m_BGPen=c;
+    m_BGPen.i=c;
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
         (*it)->OnPenChange();
+    }
+}
+
+RGBx Project::FGPenRGB() const
+{
+    switch(GetAnimConst().Fmt())
+    {
+    case FMT_I8:
+        return GetAnimConst().GetPaletteConst().GetColour(FGPen().i);
+    case FMT_RGBX8:
+        return RGBx(FGPen().rgbx);
+    default:
+        assert(false);
+        return RGBx();
+    }
+}
+
+RGBx Project::BGPenRGB() const
+{
+    switch(GetAnimConst().Fmt())
+    {
+    case FMT_I8:
+        return GetAnimConst().GetPaletteConst().GetColour(BGPen().i);
+    case FMT_RGBX8:
+        return RGBx(BGPen().rgbx);
+    default:
+        assert(false);
+        return RGBx();
     }
 }
 

@@ -73,8 +73,10 @@ public:
     Palette const& PaletteConst() const { return m_Anim.GetPaletteConst(); }
 
     // project holds FG and BG pens
-	int FGPen() const { return m_FGPen; }
-	int BGPen() const { return m_BGPen; }
+	VColour FGPen() const { return m_FGPen; }
+	VColour BGPen() const { return m_BGPen; }
+	RGBx FGPenRGB() const;
+	RGBx BGPenRGB() const;
 	void SetFGPen( int c );
 	void SetBGPen( int c );
 
@@ -126,8 +128,8 @@ private:
 
     bool m_Expendable;
 
-    int m_FGPen;
-    int m_BGPen;
+    VColour m_FGPen;
+    VColour m_BGPen;
 
     // anim stores all the image data (even if it's a single frame anim :-)
     Anim m_Anim;

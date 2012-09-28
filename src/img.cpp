@@ -219,13 +219,13 @@ static void clip_blit(
 
 
 
-// blit with optional transparency and mask colour
-// TODO: split into two: 1) transparency  2) mask blit  (mask implies transparency)
+// blit with optional transparency and matte colour
+// TODO: split into two: 1) transparency  2) matte blit  (matte implies transparency)
 void BlitFancy(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
     int transparentcolour,
-    int maskcolour )
+    int mattecolour )
 {
     // TODO
     assert(srcimg.Fmt()==FMT_I8);
@@ -241,10 +241,10 @@ void BlitFancy(
         uint8_t const* src = srcimg.PtrConst( srcclipped.x+0, srcclipped.y+y );
         uint8_t* dest = destimg.Ptr( destclipped.x+0, destclipped.y+y );
 
-        // different innerloops depending on transparency/mask
+        // different innerloops depending on transparency/matte
         if( transparentcolour == -1 )
         {
-            // straight blit (maskcolour not supported)
+            // straight blit (mattecolour not supported)
             int x;
             for( x=0; x<destclipped.w; ++x )
                 *dest++ = *src++;
@@ -257,8 +257,8 @@ void BlitFancy(
                 uint8_t c = *src++;
                 if( c != (uint8_t)transparentcolour )
                 {
-                    if( maskcolour != -1 )
-                        c= (uint8_t)maskcolour;
+                    if( mattecolour != -1 )
+                        c= (uint8_t)mattecolour;
                     *dest = c;
                 }
                 ++dest;
@@ -271,36 +271,119 @@ void BlitFancy(
 
 
 
-void BlitSwap(
-    Img& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox )
+void BlitTransparent(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    VColour transparentcolour )
 {
+    assert(srcimg.Fmt()==destimg.Fmt());
+
     Box destclipped( destbox );
     Box srcclipped( srcbox );
     clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
 
-
-    // TODO - support other formats
-    assert( srcimg.Fmt()==FMT_I8);
-    assert( destimg.Fmt()==FMT_I8);
     int y;
     for( y=0; y<destclipped.h; ++y )
     {
-        uint8_t* src = srcimg.Ptr( srcclipped.x+0, srcclipped.y+y );
-        uint8_t* dest = destimg.Ptr( destclipped.x+0, destclipped.y+y );
+        switch(srcimg.Fmt())
+        {
+        case FMT_I8:
+            {
+                I8 const* src = srcimg.PtrConst_I8( srcclipped.x+0, srcclipped.y+y );
+                I8* dest = destimg.Ptr_I8( destclipped.x+0, destclipped.y+y );
 
-         // straight blit (maskcolour not supported)
-         int x;
-         for( x=0; x<destclipped.w; ++x )
-         {
-            uint8_t tmp = *dest;
-            *dest++ = *src;
-            *src++ = tmp;
-         }
+                int x;
+                for( x=0; x<destclipped.w; ++x )
+                {
+                    I8 c = *src++;
+                    if( c != transparentcolour.i )
+                        *dest = c;
+                    ++dest;
+                }
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
+                RGBX8* dest = destimg.Ptr_RGBX8( destclipped.x+0, destclipped.y+y );
+
+                int x;
+                for( x=0; x<destclipped.w; ++x )
+                {
+                    RGBX8 c = *src++;
+                    if( c != transparentcolour.rgbx )
+                        *dest = c;
+                    ++dest;
+                }
+            }
+            break;
+        default:
+            assert(false);
+            break;
+        }
     }
 
     destbox = destclipped;
 }
+
+
+// blit the src as a matte
+void BlitMatte(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    VColour transparentcolour,
+    VColour mattecolour )
+{
+    assert(srcimg.Fmt()==destimg.Fmt());
+
+    Box destclipped( destbox );
+    Box srcclipped( srcbox );
+    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
+
+    int y;
+    for( y=0; y<destclipped.h; ++y )
+    {
+        switch(srcimg.Fmt())
+        {
+        case FMT_I8:
+            {
+                I8 const* src = srcimg.PtrConst_I8( srcclipped.x+0, srcclipped.y+y );
+                I8* dest = destimg.Ptr_I8( destclipped.x+0, destclipped.y+y );
+
+                int x;
+                for( x=0; x<destclipped.w; ++x )
+                {
+                    I8 c = *src++;
+                    if( c != transparentcolour.i )
+                        *dest = mattecolour.i;
+                    ++dest;
+                }
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
+                RGBX8* dest = destimg.Ptr_RGBX8( destclipped.x+0, destclipped.y+y );
+
+                int x;
+                for( x=0; x<destclipped.w; ++x )
+                {
+                    RGBX8 c = *src++;
+                    if( c != transparentcolour.rgbx )
+                        *dest = mattecolour.rgbx;
+                    ++dest;
+                }
+            }
+            break;
+        default:
+            assert(false);
+            break;
+        }
+    }
+    destbox = destclipped;
+}
+
+
 
 
 void BlitZoomIndexedToRGBx(
@@ -309,7 +392,7 @@ void BlitZoomIndexedToRGBx(
     Palette const& palette,
     int zoom,
     int transparentcolour,
-    int maskcolour )
+    int mattecolour )
 {
     // TODO: generalise
     assert( srcimg.Fmt()==FMT_I8);
@@ -332,8 +415,8 @@ void BlitZoomIndexedToRGBx(
         {
 
             RGBX8 c;// = *dest;
-            if( maskcolour != -1 )
-                c = palette.GetColour(maskcolour);
+            if( mattecolour != -1 )
+                c = palette.GetColour(mattecolour);
             else
                 c = palette.GetColour(*src);
             if( *src != transparentcolour )
@@ -363,13 +446,67 @@ void Blit(
     int y;
     for( y=0; y<destclipped.h; ++y )
     {
-        uint8_t const* src = srcimg.PtrConst( srcclipped.x+0, srcclipped.y+y );
-        uint8_t* dest = destimg.Ptr( destclipped.x+0, destclipped.y+y );
-//            int x;
-//            for( x=0; x<destclipped.w; ++x )
-//                *dest++ = *src++;
+        switch(srcimg.Fmt())
+        {
+        case FMT_I8:
+            {
+                I8 const* src = srcimg.PtrConst_I8( srcclipped.x+0, srcclipped.y+y );
+                I8* dest = destimg.Ptr_I8( destclipped.x+0, destclipped.y+y );
+                std::copy( src,src+destclipped.w, dest);
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
+                RGBX8* dest = destimg.Ptr_RGBX8( destclipped.x+0, destclipped.y+y );
+                std::copy( src,src+destclipped.w, dest);
+            }
+            break;
+        default:
+            assert(false);
+            break;
+        }
+    }
 
-        memcpy( dest, src, destclipped.w * srcimg.m_BytesPerPixel);
+    destbox = destclipped;
+}
+
+
+// TODO: src,dest names meaningless. Should be a,b or something neutral
+void BlitSwap(
+    Img& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox)
+{
+    assert( srcimg.Fmt() == destimg.Fmt());
+
+    Box destclipped( destbox );
+    Box srcclipped( srcbox );
+    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
+
+
+    int y;
+    for( y=0; y<destclipped.h; ++y )
+    {
+        switch(srcimg.Fmt())
+        {
+        case FMT_I8:
+            {
+                I8* src = srcimg.Ptr_I8( srcclipped.x+0, srcclipped.y+y );
+                I8* dest = destimg.Ptr_I8( destclipped.x+0, destclipped.y+y );
+                std::swap_ranges( src,src+destclipped.w, dest);
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8* src = srcimg.Ptr_RGBX8( srcclipped.x+0, srcclipped.y+y );
+                RGBX8* dest = destimg.Ptr_RGBX8( destclipped.x+0, destclipped.y+y );
+                std::swap_ranges( src,src+destclipped.w, dest);
+            }
+            break;
+        default:
+            assert(false);
+            break;
+        }
     }
 
     destbox = destclipped;

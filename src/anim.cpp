@@ -29,6 +29,8 @@ void Anim::Zap()
     }
 }
 
+PixelFormat Anim::Fmt() const
+    { return m_Frames.front()->Fmt(); }
 
 void Anim::TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst)
 {
