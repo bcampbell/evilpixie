@@ -334,8 +334,6 @@ void BlitMatte(
     VColour transparentcolour,
     VColour mattecolour )
 {
-    assert(srcimg.Fmt()==destimg.Fmt());
-
     Box destclipped( destbox );
     Box srcclipped( srcbox );
     clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
@@ -343,35 +341,63 @@ void BlitMatte(
     int y;
     for( y=0; y<destclipped.h; ++y )
     {
-        switch(srcimg.Fmt())
+        switch(destimg.Fmt())
         {
         case FMT_I8:
             {
-                I8 const* src = srcimg.PtrConst_I8( srcclipped.x+0, srcclipped.y+y );
                 I8* dest = destimg.Ptr_I8( destclipped.x+0, destclipped.y+y );
-
-                int x;
-                for( x=0; x<destclipped.w; ++x )
+                if(srcimg.Fmt()==FMT_I8)
                 {
-                    I8 c = *src++;
-                    if( c != transparentcolour.i )
-                        *dest = mattecolour.i;
-                    ++dest;
+                    I8 const* src = srcimg.PtrConst_I8( srcclipped.x+0, srcclipped.y+y );
+                    int x;
+                    for( x=0; x<destclipped.w; ++x )
+                    {
+                        I8 c = *src++;
+                        if( c != transparentcolour.i )
+                            *dest = mattecolour.i;
+                        ++dest;
+                    }
+                }
+                else if(srcimg.Fmt()==FMT_RGBX8)
+                {
+                    RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
+                    int x;
+                    for( x=0; x<destclipped.w; ++x )
+                    {
+                        RGBX8 c = *src++;
+                        if( c != transparentcolour.rgbx )
+                            *dest = mattecolour.i;
+                        ++dest;
+                    }
                 }
             }
             break;
         case FMT_RGBX8:
             {
-                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
                 RGBX8* dest = destimg.Ptr_RGBX8( destclipped.x+0, destclipped.y+y );
-
-                int x;
-                for( x=0; x<destclipped.w; ++x )
+                if(srcimg.Fmt()==FMT_I8)
                 {
-                    RGBX8 c = *src++;
-                    if( c != transparentcolour.rgbx )
-                        *dest = mattecolour.rgbx;
-                    ++dest;
+                    I8 const* src = srcimg.PtrConst_I8( srcclipped.x+0, srcclipped.y+y );
+                    int x;
+                    for( x=0; x<destclipped.w; ++x )
+                    {
+                        I8 c = *src++;
+                        if( c != transparentcolour.i )
+                            *dest = mattecolour.rgbx;
+                        ++dest;
+                    }
+                }
+                else if(srcimg.Fmt()==FMT_RGBX8)
+                {
+                    RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
+                    int x;
+                    for( x=0; x<destclipped.w; ++x )
+                    {
+                        RGBX8 c = *src++;
+                        if( c != transparentcolour.rgbx )
+                            *dest = mattecolour.rgbx;
+                        ++dest;
+                    }
                 }
             }
             break;

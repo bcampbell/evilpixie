@@ -51,6 +51,7 @@ public:
 
     // TODO: move all drawing ops out to somewhere else...
     void HLine( VColour pen, int xbegin, int xend, int y);
+    // rename to Clone
     void Copy( Img const& other );
     // b will return area affected after clipping.
 	void FillBox( VColour pen, Box& b );
