@@ -329,9 +329,9 @@ void Project::PaletteChange_Rollback()
 }
 
 
-void Project::SetFGPen( int c )
+void Project::SetFGPen( VColour c )
 {
-    m_FGPen.i=c;
+    m_FGPen=c;
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
@@ -339,9 +339,9 @@ void Project::SetFGPen( int c )
     }
 }
 
-void Project::SetBGPen( int c )
+void Project::SetBGPen( VColour c )
 {
-    m_BGPen.i=c;
+    m_BGPen=c;
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {

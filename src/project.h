@@ -77,8 +77,8 @@ public:
 	VColour BGPen() const { return m_BGPen; }
 	RGBx FGPenRGB() const;
 	RGBx BGPenRGB() const;
-	void SetFGPen( int c );
-	void SetBGPen( int c );
+	void SetFGPen( VColour c );
+	void SetBGPen( VColour c );
 
 
     // return current filename of project (empty string if no name)

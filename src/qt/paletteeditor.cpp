@@ -36,7 +36,6 @@ PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :
         RGBx c( m_Proj.GetColour( m_Selected ) );
         m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
     }
-    assert(proj.GetAnimConst().Fmt()==FMT_I8);
     m_PaletteWidget->SetLeftSelected( proj.FGPen().i );
     m_PaletteWidget->SetRightSelected( proj.BGPen().i );
 
@@ -69,7 +68,6 @@ void PaletteEditor::OnPaletteChanged( int n, RGBx const& c )
 
 void PaletteEditor::OnPenChange()
 {
-    assert(m_Proj.GetAnimConst().Fmt()==FMT_I8);
     m_Selected = m_Proj.FGPen().i;
     RGBx c( m_Proj.FGPenRGB());
     m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );

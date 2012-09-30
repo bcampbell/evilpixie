@@ -300,7 +300,7 @@ void EditorWindow::OnPenChange()
         m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
         m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
 
-        assert(Proj().GetAnimConst().Fmt()==FMT_I8);
+        //assert(Proj().GetAnimConst().Fmt()==FMT_I8);
         m_PaletteWidget->SetLeftSelected( Proj().FGPen().i );
         m_PaletteWidget->SetRightSelected( Proj().BGPen().i );
     }
@@ -311,7 +311,7 @@ void EditorWindow::OnPaletteChanged( int n, RGBx const& c )
     // make sure the gui reflects any palette changes
     m_PaletteWidget->SetColour(n,c);
 
-    assert(Proj().GetAnimConst().Fmt()==FMT_I8);
+    //assert(Proj().GetAnimConst().Fmt()==FMT_I8);
     if( n==Proj().FGPen().i || n==Proj().BGPen().i )
     {
         RGBx fg = Proj().FGPenRGB();
@@ -395,12 +395,24 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 void EditorWindow::fgColourPicked( int c )
 {
-    Proj().SetFGPen( c );
+    VColour p;
+
+    if( Proj().GetAnimConst().Fmt()==FMT_I8)
+        p.i = c;
+    else
+        p.rgbx = Proj().GetColour(c);
+    Proj().SetFGPen( p );
 }
 
 void EditorWindow::bgColourPicked( int c )
 {
-    Proj().SetBGPen( c );
+    VColour p;
+
+    if( Proj().GetAnimConst().Fmt()==FMT_I8)
+        p.i = c;
+    else
+        p.rgbx = Proj().GetColour(c);
+    Proj().SetBGPen( p );
 }
 
 void EditorWindow::togglepaletteeditor()

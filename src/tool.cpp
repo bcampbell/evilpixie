@@ -1221,6 +1221,7 @@ void EyeDropperTool::OnDown( EditView& view, Point const& p, Button b )
     if( !proj.GetAnim().GetFrame(view.Frame()).Bounds().Contains(p ) )
         return;
 
+    // TODO:
     uint8_t c = proj.GetAnim().GetFrame(view.Frame()).GetPixel(p);
     if( b == DRAW )
         proj.SetFGPen(c);
