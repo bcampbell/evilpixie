@@ -274,20 +274,47 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 
             // on the canvas
             Point p( ViewToProj(Point(x,y)) );
-            uint8_t const* src = img.PtrConst( p.x,p.y );
-            assert(img.Fmt()==FMT_I8);
-            while(x<=xmax)
+            switch( img.Fmt() )
             {
-                int cx = x + (m_Offset.x*m_Zoom);
-                int pixstop = x + (m_Zoom-(cx%m_Zoom));
-                if(pixstop>xmax)
-                    pixstop=xmax+1;
-                RGBx c(Proj().PaletteConst().GetColour(*src++));
-                while(x<pixstop)
+            case FMT_I8:
                 {
-                    *dest++ = c;
-                    ++x;
+                    I8 const* src = img.PtrConst_I8( p.x,p.y );
+                    while(x<=xmax)
+                    {
+                        int cx = x + (m_Offset.x*m_Zoom);
+                        int pixstop = x + (m_Zoom-(cx%m_Zoom));
+                        if(pixstop>xmax)
+                            pixstop=xmax+1;
+                        RGBX8 c(Proj().PaletteConst().GetColour(*src++));
+                        while(x<pixstop)
+                        {
+                            *dest++ = c;
+                            ++x;
+                        }
+                    }
                 }
+                break;
+            case FMT_RGBX8:
+                {
+                    RGBX8 const* src = img.PtrConst_RGBX8( p.x,p.y );
+                    while(x<=xmax)
+                    {
+                        int cx = x + (m_Offset.x*m_Zoom);
+                        int pixstop = x + (m_Zoom-(cx%m_Zoom));
+                        if(pixstop>xmax)
+                            pixstop=xmax+1;
+                        RGBX8 c = *src++;
+                        while(x<pixstop)
+                        {
+                            *dest++ = c;
+                            ++x;
+                        }
+                    }
+                }
+                break;
+            default:
+                assert(false);
+                break;
             }
         }
 
