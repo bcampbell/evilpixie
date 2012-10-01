@@ -102,54 +102,79 @@ void Anim::Load( const char* filename )
 //    ILint bitsperpixel = ilGetInteger( IL_IMAGE_BITS_PER_PIXEL );
 //    printf("%dx%d fmt=%x type=%x %x %x\n", w,h,fmt,type, bytesperpixel, bitsperpixel );
 
-        if( fmt != IL_COLOUR_INDEX )
+        if( fmt == IL_COLOUR_INDEX )
+        {
+    #if 0
+            transparent_idx = -1;
+            if(ext==".png") // ugh
+            {
+                transparent_idx = (int)ilGetInteger(IL_PNG_ALPHA_INDEX);
+            }
+    #endif
+
+            /* make sure everything is in the format we expect! */
+            ilConvertImage( IL_COLOUR_INDEX, IL_UNSIGNED_BYTE );
+            ilConvertPal( IL_PAL_RGB24 );
+
+            int pal_bytesperpixel = (int)ilGetInteger( IL_PALETTE_BPP );
+            if( pal_bytesperpixel != 3 )
+            {
+                ilDeleteImages(1,&im);
+                throw Wobbly( "Unsupported palette type (%d bytes/pixel)", pal_bytesperpixel );
+            }
+
+            int num_cols = (int)ilGetInteger( IL_PALETTE_NUM_COLS );
+       //int palette_type = (int)ilGetInteger( IL_PALETTE_TYPE );
+    //    printf("palette: %d colours, bpp=%d, type=0x%x\n", num_cols, pal_bytesperpixel, palette_type );
+            if( num_cols>256)
+                num_cols=256;
+            m_Palette.SetNumColours(num_cols);
+            uint8_t const* p = ilGetPalette();
+            assert( p );
+            int i=0;
+            while(i<num_cols)
+            {
+                RGBx c;
+                c.r = *p++;
+                c.g = *p++;
+                c.b = *p++;
+                m_Palette.SetColour(i,c);
+                ++i;
+            }
+     
+            const uint8_t* pixels = ilGetData();
+            Img* img = new Img(FMT_I8,w,h,pixels);
+            m_Frames.push_back(img);
+        }
+        else if( fmt == IL_RGB || fmt == IL_RGBA || fmt == IL_BGR || fmt == IL_BGRA )
+        {
+            ilConvertImage( IL_RGB, IL_UNSIGNED_BYTE );
+
+            const uint8_t* raw = ilGetData();
+            Img* img = new Img(FMT_RGBX8,w,h);
+            int y;
+            for(y=0;y<h;++y)
+            {
+                RGBX8 *dest = img->Ptr_RGBX8(0,y);
+                int x;
+                for( x=0;x<w;++x)
+                {
+                    RGBX8 c;
+                    c.r = *raw++;
+                    c.g = *raw++;
+                    c.b = *raw++;
+                    *dest++ = c;
+                }
+            }
+            m_Frames.push_back(img);
+        }
+        else
         {
             ilDeleteImages(1,&im);
             throw Wobbly( "No palette - not an indexed image" );
         }
-#if 0
-        transparent_idx = -1;
-        if(ext==".png") // ugh
-        {
-            transparent_idx = (int)ilGetInteger(IL_PNG_ALPHA_INDEX);
-        }
-#endif
 
-        /* make sure everything is in the format we expect! */
-        ilConvertImage( IL_COLOUR_INDEX, IL_UNSIGNED_BYTE );
-        ilConvertPal( IL_PAL_RGB24 );
-
-        int pal_bytesperpixel = (int)ilGetInteger( IL_PALETTE_BPP );
-        if( pal_bytesperpixel != 3 )
-        {
-            ilDeleteImages(1,&im);
-            throw Wobbly( "Unsupported palette type (%d bytes/pixel)", pal_bytesperpixel );
-        }
-
-        int num_cols = (int)ilGetInteger( IL_PALETTE_NUM_COLS );
-   //int palette_type = (int)ilGetInteger( IL_PALETTE_TYPE );
-//    printf("palette: %d colours, bpp=%d, type=0x%x\n", num_cols, pal_bytesperpixel, palette_type );
-        if( num_cols>256)
-            num_cols=256;
-        m_Palette.SetNumColours(num_cols);
-        uint8_t const* p = ilGetPalette();
-        assert( p );
-        int i=0;
-        while(i<num_cols)
-        {
-            RGBx c;
-            c.r = *p++;
-            c.g = *p++;
-            c.b = *p++;
-            m_Palette.SetColour(i,c);
-            ++i;
-        }
- 
-        const uint8_t* pixels = ilGetData();
-        Img* img = new Img(FMT_I8,w,h,pixels);
-        m_Frames.push_back(img);
     }
-
     ilDeleteImages(1,&im);
 }
 
