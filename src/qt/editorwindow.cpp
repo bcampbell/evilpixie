@@ -503,7 +503,7 @@ void EditorWindow::do_new()
         QSize sz = dlg.GetSize();
         Palette* pal = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
         pal->SetNumColours(dlg.num_colours);
-        Project* p = new Project( sz.width(), sz.height(), pal, dlg.num_frames );
+        Project* p = new Project( dlg.pixel_format, sz.width(), sz.height(), pal, dlg.num_frames );
 //        printf("%d frames, %d colours\n",dlg.num_frames,dlg.num_colours);
         EditorWindow* fenster = new EditorWindow(p);
         fenster->show();

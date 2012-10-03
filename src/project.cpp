@@ -46,13 +46,13 @@ Project::Project() :
 }
 
 
-Project::Project( int w, int h, Palette* palette, int num_frames ) :
+Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frames ) :
     m_Expendable(false),
     m_FGPen(1),
     m_BGPen(0),
     m_DrawTool(0),
     m_DrawFrame(0),
-    m_DrawBackup(FMT_I8,1,1), // ugh
+    m_DrawBackup(fmt,1,1), // ugh
     m_Modified( false )
 {
     assert(num_frames>=1);
@@ -62,7 +62,7 @@ Project::Project( int w, int h, Palette* palette, int num_frames ) :
     delete palette;
     int i;
     for(i=0;i<num_frames;++i)
-        m_Anim.Append(new Img(FMT_I8,w,h));
+        m_Anim.Append(new Img(fmt,w,h));
 }
 
 

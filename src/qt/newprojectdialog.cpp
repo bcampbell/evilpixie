@@ -29,18 +29,21 @@ NewProjectDialog::NewProjectDialog(QWidget *parent)
 
     {
         QComboBox* w = new QComboBox(this);
-        w->addItem("2",2);
-        w->addItem("4",4);
-        w->addItem("8",8);
-        w->addItem("16",16);
-        w->addItem("32",32);
-        w->addItem("64",64);
-        w->addItem("128",128);
-        w->addItem("256",256);
+        m_Format = w;
+        w->addItem("RGB",-1);
+        w->addItem("2 colour palette",2);
+        w->addItem("4 colour palette",4);
+        w->addItem("8 colour palette",8);
+        w->addItem("16 colour palette",16);
+        w->addItem("32 colour palette",32);
+        w->addItem("64 colour palette",64);
+        w->addItem("128 colour palette",128);
+        w->addItem("256 colour palette",256);
         num_colours = 32;
-        w->setCurrentIndex(4);
-        connect(w,SIGNAL(currentIndexChanged(QString)), this, SLOT(numcoloursChanged(QString)));
-        l->addRow("Colours", w);
+        pixel_format = FMT_I8;
+        w->setCurrentIndex(5);
+        connect(w,SIGNAL(currentIndexChanged(int)), this, SLOT(formatChanged(int)));
+        l->addRow("Format", w);
     }
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -57,12 +60,21 @@ QSize NewProjectDialog::GetSize()
     return QSize( m_WidthEdit->text().toInt(), m_HeightEdit->text().toInt() );
 }
 
-void NewProjectDialog::numcoloursChanged( QString const& txt )
+void NewProjectDialog::formatChanged( int idx )
 {
-    num_colours = txt.toInt();
-    if( num_colours<2 )
-        num_colours = 2;
-    if( num_colours>255 )
-        num_colours=255;
+    num_colours = m_Format->itemData(idx).toInt();
+    if( num_colours == -1 )
+    {
+        pixel_format = FMT_RGBX8;
+        num_colours = 32;   // kludge for now
+    }
+    else
+    {
+        pixel_format = FMT_I8;
+        if( num_colours<2 )
+            num_colours = 2;
+        if( num_colours>255 )
+            num_colours=255;
+    }
 }
 
