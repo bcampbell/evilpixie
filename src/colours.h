@@ -2,7 +2,7 @@
 #define COLOURS_H
 
 #include <stdint.h>
-
+#include <cassert>
 
 
 // Raw pixel types:
@@ -71,6 +71,17 @@ struct RGBx
     operator VColour() const
         { VColour tmp; tmp.rgbx = (RGBX8)*this; return tmp; }
 };
+
+inline RGBx Lerp(RGBx const& a, RGBx const& b, float t)
+{
+    assert(t>=0.0f && t <= 1.0f);
+    float inv = 1-t;
+    return RGBx(
+        (int)(a.r*inv + b.r*t),
+        (int)(a.g*inv + b.g*t),
+        (int)(a.b*inv + b.b*t));
+}
+
 
 #endif // COLOURS_H
 

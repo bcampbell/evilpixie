@@ -7,6 +7,8 @@
 class QSlider;
 class QLabel;
 
+
+// RGB-twiddling widget, with slider bars for RGB components.
 class RGBWidget : public QWidget
 {
     Q_OBJECT

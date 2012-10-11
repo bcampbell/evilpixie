@@ -31,9 +31,10 @@ SOURCES += src/anim.cpp \
     src/qt/paletteeditor.cpp \
     src/qt/miscwindows.cpp \
     src/qt/newprojectdialog.cpp \
+    src/qt/rgbwidget.cpp \
+    src/qt/rgbpickerwidget.cpp \
     src/qt/resizeprojectdialog.cpp \
     src/qt/qtapp.cpp \
-    src/qt/rgbwidget.cpp \
     src/qt/main.cpp
 
 HEADERS += src/anim.h \
@@ -56,8 +57,9 @@ HEADERS += src/anim.h \
     src/qt/paletteeditor.h \
     src/qt/miscwindows.h \
     src/qt/newprojectdialog.h \
-    src/qt/resizeprojectdialog.h \
     src/qt/rgbwidget.h \
+    src/qt/rgbpickerwidget.h \
+    src/qt/resizeprojectdialog.h \
     src/qt/editviewwidget.h
 
 !win32 {

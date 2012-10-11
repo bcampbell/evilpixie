@@ -14,12 +14,14 @@
 class EditViewWidget;
 class PaletteEditor;
 class PaletteWidget;
+class RGBPickerWidget;
 class HelpWindow;
 class AboutBox;
 class QLayout;
 class QLabel;
 class QMenuBar;
 class QAction;
+class QTabWidget;
 
 class CurrentColourWidget : public QWidget
 {
@@ -81,6 +83,8 @@ public slots:
     void brushclicked( QAbstractButton* b );
     void fgColourPicked( int c );
     void bgColourPicked( int c );
+    void fgColourPickedRGB( RGBx c );
+    void bgColourPickedRGB( RGBx c );
     void togglepaletteeditor();
     void useeyedroppertool();
     void nextColour();
@@ -111,7 +115,9 @@ public slots:
 private:
     EditViewWidget* m_ViewWidget;
     PaletteWidget* m_PaletteWidget;
+    RGBPickerWidget* m_RGBPicker;
     CurrentColourWidget* m_CurrentColourWidget;
+    QTabWidget* m_ColourTab;
 
     QButtonGroup* m_BrushButtons;
     QButtonGroup* m_ToolButtons;

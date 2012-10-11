@@ -7,6 +7,7 @@
 #include "editorwindow.h"
 #include "editviewwidget.h"
 #include "palettewidget.h"
+#include "rgbpickerwidget.h"
 #include "paletteeditor.h"
 #include "newprojectdialog.h"
 #include "resizeprojectdialog.h"
@@ -20,6 +21,7 @@
 #include <QPushButton>
 #include <QButtonGroup>
 #include <QToolButton>
+#include <QTabWidget>
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QWidget>
@@ -76,7 +78,9 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     Editor(proj),
     m_ViewWidget(0),
     m_PaletteWidget(0),
+    m_RGBPicker(0),
     m_CurrentColourWidget(0),
+    m_ColourTab(0),
     m_BrushButtons(0),
     m_ToolButtons(0),
     m_PaletteEditor(0),
@@ -133,11 +137,24 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         connect(m_CurrentColourWidget, SIGNAL(left_clicked()), this, SLOT( useeyedroppertool()));
         connect(m_CurrentColourWidget, SIGNAL(right_clicked()), this, SLOT( togglepaletteeditor()));
 
+
+        m_ColourTab = new QTabWidget(this);
+        m_ColourTab->setTabShape(QTabWidget::Triangular);
+        m_ColourTab->setTabPosition(QTabWidget::South);
+        m_ColourTab->setDocumentMode(true);
+        layout->addWidget( m_ColourTab, 5,1 );
+
+
         m_PaletteWidget = new PaletteWidget(Proj().PaletteConst());
 
         connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
         connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
-        layout->addWidget( m_PaletteWidget, 5,1 );
+        m_ColourTab->addTab(m_PaletteWidget, "Palette");
+
+        m_RGBPicker = new RGBPickerWidget();
+        connect(m_RGBPicker, SIGNAL(pickedLeftButton(RGBx)), this, SLOT( fgColourPickedRGB(RGBx)));
+        connect(m_RGBPicker, SIGNAL(pickedRightButton(RGBx)), this, SLOT( bgColourPickedRGB(RGBx)));
+        m_ColourTab->addTab(m_RGBPicker, "RGB");
     }
 
     /* status bar */
@@ -392,7 +409,6 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 }
 
-
 void EditorWindow::fgColourPicked( int c )
 {
     VColour p;
@@ -412,6 +428,21 @@ void EditorWindow::bgColourPicked( int c )
         p.i = c;
     else
         p.rgbx = Proj().GetColour(c);
+    Proj().SetBGPen( p );
+}
+
+
+void EditorWindow::fgColourPickedRGB( RGBx c )
+{
+    VColour p;
+    p.rgbx=c;
+    Proj().SetFGPen( p );
+}
+
+void EditorWindow::bgColourPickedRGB( RGBx c )
+{
+    VColour p;
+    p.rgbx=c;
     Proj().SetBGPen( p );
 }
 
