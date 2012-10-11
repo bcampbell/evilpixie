@@ -50,12 +50,12 @@ public:
         { return m_Bounds; }
 
     // TODO: move all drawing ops out to somewhere else...
-    void HLine( VColour pen, int xbegin, int xend, int y);
+    void HLine( PenColour const& pen, int xbegin, int xend, int y);
     // rename to Clone
     void Copy( Img const& other );
     // b will return area affected after clipping.
-	void FillBox( VColour pen, Box& b );
-    void OutlineBox( VColour pen, Box& b );
+	void FillBox( PenColour const& pen, Box& b );
+    void OutlineBox( PenColour const& pen, Box& b );
 
     void XFlip();
     void YFlip();
@@ -89,35 +89,38 @@ void Blit(
 
 
 // destbox is changed to reflect the final clipped area on the dest Img
-void BlitFancy(
-    Img const& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox,
-    int transparentcolour = -1,
-    int mattecolour = -1 );
-
 void BlitMatte(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
-    VColour transparentcolour,
-    VColour mattecolour );
+    PenColour const& transparentcolour,
+    PenColour const& mattecolour );
 
+// destbox is changed to reflect the final clipped area on the dest Img
 void BlitTransparent(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
-    VColour transparentcolour );
+    PenColour const& transparentcolour );
 
 // Same as Blit, except that srcimg is replaced by destimg
 void BlitSwap(
     Img& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox);
 
-void BlitZoomIndexedToRGBx(
+void BlitZoomTransparent(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
     Palette const& palette,
     int zoom,
-    int transparentcolour=-1,
-    int mattecolour=-1 );
+    PenColour const& transparentcolour);
+
+
+void BlitZoomMatte(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    Palette const& palette,
+    int zoom,
+    PenColour const& transparentcolour,
+    PenColour const& mattecolour );
 
 #endif // IMG_H
 

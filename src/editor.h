@@ -32,6 +32,10 @@ public:
     Tool& CurrentTool() { return *m_Tool; }
 //    void SetTool( Tool* newtool, bool notifygui=true );
 
+	PenColour FGPen() const { return m_FGPen; }
+	PenColour BGPen() const { return m_BGPen; }
+	void SetFGPen( PenColour const& pen );
+	void SetBGPen( PenColour const& pen );
 
 
     // -1 for custom brush, 0-3 for stdbrush
@@ -69,6 +73,7 @@ protected:
     // stuff to notify the gui...
     virtual void OnToolChanged() = 0;
     virtual void OnBrushChanged() = 0;
+    virtual void OnPenChanged() = 0;
 
     // options
     bool m_SaveBGAsTransparent;
@@ -91,6 +96,8 @@ private:
     bool m_GridActive;
     Box m_Grid;
 
+    PenColour m_FGPen;
+    PenColour m_BGPen;
 };
 
 

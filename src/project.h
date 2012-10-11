@@ -62,6 +62,8 @@ public:
     //Img& Img(int frame) { return m_Anim.GetFrame(frame); }
     Img const& ImgConst(int frame) const { return m_Anim.GetFrameConst(frame); }
 
+
+    PixelFormat Fmt() const { return m_Anim.GetFrameConst(0).Fmt(); }
     int NumFrames() const { return m_Anim.NumFrames(); }
 
     // kill!

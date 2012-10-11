@@ -71,23 +71,24 @@ void Img::Copy( Img const& other )
 }
 
 
-void Img::HLine( VColour pen, int xbegin, int xend, int y)
+void Img::HLine( PenColour const& pen, int xbegin, int xend, int y)
 {
     int x;
     switch(Fmt())
     {
         case FMT_I8:
             {
+                assert(pen.IdxValid());
                 I8* dest = Ptr_I8(xbegin,y);
                 for( x=xbegin; x<xend; ++x )
-                    *dest++ = pen.i;
+                    *dest++ = pen.idx();
             }
             break;
         case FMT_RGBX8:
             {
                 RGBX8* dest = Ptr_RGBX8(xbegin,y);
                 for( x=xbegin; x<xend; ++x )
-                    *dest++ = pen.rgbx;
+                    *dest++ = pen.rgb();
             }
             break;
         default: assert(false); // not implemented
@@ -96,7 +97,7 @@ void Img::HLine( VColour pen, int xbegin, int xend, int y)
 
 
 
-void Img::FillBox( VColour pen, Box& b )
+void Img::FillBox( PenColour const& pen, Box& b )
 {
     b.ClipAgainst( Bounds() );
     int y;
@@ -162,7 +163,7 @@ void Img::YFlip()
 //-----------------------
 
 
-void Img::OutlineBox( VColour pen, Box& b )
+void Img::OutlineBox( PenColour const& pen, Box& b )
 {
     b.ClipAgainst( Bounds() );
 
@@ -177,9 +178,9 @@ void Img::OutlineBox( VColour pen, Box& b )
         int y;
         for( y=b.YMin()+1; y<=b.YMax()-1; ++y )
         {
-            *pleft = pen.rgbx;
+            *pleft = pen.rgb();
             pleft += W();
-            *pright = pen.rgbx;
+            *pright = pen.rgb();
             pright += W();
         }
     } else {
@@ -219,62 +220,12 @@ static void clip_blit(
 
 
 
-// blit with optional transparency and matte colour
-// TODO: split into two: 1) transparency  2) matte blit  (matte implies transparency)
-void BlitFancy(
-    Img const& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox,
-    int transparentcolour,
-    int mattecolour )
-{
-    // TODO
-    assert(srcimg.Fmt()==FMT_I8);
-    assert(destimg.Fmt()==FMT_I8);
-
-    Box destclipped( destbox );
-    Box srcclipped( srcbox );
-    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
-
-    int y;
-    for( y=0; y<destclipped.h; ++y )
-    {
-        uint8_t const* src = srcimg.PtrConst( srcclipped.x+0, srcclipped.y+y );
-        uint8_t* dest = destimg.Ptr( destclipped.x+0, destclipped.y+y );
-
-        // different innerloops depending on transparency/matte
-        if( transparentcolour == -1 )
-        {
-            // straight blit (mattecolour not supported)
-            int x;
-            for( x=0; x<destclipped.w; ++x )
-                *dest++ = *src++;
-        }
-        else
-        {
-            int x;
-            for( x=0; x<destclipped.w; ++x )
-            {
-                uint8_t c = *src++;
-                if( c != (uint8_t)transparentcolour )
-                {
-                    if( mattecolour != -1 )
-                        c= (uint8_t)mattecolour;
-                    *dest = c;
-                }
-                ++dest;
-            }
-        }
-    }
-
-    destbox = destclipped;
-}
-
 
 
 void BlitTransparent(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
-    VColour transparentcolour )
+    PenColour const& transparentcolour )
 {
     assert(srcimg.Fmt()==destimg.Fmt());
 
@@ -296,7 +247,7 @@ void BlitTransparent(
                 for( x=0; x<destclipped.w; ++x )
                 {
                     I8 c = *src++;
-                    if( c != transparentcolour.i )
+                    if( c != transparentcolour.idx() )
                         *dest = c;
                     ++dest;
                 }
@@ -311,7 +262,7 @@ void BlitTransparent(
                 for( x=0; x<destclipped.w; ++x )
                 {
                     RGBX8 c = *src++;
-                    if( c != transparentcolour.rgbx )
+                    if( c != transparentcolour.rgb() )
                         *dest = c;
                     ++dest;
                 }
@@ -331,8 +282,8 @@ void BlitTransparent(
 void BlitMatte(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
-    VColour transparentcolour,
-    VColour mattecolour )
+    PenColour const& transparentcolour,
+    PenColour const& mattecolour )
 {
     Box destclipped( destbox );
     Box srcclipped( srcbox );
@@ -345,6 +296,8 @@ void BlitMatte(
         {
         case FMT_I8:
             {
+                assert(mattecolour.IdxValid()); // can't blit rgb colour onto indexed image!
+
                 I8* dest = destimg.Ptr_I8( destclipped.x+0, destclipped.y+y );
                 if(srcimg.Fmt()==FMT_I8)
                 {
@@ -353,8 +306,8 @@ void BlitMatte(
                     for( x=0; x<destclipped.w; ++x )
                     {
                         I8 c = *src++;
-                        if( c != transparentcolour.i )
-                            *dest = mattecolour.i;
+                        if( c != transparentcolour.idx() )
+                            *dest = mattecolour.idx();
                         ++dest;
                     }
                 }
@@ -365,8 +318,8 @@ void BlitMatte(
                     for( x=0; x<destclipped.w; ++x )
                     {
                         RGBX8 c = *src++;
-                        if( c != transparentcolour.rgbx )
-                            *dest = mattecolour.i;
+                        if( c != transparentcolour.rgb() )
+                            *dest = mattecolour.idx();
                         ++dest;
                     }
                 }
@@ -382,8 +335,8 @@ void BlitMatte(
                     for( x=0; x<destclipped.w; ++x )
                     {
                         I8 c = *src++;
-                        if( c != transparentcolour.i )
-                            *dest = mattecolour.rgbx;
+                        if( c != transparentcolour.idx() )
+                            *dest = mattecolour.rgb();
                         ++dest;
                     }
                 }
@@ -394,8 +347,8 @@ void BlitMatte(
                     for( x=0; x<destclipped.w; ++x )
                     {
                         RGBX8 c = *src++;
-                        if( c != transparentcolour.rgbx )
-                            *dest = mattecolour.rgbx;
+                        if( c != transparentcolour.rgb() )
+                            *dest = mattecolour.rgb();
                         ++dest;
                     }
                 }
@@ -411,17 +364,13 @@ void BlitMatte(
 
 
 
-
-void BlitZoomIndexedToRGBx(
+void BlitZoomTransparent(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
     Palette const& palette,
     int zoom,
-    int transparentcolour,
-    int mattecolour )
+    PenColour const& transparentcolour)
 {
-    // TODO: generalise
-    assert( srcimg.Fmt()==FMT_I8);
     assert( destimg.Fmt()==FMT_RGBX8);
     assert( srcimg.Bounds().Contains( srcbox ) );
     assert( zoom >= 1 );
@@ -435,24 +384,110 @@ void BlitZoomIndexedToRGBx(
     {
         int x;
         RGBX8* dest = destimg.Ptr_RGBX8( destclipped.XMin() + 0, destclipped.YMin() + y );
-        uint8_t const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
-        int n=0;
-        for( x=0; x<destclipped.W(); ++x )
+        switch(srcimg.Fmt())
         {
-
-            RGBX8 c;// = *dest;
-            if( mattecolour != -1 )
-                c = palette.GetColour(mattecolour);
-            else
-                c = palette.GetColour(*src);
-            if( *src != transparentcolour )
-                *dest = c;
-            ++dest;
-            if( ++n >= zoom )
+        case FMT_I8:
             {
-                ++src;
-                n=0;
+                I8 const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                int n=0;
+                for( x=0; x<destclipped.W(); ++x )
+                {
+                    if( *src != transparentcolour.idx())
+                    {
+                        RGBX8 c = palette.GetColour(*src);
+                        *dest = c;
+                    }
+                    ++dest;
+                    if( ++n >= zoom )
+                    {
+                        ++src;
+                        n=0;
+                    }
+                }
             }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                int n=0;
+                for( x=0; x<destclipped.W(); ++x )
+                {
+                    RGBX8 c=*src;
+                    if( c != transparentcolour.rgb())
+                        *dest = c;
+                    ++dest;
+                    if( ++n >= zoom )
+                    {
+                        ++src;
+                        n=0;
+                    }
+                }
+            }
+            break;
+
+        }
+    }
+}
+
+
+void BlitZoomMatte(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    Palette const& palette,
+    int zoom,
+    PenColour const& transparentcolour,
+    PenColour const& mattecolour )
+{
+    assert( destimg.Fmt()==FMT_RGBX8);
+    assert( srcimg.Bounds().Contains( srcbox ) );
+    assert( zoom >= 1 );
+
+    Box destclipped( destbox );
+    Box srcclipped( srcbox );
+    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped, zoom );
+
+    int y;
+    for( y=0; y<destclipped.H(); ++y )
+    {
+        int x;
+        RGBX8* dest = destimg.Ptr_RGBX8( destclipped.XMin() + 0, destclipped.YMin() + y );
+        switch(srcimg.Fmt())
+        {
+        case FMT_I8:
+            {
+                I8 const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                int n=0;
+                for( x=0; x<destclipped.W(); ++x )
+                {
+                    if( *src != transparentcolour.idx())
+                        *dest = mattecolour.rgb();
+                    ++dest;
+                    if( ++n >= zoom )
+                    {
+                        ++src;
+                        n=0;
+                    }
+                }
+            }
+            break;
+        case FMT_RGBX8:
+            {
+                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                int n=0;
+                for( x=0; x<destclipped.W(); ++x )
+                {
+                    if( *src != transparentcolour.rgb())
+                        *dest = mattecolour.rgb();
+                    ++dest;
+                    if( ++n >= zoom )
+                    {
+                        ++src;
+                        n=0;
+                    }
+                }
+            }
+            break;
+
         }
     }
 }

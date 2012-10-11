@@ -36,12 +36,7 @@ PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :
         RGBx c( m_Proj.GetColour( m_Selected ) );
         m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
     }
-    m_PaletteWidget->SetLeftSelected( proj.FGPen().i );
-    m_PaletteWidget->SetRightSelected( proj.BGPen().i );
-
     connect( m_RGBWidget, SIGNAL( colourChanged() ), this, SLOT( colourChanged() ) );
-    connect( m_PaletteWidget, SIGNAL( pickedLeftButton(int) ), this, SLOT( setLeftSelected(int) ) );
-    connect( m_PaletteWidget, SIGNAL( pickedRightButton(int) ), this, SLOT( setRightSelected(int) ) );
     connect( m_PaletteWidget, SIGNAL( rangeAltered() ), this, SLOT( paletteRangeAltered() ) );
     connect( m_SpreadButton, SIGNAL( clicked() ), this, SLOT( spreadColours() ) );
 
@@ -66,14 +61,6 @@ void PaletteEditor::OnPaletteChanged( int n, RGBx const& c )
     m_PaletteWidget->SetColour(n,c);
 }
 
-void PaletteEditor::OnPenChange()
-{
-    m_Selected = m_Proj.FGPen().i;
-    RGBx c( m_Proj.FGPenRGB());
-    m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
-    m_PaletteWidget->SetLeftSelected( m_Proj.FGPen().i );
-    m_PaletteWidget->SetRightSelected( m_Proj.BGPen().i );
-}
 
 void PaletteEditor::OnPaletteReplaced()
 {
@@ -89,12 +76,6 @@ void PaletteEditor::colourChanged()
     m_Proj.PaletteChange_Alter(m_Selected, c );
     m_Proj.PaletteChange_Commit();
 }
-
-void PaletteEditor::setLeftSelected(int n)
-    { m_Proj.SetFGPen( n ); }
-
-void PaletteEditor::setRightSelected(int n)
-    { m_Proj.SetBGPen( n ); }
 
 void PaletteEditor::paletteRangeAltered()
 {

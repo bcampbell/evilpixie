@@ -21,6 +21,10 @@ Editor::Editor( Project* proj ) :
 {
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);
+
+
+    m_BGPen = PenColour(proj->GetColour(0),0);
+    m_FGPen = PenColour(proj->GetColour(1),1);
 }
 
 
@@ -147,4 +151,17 @@ void Editor::GridSnap( Point& p )
     p.y += grid.y;
 }
 
+
+void Editor::SetFGPen( PenColour const& pen )
+{
+    m_FGPen=pen;
+    OnPenChanged();
+}
+
+
+void Editor::SetBGPen( PenColour const& pen )
+{
+    m_BGPen = pen;
+    OnPenChanged();
+}
 

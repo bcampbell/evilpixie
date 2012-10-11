@@ -190,7 +190,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     setLayout(layout);
     UseTool( TOOL_PENCIL );
     OnBrushChanged();
-    OnPenChange();
+    OnPenChanged();
 
     RethinkWindowTitle();
 
@@ -308,18 +308,20 @@ QLayout* EditorWindow::CreateBrushButtons()
 }
 
 
-void EditorWindow::OnPenChange()
+void EditorWindow::OnPenChanged()
 {
     // new fg or bg pen
     {
-        RGBx fg = Proj().FGPenRGB();
-        RGBx bg = Proj().BGPenRGB();
+        RGBx fg = FGPen().rgb();
+        RGBx bg = BGPen().rgb();
         m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
         m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
 
         //assert(Proj().GetAnimConst().Fmt()==FMT_I8);
-        m_PaletteWidget->SetLeftSelected( Proj().FGPen().i );
-        m_PaletteWidget->SetRightSelected( Proj().BGPen().i );
+        if(FGPen().IdxValid())
+            m_PaletteWidget->SetLeftSelected( FGPen().idx() );
+        if(BGPen().IdxValid())
+            m_PaletteWidget->SetLeftSelected( BGPen().idx() );
     }
 }
 
@@ -328,14 +330,7 @@ void EditorWindow::OnPaletteChanged( int n, RGBx const& c )
     // make sure the gui reflects any palette changes
     m_PaletteWidget->SetColour(n,c);
 
-    //assert(Proj().GetAnimConst().Fmt()==FMT_I8);
-    if( n==Proj().FGPen().i || n==Proj().BGPen().i )
-    {
-        RGBx fg = Proj().FGPenRGB();
-        RGBx bg = Proj().BGPenRGB();
-        m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
-        m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
-    }
+    OnPenChanged();
 }
 
 void EditorWindow::OnPaletteReplaced()
@@ -347,10 +342,7 @@ void EditorWindow::OnPaletteReplaced()
         m_PaletteWidget->SetColour(n,c);
     }
 
-    RGBx fg = Proj().FGPenRGB();
-    RGBx bg = Proj().BGPenRGB();
-    m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
-    m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
+    OnPenChanged();
 }
 
 void EditorWindow::OnModifiedFlagChanged( bool )
@@ -409,41 +401,29 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 }
 
-void EditorWindow::fgColourPicked( int c )
+void EditorWindow::fgColourPicked( int idx )
 {
-    VColour p;
-
-    if( Proj().GetAnimConst().Fmt()==FMT_I8)
-        p.i = c;
-    else
-        p.rgbx = Proj().GetColour(c);
-    Proj().SetFGPen( p );
+    RGBx c = Proj().GetColour(idx);
+    SetFGPen( PenColour(c,idx) );
 }
 
-void EditorWindow::bgColourPicked( int c )
+void EditorWindow::bgColourPicked( int idx )
 {
-    VColour p;
-
-    if( Proj().GetAnimConst().Fmt()==FMT_I8)
-        p.i = c;
-    else
-        p.rgbx = Proj().GetColour(c);
-    Proj().SetBGPen( p );
+    RGBx c = Proj().GetColour(idx);
+    SetBGPen( PenColour(c,idx) );
 }
 
 
 void EditorWindow::fgColourPickedRGB( RGBx c )
 {
-    VColour p;
-    p.rgbx=c;
-    Proj().SetFGPen( p );
+    // TODO: look up a palette index
+    SetFGPen( PenColour(c) );
 }
 
 void EditorWindow::bgColourPickedRGB( RGBx c )
 {
-    VColour p;
-    p.rgbx=c;
-    Proj().SetBGPen( p );
+    // TODO: look up a palette index
+    SetBGPen(PenColour(c));
 }
 
 void EditorWindow::togglepaletteeditor()
@@ -458,20 +438,27 @@ void EditorWindow::useeyedroppertool()
 
 void EditorWindow::nextColour()
 {
-    assert(Proj().GetAnimConst().Fmt()==FMT_I8);
+    assert( false );
+    // TODO: implement!
+/*
     int c = Proj().FGPen().i + 1;
     if( c>255 )
         return;
     Proj().SetFGPen( c );
+*/
 }
 
 void EditorWindow::prevColour()
 {
+    assert( false );
+    // TODO: implement!
+/*
     assert(Proj().GetAnimConst().Fmt()==FMT_I8);
     int c = Proj().FGPen().i -1;
     if( c<0 )
         return;
     Proj().SetFGPen( c );
+*/
 }
 
 void EditorWindow::update_menu_states()
@@ -521,7 +508,7 @@ void EditorWindow::do_resize()
         Cmd* c = new Cmd_Resize(Proj(),
             Box(0,0,area.width(),area.height()),
             0,
-            Proj().GetAnim().NumFrames() );
+            Proj().GetAnim().NumFrames(), BGPen() );
         Proj().AddCmd(c);
     }
 }

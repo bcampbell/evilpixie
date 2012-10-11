@@ -34,7 +34,7 @@ void Cmd_Draw::Undo()
 
 
 
-Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast) :
+Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast, PenColour const& fillpen) :
     Cmd(proj,NOT_DONE),
     m_First(framefirst),
     m_Last(framelast)
@@ -46,7 +46,7 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
         Img const& src_img = Proj().GetAnim().GetFrameConst(n);
         Img* dest_img = new Img(src_img.Fmt(), new_area.w, new_area.h);
         Box foo(dest_img->Bounds());
-        dest_img->FillBox(Proj().BGPen(),foo);
+        dest_img->FillBox(fillpen,foo);
         Box src_area(src_img.Bounds());
         Box dest_area(src_area);
         dest_area -= new_area.TopLeft();

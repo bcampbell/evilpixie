@@ -83,5 +83,37 @@ inline RGBx Lerp(RGBx const& a, RGBx const& b, float t)
 }
 
 
+
+// a colour value to pass into drawing functions, which can cope with
+// both indexed and non-indexed drawing.
+// rgb is _always_ set, but index may not be.
+// So any pen can draw to an rgb image, but only a pen with a valid
+// index can draw to a paletted image. (drawing functions should check
+// this with asserts)
+class PenColour
+{
+public:
+    PenColour() :
+        m_rgb(255,0,255),
+        m_idx(-1)
+    {
+    }
+
+    PenColour( RGBx c, int i=-1) :
+        m_rgb(c),
+        m_idx(i)
+    {
+    }
+
+    RGBx rgb() const {return m_rgb; }
+    int idx() const { assert(IdxValid());return m_idx; }
+
+    bool IdxValid() const { return m_idx>=0; }
+private:
+    RGBx m_rgb;
+    int m_idx;
+};
+
+
 #endif // COLOURS_H
 

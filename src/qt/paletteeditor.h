@@ -20,7 +20,6 @@ public:
 	virtual void OnDamaged( Box const& viewdmg );
     virtual void OnPaletteChanged( int n, RGBx const& c );
     virtual void OnPaletteReplaced();
-    virtual void OnPenChange();
 private:
     Project& m_Proj;
     int m_Selected;
@@ -30,8 +29,6 @@ private:
     QPushButton *m_SpreadButton;
 private slots:
     void colourChanged();
-    void setLeftSelected(int n);
-    void setRightSelected(int n);
     void paletteRangeAltered();
     void spreadColours();
 };

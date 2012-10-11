@@ -56,7 +56,7 @@ private:
 class Cmd_Resize : public Cmd
 {
 public:
-    Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast);
+    Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast, PenColour const& fillpen);
     virtual ~Cmd_Resize();
     virtual void Do();
     virtual void Undo();
