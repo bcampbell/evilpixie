@@ -59,14 +59,13 @@ public:
 
     void XFlip();
     void YFlip();
-	void SetPixel( int x, int y, uint8_t c )
-		{ assert(Fmt()==FMT_I8); uint8_t* p=Ptr(x,y); *p=c; }
-	uint8_t GetPixel( int x, int y ) const
-		{ assert(Fmt()==FMT_I8); return *PtrConst(x,y); }
-	void SetPixel( const Point& p, uint8_t c )
-		{ assert(Fmt()==FMT_I8); *Ptr(p.x,p.y) = c; }
-	uint8_t GetPixel( const Point& p ) const
-		{ assert(Fmt()==FMT_I8); return *PtrConst(p.x,p.y); }
+
+    // helpers to get single pixel
+	RGBX8 Get_RGBX8( const Point& p ) const
+		{ return *PtrConst_RGBX8(p.x,p.y); }
+	I8 Get_I8( const Point& p ) const
+		{ return *PtrConst_I8(p.x,p.y); }
+
 
 
 protected:

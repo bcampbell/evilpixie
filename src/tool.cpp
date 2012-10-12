@@ -1,5 +1,6 @@
 #include "tool.h"
 #include "app.h"
+#include "draw.h"
 #include "project.h"
 #include "editor.h"
 #include "editview.h"
@@ -252,65 +253,6 @@ void DrawCrossHairCursor( EditView& view, Point const& centre, RGBx const& c )
     view.AddCursorDamage( vbox );
 }
 
-
-// helper
-void FloodFill( Img& img, Point const& start, PenColour newcolour, Box& damage )
-{
-    assert(img.Fmt()==FMT_I8);
-
-    damage.SetEmpty();
-    int oldcolour = img.GetPixel( start );
-    if( oldcolour == newcolour.idx() )
-        return;
-
-    std::vector< Point > q;
-    q.push_back( start );
-    while( !q.empty() )
-    {
-        Point pt = q.back();
-        q.pop_back();
-        if( img.GetPixel(pt) != oldcolour )
-            continue;
-
-        // scan left and right to find span
-        int y = pt.y;
-        int l = pt.x;
-        while( l>0 && img.GetPixel( Point(l-1,y)) == oldcolour )
-            --l;
-        int r = pt.x;
-        while( r<img.W()-1 && img.GetPixel( Point(r+1,y)) == oldcolour )
-            ++r;
-
-        // fill the span
-        I8* dest = img.Ptr_I8( l,y );
-        int x;
-        for( x=l; x<=r; ++x )
-            *dest++ = newcolour.idx();
-        // expand the damage box to include the affected span
-        damage.Merge( Box( l,y, (r+1)-l,1) );
-        // add pixels above the span to the queue 
-        y = pt.y-1;
-        if( y>=0 )
-        {
-            for(x=l; x<=r; ++x)
-            {
-                if( img.GetPixel(x,y) == oldcolour )
-                    q.push_back( Point(x,y) );
-            }
-        }
-
-        // add pixels below the span to the queue
-        y = pt.y+1;
-        if( y<img.H() )
-        {
-            for(x=l; x<=r; ++x)
-            {
-                if( img.GetPixel(x,y) == oldcolour )
-                    q.push_back( Point(x,y) );
-            }
-        }
-    }
-}
 
 
 

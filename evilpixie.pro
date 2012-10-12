@@ -17,6 +17,7 @@ SOURCES += src/anim.cpp \
     src/box.cpp \
     src/brush.cpp \
     src/cmd.cpp \
+    src/draw.cpp \
     src/editor.cpp \
     src/editview.cpp \
     src/img.cpp \
@@ -42,6 +43,7 @@ HEADERS += src/anim.h \
     src/brush.h \
     src/cmd.h \
     src/colours.h \
+    src/draw.h \
     src/editor.h \
     src/editview.h \
     src/global.h \
