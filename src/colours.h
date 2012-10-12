@@ -28,18 +28,6 @@ inline bool operator!=(const RGBX8& a, const RGBX8& b){return !operator==(a,b);}
 typedef uint8_t I8;
 
 
-union VColour
-{
-    RGBX8 rgbx;
-    I8 i;
-	VColour( uint8_t red=0, uint8_t green=0, uint8_t blue=0 ) {
-        rgbx.r=red;
-        rgbx.g=green;
-        rgbx.b=blue;
-        rgbx.pad=255;
-    }
-};
-
 
 // higher-level colour handling:
 // TODO: rename to Colour or something
@@ -68,8 +56,6 @@ struct RGBx
 
     operator RGBX8() const
         { RGBX8 tmp; tmp.r=r; tmp.g=g; tmp.b=b; tmp.pad=255; return tmp; }
-    operator VColour() const
-        { VColour tmp; tmp.rgbx = (RGBX8)*this; return tmp; }
 };
 
 inline RGBx Lerp(RGBx const& a, RGBx const& b, float t)
@@ -111,7 +97,7 @@ public:
     bool IdxValid() const { return m_idx>=0; }
 private:
     RGBx m_rgb;
-    int m_idx;
+    int m_idx; // -1 = invalid
 };
 
 
