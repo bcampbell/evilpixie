@@ -66,22 +66,15 @@ public:
     PixelFormat Fmt() const { return m_Anim.GetFrameConst(0).Fmt(); }
     int NumFrames() const { return m_Anim.NumFrames(); }
 
+    PenColour PickUpPen(Point const& pt, int frame) const;
+
     // kill!
     // palette manipulation
-	RGBx const& GetColour(int n ) { return GetAnim().GetPaletteConst().GetColour(n); }
+	RGBx const& GetColour(int n ) const { return GetAnimConst().GetPaletteConst().GetColour(n); }
 	void SetColour( int n, RGBx const& c ) { GetAnim().GetPalette().SetColour(n,c); }
 //    RGBx const* GetPaletteConst() const { return GetAnimConst().GetPaletteConst().rawconst(); }
 
     Palette const& PaletteConst() const { return m_Anim.GetPaletteConst(); }
-
-    // project holds FG and BG pens
-	VColour FGPen() const { return m_FGPen; }
-	VColour BGPen() const { return m_BGPen; }
-	RGBx FGPenRGB() const;
-	RGBx BGPenRGB() const;
-	void SetFGPen( VColour c );
-	void SetBGPen( VColour c );
-
 
     // return current filename of project (empty string if no name)
     std::string const& Filename() const { return m_Filename; }
@@ -130,8 +123,6 @@ private:
 
     bool m_Expendable;
 
-    VColour m_FGPen;
-    VColour m_BGPen;
 
     // anim stores all the image data (even if it's a single frame anim :-)
     Anim m_Anim;

@@ -13,24 +13,18 @@
 
 Project::Project( std::string const& filename ) :
     m_Expendable(false),
-    m_FGPen(1),
-    m_BGPen(0),
     m_DrawTool(0),
     m_DrawFrame(0),
     m_DrawBackup(FMT_I8,1,1),
     m_Modified( false )
 {
     m_Anim.Load( filename.c_str() );
-    if(m_Anim.TransparentIdx() != -1)
-        SetBGPen(m_Anim.TransparentIdx());
     m_Filename = filename;
 }
 
 
 Project::Project() :
     m_Expendable(true),
-    m_FGPen(1),
-    m_BGPen(0),
     m_DrawTool(0),
     m_DrawFrame(0),
     m_DrawBackup(FMT_I8,1,1), // ugh
@@ -48,8 +42,6 @@ Project::Project() :
 
 Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frames ) :
     m_Expendable(false),
-    m_FGPen(1),
-    m_BGPen(0),
     m_DrawTool(0),
     m_DrawFrame(0),
     m_DrawBackup(fmt,1,1), // ugh
@@ -122,9 +114,9 @@ void Project::ReplacePalette(Palette* newpalette)
 }
 
 
-void Project::Save( std::string const& filename, bool savetransparency )
+void Project::Save( std::string const& filename, bool /* savetransparency */ )
 {
-    m_Anim.SetTransparentIdx(savetransparency ? BGPen().i : -1);
+    //m_Anim.SetTransparentIdx(savetransparency ? BGPen().i : -1);
     m_Anim.Save(filename.c_str());
     SetModifiedFlag(false);
     m_Filename = filename;
@@ -329,51 +321,24 @@ void Project::PaletteChange_Rollback()
 }
 
 
-void Project::SetFGPen( VColour c )
+PenColour Project::PickUpPen(Point const& pt, int frame) const
 {
-    m_FGPen=c;
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnPenChange();
-    }
-}
-
-void Project::SetBGPen( VColour c )
-{
-    m_BGPen=c;
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnPenChange();
-    }
-}
-
-RGBx Project::FGPenRGB() const
-{
-    switch(GetAnimConst().Fmt())
+    Img const& srcimg = GetAnimConst().GetFrameConst(frame);
+    switch(srcimg.Fmt())
     {
     case FMT_I8:
-        return GetAnimConst().GetPaletteConst().GetColour(FGPen().i);
+        {
+            I8 const* src = srcimg.PtrConst_I8(pt.x,pt.y);
+            return PenColour(GetColour(*src),*src);
+        }
+        break;
     case FMT_RGBX8:
-        return RGBx(FGPen().rgbx);
-    default:
-        assert(false);
-        return RGBx();
-    }
-}
-
-RGBx Project::BGPenRGB() const
-{
-    switch(GetAnimConst().Fmt())
-    {
-    case FMT_I8:
-        return GetAnimConst().GetPaletteConst().GetColour(BGPen().i);
-    case FMT_RGBX8:
-        return RGBx(BGPen().rgbx);
-    default:
-        assert(false);
-        return RGBx();
+        {
+            RGBX8 const* src = srcimg.PtrConst_RGBX8(pt.x,pt.y);
+            // TODO: could search for a palette index too...
+            return PenColour(*src);
+        }
+        break;
     }
 }
 

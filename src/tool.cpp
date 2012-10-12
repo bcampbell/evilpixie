@@ -406,7 +406,6 @@ void PencilTool::Plot_cb( int x, int y, void* user )
         }
         else
         {
-            RGBx c = brush.TransparentColour().rgb();
             BlitTransparent( brush, brush.Bounds(),
                 target, dmg,
                 brush.TransparentColour() );
@@ -1180,7 +1179,6 @@ void FilledCircleTool::Cursor_hline_cb( int x0, int x1, int y, void* user )
 
     FilledCircleTool* that = (FilledCircleTool*)user;
     EditView& view = *that->m_View;
-    Project& proj = view.Proj();
 
     PenColour c;
     if( that->m_DownButton == DRAW )
@@ -1220,12 +1218,12 @@ void EyeDropperTool::OnDown( EditView& view, Point const& p, Button b )
     if( !proj.GetAnim().GetFrame(view.Frame()).Bounds().Contains(p ) )
         return;
 
-    // TODO:
-    uint8_t c = proj.GetAnim().GetFrame(view.Frame()).GetPixel(p);
+    PenColour c = proj.PickUpPen(p, view.Frame());
+
     if( b == DRAW )
-        proj.SetFGPen(c);
+        Owner().SetFGPen(c);
     else if( b == ERASE )
-        proj.SetBGPen(c);
+        Owner().SetBGPen(c);
 
     Owner().UseTool( m_PreviousToolType );
 }
