@@ -13,139 +13,6 @@
 
 #include <cstdio>
 
-// helper
-void line(int x0, int y0, int x1, int y1, void (*plot)(int x, int y, void* user ), void* userdata )
-{
-    int dy = y1-y0;
-    int dx = x1-x0;
-    int xinc;
-    int yinc;
-
-    if( dx<0 )
-        { xinc=-1; dx=-dx; }
-    else
-        { xinc=1; }
-    dx*=2;
-
-    if( dy<0 )
-        { dy=-dy; yinc=-1; }
-    else
-        { yinc = 1; }
-    dy*=2;
-
-    plot( x0, y0, userdata );
-    if( dx>dy )
-    {
-        // step along x axis
-        int f = dy-(dx/2);
-        while (x0 != x1)
-        {
-            if( f>=0 )
-            {
-                y0 += yinc;
-                f -= dx;
-            }
-            f += dy;
-            x0 += xinc;
-            plot( x0, y0, userdata );
-        }
-    }
-    else
-    {
-        // step along y axis
-        int f = dx-(dy/2);
-        while( y0 != y1 )
-        {
-            if (f >= 0)
-            {
-                x0 += xinc;
-                f -= dy;
-            }
-            f += dx;
-            y0 += yinc;
-            plot( x0, y0, userdata );
-        }
-    }
-}
-
-
-//
-// Adapted from:
-// http://willperone.net/Code/ellipse.php
-//
-void EllipseBresenham(int xc, int yc, int r1, int r2,
-    void (*drawpixel)(int x, int y, void* user ), void* userdata )
-{
-	int x= 0, y= r2, 
-		a2= r1*r1, b2= r2*r2, 
-		S, T;
-
-	S = a2*(1-2*r2) + 2*b2;
-	T = b2 - 2*a2*(2*r2-1);
-	drawpixel(xc-x, yc-y, userdata);
-	drawpixel(xc+x, yc+y, userdata);
-	drawpixel(xc-x, yc+y, userdata);
-	drawpixel(xc+x, yc-y, userdata);	
-	do {
-		if (S < 0)
-		{
-			S += 2*b2*(2*x + 3);
-			T += 4*b2*(x + 1);
-			x++;
-		} else 
-		if (T < 0)
-		{
-			S += 2*b2*(2*x + 3) - 4*a2*(y - 1);
-			T += 4*b2*(x + 1) - 2*a2*(2*y - 3);
-			x++;
-			y--;
-		} else {
-			S -= 4*a2*(y - 1);
-			T -= 2*a2*(2*y - 3);
-			y--;
-		}
-		drawpixel(xc-x, yc-y, userdata);
-		drawpixel(xc+x, yc+y, userdata);
-		drawpixel(xc-x, yc+y, userdata);
-		drawpixel(xc+x, yc-y, userdata);
-	} while (y > 0);
-}
-
-
-void FilledEllipseBresenham(int xc, int yc, int r1, int r2,
-    void (*drawhline)(int x0, int x1, int y, void* user ), void* userdata )
-{
-	int x= 0, y= r2, 
-		a2= r1*r1, b2= r2*r2, 
-		S, T;
-
-	S = a2*(1-2*r2) + 2*b2;
-	T = b2 - 2*a2*(2*r2-1);
-    drawhline( xc-x, xc+x, yc-y, userdata );
-    drawhline( xc-x, xc+x, yc+y, userdata );
-	do {
-		if (S < 0)
-		{
-			S += 2*b2*(2*x + 3);
-			T += 4*b2*(x + 1);
-			x++;
-		} else 
-		if (T < 0)
-		{
-			S += 2*b2*(2*x + 3) - 4*a2*(y - 1);
-			T += 4*b2*(x + 1) - 2*a2*(2*y - 3);
-			x++;
-			y--;
-		} else {
-			S -= 4*a2*(y - 1);
-			T -= 2*a2*(2*y - 3);
-			y--;
-		}
-        drawhline( xc-x, xc+x, yc-y, userdata );
-        drawhline( xc-x, xc+x, yc+y, userdata );
-	} while (y > 0);
-}
-
 // helper for drawing cursor (using FG pen)
 void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
 {
@@ -158,7 +25,6 @@ void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
     {
         BlitZoomMatte( b, b.Bounds(),
             view.Canvas(), viewdmg,
-            view.Proj().PaletteConst(),
             view.Zoom(),
             b.TransparentColour(),
             view.Ed().FGPen() );
@@ -184,7 +50,6 @@ void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
 
     BlitZoomMatte( b, b.Bounds(),
         view.Canvas(), viewdmg,
-        view.Proj().PaletteConst(),
         view.Zoom(),
         b.TransparentColour(),
         view.Ed().BGPen() );
@@ -298,7 +163,7 @@ void PencilTool::OnMove( EditView&, Point const& p)
     else
     {
         // TODO: should not draw first point (m_Pos) - it's already been drawn.
-        line( m_Pos.x, m_Pos.y, p.x, p.y, Plot_cb, this );
+        WalkLine( m_Pos.x, m_Pos.y, p.x, p.y, Plot_cb, this );
     }
     m_Pos = p;
 }
@@ -405,7 +270,7 @@ void LineTool::OnUp( EditView& view, Point const& p, Button b )
     m_To = p;
 
     view.Proj().Draw_Begin(this,view.Frame());
-    line( m_From.x, m_From.y, m_To.x, m_To.y, Plot_cb, this );
+    WalkLine( m_From.x, m_From.y, m_To.x, m_To.y, Plot_cb, this );
     view.Proj().Draw_Commit();
     m_DownButton = NONE;
     m_View = 0;
@@ -462,7 +327,7 @@ void LineTool::DrawCursor( EditView& view )
     }
     else
     {
-        line( m_From.x, m_From.y, m_To.x, m_To.y, PlotCursor_cb, this );
+        WalkLine( m_From.x, m_From.y, m_To.x, m_To.y, PlotCursor_cb, this );
     }
     view.AddCursorDamage( m_CursorDamage );
 }
@@ -936,7 +801,7 @@ void CircleTool::OnUp( EditView& view, Point const& p, Button b )
     view.Proj().Draw_Begin(this,view.Frame());
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
-    EllipseBresenham( m_From.x, m_From.y, rx, ry, Plot_cb, this );
+    WalkEllipse( m_From.x, m_From.y, rx, ry, Plot_cb, this );
     view.Proj().Draw_Commit();
     m_DownButton = NONE;
     m_View = 0;
@@ -997,7 +862,7 @@ void CircleTool::DrawCursor( EditView& view )
     {
         int rx = std::abs( m_To.x - m_From.x );
         int ry = std::abs( m_To.y - m_From.y );
-        EllipseBresenham( m_From.x, m_From.y, rx, ry, PlotCursor_cb, this );
+        WalkEllipse( m_From.x, m_From.y, rx, ry, PlotCursor_cb, this );
     }
     view.AddCursorDamage( m_CursorDamage );
 }
@@ -1071,7 +936,7 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
     view.Proj().Draw_Begin(this,view.Frame());
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
-    FilledEllipseBresenham( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
+    WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
     view.Proj().Draw_Commit();
     m_DownButton = NONE;
     m_View = 0;
@@ -1108,7 +973,7 @@ void FilledCircleTool::DrawCursor( EditView& view )
     {
         int rx = std::abs( m_To.x - m_From.x );
         int ry = std::abs( m_To.y - m_From.y );
-        FilledEllipseBresenham( m_From.x, m_From.y, rx, ry, Cursor_hline_cb, this );
+        WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Cursor_hline_cb, this );
     }
     view.AddCursorDamage( m_CursorDamage );
 }

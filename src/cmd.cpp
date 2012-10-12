@@ -1,5 +1,6 @@
 #include "cmd.h"
 #include "anim.h"
+#include "draw.h"
 #include "project.h"
 #include <assert.h>
 #include <cstdio>

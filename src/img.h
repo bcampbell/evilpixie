@@ -80,46 +80,5 @@ protected:
 
 
 
-void Blit(
-    Img const& srcimg,
-    Box const& srcbox,
-    Img& destimg,
-    Box& destbox);
-
-
-// destbox is changed to reflect the final clipped area on the dest Img
-void BlitMatte(
-    Img const& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox,
-    PenColour const& transparentcolour,
-    PenColour const& mattecolour );
-
-// destbox is changed to reflect the final clipped area on the dest Img
-void BlitTransparent(
-    Img const& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox,
-    PenColour const& transparentcolour );
-
-// Same as Blit, except that srcimg is replaced by destimg
-void BlitSwap(
-    Img& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox);
-
-void BlitZoomTransparent(
-    Img const& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox,
-    Palette const& palette,
-    int zoom,
-    PenColour const& transparentcolour);
-
-
-void BlitZoomMatte(
-    Img const& srcimg, Box const& srcbox,
-    Img& destimg, Box& destbox,
-    Palette const& palette,
-    int zoom,
-    PenColour const& transparentcolour,
-    PenColour const& mattecolour );
-
 #endif // IMG_H
 

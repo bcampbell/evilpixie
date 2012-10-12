@@ -1,6 +1,7 @@
 #include "project.h"
 #include "projectlistener.h"
 #include "editview.h"
+#include "draw.h"
 #include "cmd.h"
 #include "colours.h"
 #include "editor.h"
