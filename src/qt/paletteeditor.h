@@ -20,6 +20,10 @@ public:
 	virtual void OnDamaged( Box const& viewdmg );
     virtual void OnPaletteChanged( int n, RGBx const& c );
     virtual void OnPaletteReplaced();
+
+public slots:
+    void colourPicked(int idx);
+    void SetSelected(int idx);
 private:
     Project& m_Proj;
     int m_Selected;

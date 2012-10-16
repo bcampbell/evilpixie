@@ -144,17 +144,24 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         m_ColourTab->setDocumentMode(true);
         layout->addWidget( m_ColourTab, 5,1 );
 
+        if(Proj().Fmt() == FMT_RGBX8)
+        {
+            m_RGBPicker = new RGBPickerWidget();
+            connect(m_RGBPicker, SIGNAL(pickedLeftButton(RGBx)), this, SLOT( fgColourPickedRGB(RGBx)));
+            connect(m_RGBPicker, SIGNAL(pickedRightButton(RGBx)), this, SLOT( bgColourPickedRGB(RGBx)));
+            m_ColourTab->addTab(m_RGBPicker, "RGB");
+        }
 
+        {
         m_PaletteWidget = new PaletteWidget(Proj().PaletteConst());
-
         connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
         connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
+//            QIcon icon;
+//        icon.addFile( ICONDIR "/penciltool.png", QSize(), QIcon::Normal, QIcon::Off );
+//        m_ColourTab->addTab(m_PaletteWidget, icon, "");
         m_ColourTab->addTab(m_PaletteWidget, "Palette");
+        }
 
-        m_RGBPicker = new RGBPickerWidget();
-        connect(m_RGBPicker, SIGNAL(pickedLeftButton(RGBx)), this, SLOT( fgColourPickedRGB(RGBx)));
-        connect(m_RGBPicker, SIGNAL(pickedRightButton(RGBx)), this, SLOT( bgColourPickedRGB(RGBx)));
-        m_ColourTab->addTab(m_RGBPicker, "RGB");
     }
 
     /* status bar */
@@ -319,7 +326,11 @@ void EditorWindow::OnPenChanged()
 
         //assert(Proj().GetAnimConst().Fmt()==FMT_I8);
         if(FGPen().IdxValid())
+        {
             m_PaletteWidget->SetLeftSelected( FGPen().idx() );
+            if( m_PaletteEditor )
+                m_PaletteEditor->SetSelected(FGPen().idx());
+        }
         if(BGPen().IdxValid())
             m_PaletteWidget->SetLeftSelected( BGPen().idx() );
     }
@@ -329,9 +340,8 @@ void EditorWindow::OnPaletteChanged( int n, RGBx const& c )
 {
     // make sure the gui reflects any palette changes
     m_PaletteWidget->SetColour(n,c);
-
-    OnPenChanged();
 }
+
 
 void EditorWindow::OnPaletteReplaced()
 {
@@ -341,8 +351,6 @@ void EditorWindow::OnPaletteReplaced()
         RGBx c = Proj().GetColour(n);
         m_PaletteWidget->SetColour(n,c);
     }
-
-    OnPenChanged();
 }
 
 void EditorWindow::OnModifiedFlagChanged( bool )

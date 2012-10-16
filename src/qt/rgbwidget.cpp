@@ -2,6 +2,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <QGridLayout>
+#include <cstdio>
 
 
 RGBWidget::RGBWidget( QWidget* parent ) :
@@ -42,16 +43,19 @@ QColor RGBWidget::colour() const
 
 void RGBWidget::setColour( QColor const& c )
 {
-    m_Sliders[0]->setValue( c.red() );
-    m_Sliders[1]->setValue( c.green() );
-    m_Sliders[2]->setValue( c.blue() );
-    QString s;
-    s.setNum(m_Sliders[0]->value());
-    m_Labels[0]->setText( s );
-    s.setNum(m_Sliders[1]->value());
-    m_Labels[1]->setText( s );
-    s.setNum(m_Sliders[2]->value());
-    m_Labels[2]->setText( s );
+    int rgb[3];
+    c.getRgb(&rgb[0], &rgb[1], &rgb[2]);
+
+    int i;
+    for( i=0; i<3; ++i)
+    {
+        bool old = m_Sliders[i]->blockSignals(true);
+        m_Sliders[i]->setValue(rgb[i]);
+        QString s;
+        s.setNum(m_Sliders[i]->value());
+        m_Labels[i]->setText( s );
+        m_Sliders[i]->blockSignals(old);
+    }
 }
 
 void RGBWidget::redChanged(int)

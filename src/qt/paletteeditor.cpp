@@ -38,6 +38,7 @@ PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :
     }
     connect( m_RGBWidget, SIGNAL( colourChanged() ), this, SLOT( colourChanged() ) );
     connect( m_PaletteWidget, SIGNAL( rangeAltered() ), this, SLOT( paletteRangeAltered() ) );
+    connect( m_PaletteWidget, SIGNAL( pickedLeftButton(int) ), this, SLOT( colourPicked(int) ) );
     connect( m_SpreadButton, SIGNAL( clicked() ), this, SLOT( spreadColours() ) );
 
     m_SpreadButton->setEnabled( m_PaletteWidget->RangeValid() );
@@ -50,6 +51,23 @@ PaletteEditor::~PaletteEditor()
     m_Proj.RemoveListener( this );
 }
 
+
+void PaletteEditor::colourPicked(int idx)
+{
+    m_Selected = idx;
+    RGBx c( m_Proj.GetColour( idx ) );
+    m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
+}
+
+void PaletteEditor::SetSelected(int idx)
+{
+    if( m_Selected==idx )
+        return;
+    m_Selected = idx;
+    m_PaletteWidget->SetLeftSelected(idx);
+    RGBx c( m_Proj.GetColour( idx ) );
+    m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
+}
 
 void PaletteEditor::OnDamaged( Box const& )
 {
