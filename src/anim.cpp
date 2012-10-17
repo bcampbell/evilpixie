@@ -274,7 +274,7 @@ void Anim::Save( const char* filename )
     int y;
     for( y=0; y<img.H(); ++y )
     {
-        const uint8_t* src = img.PtrConst( 0, (img.H()-1)-y );
+        const uint8_t* src = img.PtrConst_I8( 0, (img.H()-1)-y );
         ilSetPixels( 0,y,0, img.W(),1,1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, (void*)src );
     }
 
@@ -395,7 +395,7 @@ void Anim::SaveGif( const char* filename )
             int y;
             for(y=0; y<img.H(); ++y)
             {
-                GifPixelType* pix = (GifPixelType*)img.PtrConst(0,y);
+                GifPixelType* pix = (GifPixelType*)img.PtrConst_I8(0,y);
                 if(EGifPutLine(f, pix, img.W()) != GIF_OK)
                 {
                     throw Wobbly( "gif error (code %d)", filename, GifLastError() );

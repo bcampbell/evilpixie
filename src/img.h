@@ -29,12 +29,6 @@ public:
 		{ return m_Bounds.w; }
 	int H() const
 		{ return m_Bounds.h; }
-    // TODO: Kill or hide
-	uint8_t* Ptr( int x, int y )
-		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
-    // TODO: Kill or hide
-	uint8_t const* PtrConst( int x, int y ) const
-		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
 
 	I8* Ptr_I8( int x, int y )
 		{ assert(Fmt()==FMT_I8); return (I8*)Ptr(x,y); }
@@ -76,6 +70,11 @@ protected:
     int m_BytesPerRow;
     Box m_Bounds;
 	uint8_t* m_Pixels;
+private:
+	uint8_t* Ptr( int x, int y )
+		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
+	uint8_t const* PtrConst( int x, int y ) const
+		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
 };
 
 
