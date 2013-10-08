@@ -1,6 +1,12 @@
 TODO
 ====
 
+misc:
+
+- brush rotate (by 90 degrees)
+- (DONE) BUG: XFLip/YFlip assert if used on rgb image?
+- BUG: crap error messages on bad file load
+
 For initial release:
 
 - (DONE) provide reasonable default palette

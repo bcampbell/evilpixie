@@ -109,7 +109,6 @@ void Img::FillBox( PenColour const& pen, Box& b )
 
 void Img::XFlip()
 {
-    assert(Fmt()==FMT_I8);
     int y;
     for(y=0; y<H(); ++y)
     {
@@ -134,7 +133,6 @@ void Img::XFlip()
 
 void Img::YFlip()
 {
-    assert(Fmt()==FMT_I8);
     int y;
     for(y=0; y<H()/2; ++y)
     {
