@@ -30,6 +30,8 @@ Img::Img( Img const& other ) :
     m_Pixels(0)
 {
     init();
+    Box b(m_Bounds);
+    Blit(other, other.Bounds(), *this, b);
 }
     
 Img::Img( Img const& other, Box const& otherarea ) :
