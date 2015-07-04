@@ -2,7 +2,7 @@
 #define PALETTEWIDGET_H
 
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #include <cstdio>
 

@@ -4,7 +4,7 @@
 #include "cmd.h"
 #include "editor.h"
 #include "util.h"
-#include "wobbly.h"
+#include "exception.h"
 
 #include <assert.h>
 #include <cstdio>

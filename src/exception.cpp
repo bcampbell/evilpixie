@@ -1,7 +1,7 @@
 
 
 
-#include "wobbly.h"
+#include "exception.h"
 #include <cstdio>
 #include <cstdarg>
 
@@ -9,7 +9,7 @@
 #define vsnprintf _vsnprintf
 #endif
 
-Wobbly::Wobbly( const char* fmt, ... )
+Exception::Exception( const char* fmt, ... )
 {
 	va_list ap;
 	va_start( ap,fmt);

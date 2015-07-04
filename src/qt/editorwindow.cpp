@@ -2,7 +2,7 @@
 #include "../project.h"
 #include "../brush.h"
 #include "../util.h"
-#include "../wobbly.h"
+#include "../exception.h"
 #include "../cmd.h"
 #include "editorwindow.h"
 #include "editviewwidget.h"
@@ -16,27 +16,32 @@
 #ifdef WIN32
 #include <unistd.h> // for getcwd()
 #endif
-#include <QApplication>
-#include <QPushButton>
-#include <QButtonGroup>
-#include <QToolButton>
-#include <QVBoxLayout>
-#include <QGridLayout>
-#include <QWidget>
-#include <QLabel>
-#include <QFrame>
-#include <QFileDialog>
-#include <QStatusBar>
-#include <QMenuBar>
-#include <QMessageBox>
-#include <QAction>
+
+#include <QtWidgets/QWidget>
+
 #include <QPainter>
+
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QShortcut>
+#include <QtWidgets/QTextEdit>
+
 #include <QCloseEvent>
 #include <QCursor>
-#include <QShortcut>
-#include <QTextEdit>
 
 
+#include <unistd.h>
 
 #define ICONDIR EVILPIXIE_DATA_DIR "/icons"
 
@@ -577,7 +582,7 @@ void EditorWindow::do_loadpalette()
         Palette* p = Palette::Load(filename.toStdString().c_str());
         Proj().ReplacePalette(p);
     }
-    catch( Wobbly const& e )
+    catch( Exception const& e )
     {
         GUIShowError( e.what() );
     }
@@ -623,7 +628,7 @@ void EditorWindow::do_open()
             this->close();
 
     }
-    catch( Wobbly const& e )
+    catch( Exception const& e )
     {
         GUIShowError( e.what() );
     }
@@ -638,7 +643,7 @@ void EditorWindow::do_save()
     {
         Proj().Save( Proj().Filename(), m_SaveBGAsTransparent );
     }
-    catch( Wobbly const& e )
+    catch( Exception const& e )
     {
         GUIShowError( e.what() );
     }
@@ -676,7 +681,7 @@ void EditorWindow::do_saveas()
     {
         Proj().Save( filename.toStdString(), m_SaveBGAsTransparent );
     }
-    catch( Wobbly const& e )
+    catch( Exception const& e )
     {
         GUIShowError( e.what() );
     }

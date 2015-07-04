@@ -1,7 +1,7 @@
 #ifndef MISCWINDOWS_H
 #define MISCWINDOWS_H
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 
 class AboutBox : public QDialog
 {
