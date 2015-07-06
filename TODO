@@ -33,10 +33,16 @@ LATER
 =====
 
 - paletteeditor
-    - allow ad-hoc layout (and save in custom PNG chunk)
+    - hold ctrl to copy colours?
+    - hsv controls (something with brightness control at least)
+    - curve-based spread tool
+    - ad-hoc layout (and save in custom PNG chunk)
     - textboxes for each component
+    - support restricted colour palettes (eg 12bit colour, 555, 565)
     - hex/dec
     - html colour box
+    - method to pick colours from image or current pen (on rgb images,
+       pen isn't necessarily from the palette)
 - brush flip (X and Y)
 - support palettes with <256 colours
 - palette animation (colour cycling)
@@ -52,8 +58,6 @@ LATER
   - graphicsgale
   - ds formats?
 - layers
-- support for non-indexed images (rgba)
-- support restricted colour palettes (eg 12bit colour)
 
 
 DevIL issues
@@ -74,6 +78,8 @@ Colour key setting is per format (one for png, another for gif)
 
 ilRegisterPal name is misleading (not really part of register fns).
 Should be ilSetPal() or something.
+
+ilRegister* fns are supposed to be for use by file format extensions...
 
 IFF loading: unify frontend for ILBM and CIMG because they share .iff
 filename extension
