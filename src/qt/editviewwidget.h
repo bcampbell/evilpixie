@@ -5,12 +5,12 @@
 #include <cstdio>
 #include "../editview.h"
 
-#include <QWidget>
-
+#include <QtWidgets/QWidget>
 
 class EditViewWidget : public QWidget, public EditView
 {
     Q_OBJECT
+
 public:
 	EditViewWidget( Editor& editor );
 

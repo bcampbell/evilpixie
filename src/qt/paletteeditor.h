@@ -1,7 +1,7 @@
 #ifndef PALETTEEDITOR_H
 #define PALETTEEDITOR_H
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 #include "../projectlistener.h"
 
 class PaletteWidget;

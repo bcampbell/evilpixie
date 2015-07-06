@@ -1,7 +1,7 @@
 #ifndef RGBWIDGET_H
 #define RGBWIDGET_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QColor>
 
 class QSlider;

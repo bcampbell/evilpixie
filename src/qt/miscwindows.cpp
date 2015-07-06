@@ -2,10 +2,10 @@
 #include "../global.h"
 #include <QFile>
 #include <QString>
-#include <QTextEdit>
-#include <QLabel>
-#include <QDialogButtonBox>
-#include <QVBoxLayout>
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QVBoxLayout>
 
 HelpWindow::HelpWindow()
 {

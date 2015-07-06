@@ -1,7 +1,7 @@
 #ifndef RESIZEPROJECTDIALOG_H
 #define RESIZEPROJECTDIALOG_H
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 
 //class QDialogButtonBox;
 //class QLabel;

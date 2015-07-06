@@ -1,7 +1,7 @@
 #ifndef NEWPROJECTDIALOG_H
 #define NEWPROJECTDIALOG_H
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 
 //class QDialogButtonBox;
 //class QLabel;

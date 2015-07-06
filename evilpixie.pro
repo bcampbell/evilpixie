@@ -1,16 +1,16 @@
 TARGET = evilpixie
-CONFIG += qt
+#CONFIG += qt
+QT += widgets
 
 win32 {
     INCLUDEPATH = /c/mingw/gnuwin32/include
     LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
-    ; to make sure we don't compile a console app:
+# to make sure we don't compile a console app:
     CONFIG += windows
     RC_FILE = win32/evilpixie.rc
 }
 
 unix:LIBS = -lgif -lXpm -lIL
-
 
 SOURCES += src/anim.cpp \
     src/app.cpp \
@@ -24,7 +24,7 @@ SOURCES += src/anim.cpp \
     src/palette.cpp \
     src/project.cpp \
     src/tool.cpp \
-    src/wobbly.cpp \
+    src/exception.cpp \
     src/util.cpp \
     src/xpmsupport.cpp \
     src/qt/editorwindow.cpp \
@@ -52,7 +52,7 @@ HEADERS += src/anim.h \
     src/project.h \
     src/tool.h \
     src/util.h \
-    src/wobbly.h \
+    src/exception.h \
     src/qt/editorwindow.h \
     src/qt/palettewidget.h \
     src/qt/paletteeditor.h \
@@ -76,6 +76,10 @@ HEADERS += src/anim.h \
 
     target.path = $${PREFIX}/bin
     INSTALLS += target datafiles
+
 }
+
+RESOURCES += \
+    resources.qrc
 
 

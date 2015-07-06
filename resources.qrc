@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/">
+        <file>data/icons/brush1.xpm</file>
+        <file>data/icons/brush4.xpm</file>
+        <file>data/icons/circletool.png</file>
+        <file>data/icons/filledcircletool.png</file>
+        <file>data/icons/recttool.png</file>
+        <file>data/icons/brush2.xpm</file>
+        <file>data/icons/brushcustom.png</file>
+        <file>data/icons/cursor_crosshair.png</file>
+        <file>data/icons/filledrecttool.png</file>
+        <file>data/icons/linetool.png</file>
+        <file>data/icons/brush3.xpm</file>
+        <file>data/icons/brushpickuptool.png</file>
+        <file>data/icons/cursor_eyedropper.png</file>
+        <file>data/icons/eyedroppertool.png</file>
+        <file>data/icons/filltool.png</file>
+        <file>data/icons/penciltool.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>data/default.gpl</file>
+        <file>data/help.html</file>
+    </qresource>
+</RCC>
