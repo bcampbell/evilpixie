@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #include "img.h"
-#include "wobbly.h"
+#include "exception.h"
 
 // NOTE: Not actually included in build right now, but left in for easy reference
 
@@ -12,11 +12,11 @@ void LoadGIF( Img& img, RGBx* palette, const char* filename )
 {
     GifFileType* f = DGifOpenFileName( filename );
     if( !f )
-        throw Wobbly( "couldn't open '%s' (code %d)", filename, GifLastError() );
+        throw Exception( "couldn't open '%s' (code %d)", filename, GifLastError() );
 
     if( DGifSlurp( f ) != GIF_OK )
     {
-        throw Wobbly( "couldn't load '%s' (code %d)", filename, GifLastError() );
+        throw Exception( "couldn't load '%s' (code %d)", filename, GifLastError() );
     }
 
 //    printf("SWidth: %d\n", f->SWidth );
@@ -53,12 +53,12 @@ void SaveGIF( Img const& img, RGBx const* palette, const char* filename )
     GifFileType* gif = EGifOpenFileName(filename, 0 );
     if( gif == NULL )
     {
-        throw Wobbly( "EGifOpenFileName failed (%d)", GifLastError() );
+        throw Exception( "EGifOpenFileName failed (%d)", GifLastError() );
     }
 
     ColorMapObject* colormap = MakeMapObject( 256, NULL );
     if( !colormap )
-        throw Wobbly( "MakeMapObject failed" );
+        throw Exception( "MakeMapObject failed" );
     int i;
     assert( colormap->ColorCount == 256 );
     for( i=0; i<=255; ++i )
@@ -76,7 +76,7 @@ void SaveGIF( Img const& img, RGBx const* palette, const char* filename )
     if( status != GIF_OK )
     {
         FreeMapObject( colormap );
-        throw Wobbly( "EGifPutScreenDesc failed (%d)", GifLastError() );
+        throw Exception( "EGifPutScreenDesc failed (%d)", GifLastError() );
     }
 
     status = EGifPutImageDesc( gif,
@@ -86,7 +86,7 @@ void SaveGIF( Img const& img, RGBx const* palette, const char* filename )
     if( status != GIF_OK )
     {
         FreeMapObject( colormap );
-        throw Wobbly( "EGifPutImageDesc failed (%d)", GifLastError() );
+        throw Exception( "EGifPutImageDesc failed (%d)", GifLastError() );
     }
 
 
@@ -98,7 +98,7 @@ void SaveGIF( Img const& img, RGBx const* palette, const char* filename )
         if( status != GIF_OK )
         {
             FreeMapObject( colormap );
-            throw Wobbly( "EGifPutLine failed (%d)", GifLastError() );
+            throw Exception( "EGifPutLine failed (%d)", GifLastError() );
         }
     }
 

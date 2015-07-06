@@ -5,9 +5,9 @@
 #include "../palette.h"
 #include "../project.h"
 
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QPushButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QPushButton>
 
 
 PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :

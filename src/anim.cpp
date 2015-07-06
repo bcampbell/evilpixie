@@ -5,7 +5,7 @@
 
 #include "anim.h"
 #include "img.h"
-#include "wobbly.h"
+#include "exception.h"
 #include "util.h"
 
 
@@ -79,7 +79,7 @@ void Anim::Load( const char* filename )
     if( err != IL_NO_ERROR )
     {
         ilDeleteImages(1,&im);
-        throw Wobbly( "ILerror: 0x%x", err );
+        throw Exception( "ILerror: 0x%x", err );
     }
 
     int num_frames = ilGetInteger(IL_NUM_IMAGES);
@@ -91,7 +91,7 @@ void Anim::Load( const char* filename )
         if(ilActiveImage(frame)==IL_FALSE)
         {
             ilDeleteImages(1,&im);
-            throw Wobbly("ilActiveImage() failed (err 0x%x)",ilGetError());
+            throw Exception("ilActiveImage() failed (err 0x%x)",ilGetError());
         }
 
         int w = (int)ilGetInteger( IL_IMAGE_WIDTH );
@@ -120,7 +120,7 @@ void Anim::Load( const char* filename )
             if( pal_bytesperpixel != 3 )
             {
                 ilDeleteImages(1,&im);
-                throw Wobbly( "Unsupported palette type (%d bytes/pixel)", pal_bytesperpixel );
+                throw Exception( "Unsupported palette type (%d bytes/pixel)", pal_bytesperpixel );
             }
 
             int num_cols = (int)ilGetInteger( IL_PALETTE_NUM_COLS );
@@ -171,7 +171,7 @@ void Anim::Load( const char* filename )
         else
         {
             ilDeleteImages(1,&im);
-            throw Wobbly( "No palette - not an indexed image" );
+            throw Exception( "No palette - not an indexed image" );
         }
 
     }
@@ -184,12 +184,12 @@ void Anim::LoadGif( const char* filename )
 {
     GifFileType* f = DGifOpenFileName( filename );
     if( !f )
-        throw Wobbly( "couldn't open '%s' (code %d)", filename, GifLastError() );
+        throw Exception( "couldn't open '%s' (code %d)", filename, GifLastError() );
 
     if( DGifSlurp( f ) != GIF_OK )
     {
         DGifCloseFile(f);
-        throw Wobbly( "couldn't load '%s' (code %d)", filename, GifLastError() );
+        throw Exception( "couldn't load '%s' (code %d)", filename, GifLastError() );
     }
 #if 0
     printf("SWidth: %d\n", f->SWidth );
@@ -251,12 +251,12 @@ void Anim::Save( const char* filename )
     }
 
     if(NumFrames()>1)
-        throw Wobbly("Sorry... to save anims you need to use GIF format (for now)");
+        throw Exception("Sorry... to save anims you need to use GIF format (for now)");
 
     // OK then... just save first frame
     Img const& img = GetFrameConst(0);
     if(img.Fmt() != FMT_I8)
-        throw Wobbly("Sorry... only paletted images supported right now...");
+        throw Exception("Sorry... only paletted images supported right now...");
 
     ilSetInteger(IL_PNG_ALPHA_INDEX,TransparentIdx());
 
@@ -267,7 +267,7 @@ void Anim::Save( const char* filename )
     if( !ilTexImage( img.W(), img.H(), 1, 1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, NULL ) )
     {
         ilDeleteImages(1,&im);
-        throw Wobbly( "ilTexImage() failed)" );
+        throw Exception( "ilTexImage() failed)" );
     }
 
     /* copy in image, flipped (ilTexImage sets ORIGIN_LOWER_LEFT) */
@@ -299,12 +299,12 @@ void Anim::Save( const char* filename )
         ILenum err = ilGetError();
 
         if( err == IL_INVALID_EXTENSION )
-            throw Wobbly( "Invalid filename extension" );
+            throw Exception( "Invalid filename extension" );
         if( err == IL_FORMAT_NOT_SUPPORTED )
-            throw Wobbly( "File format not supported" );
+            throw Exception( "File format not supported" );
         else
         {
-            throw Wobbly( "ilSaveImage() failed (err 0x%x)", err );
+            throw Exception( "ilSaveImage() failed (err 0x%x)", err );
         }
     }
     ilDeleteImages(1,&im);
@@ -324,7 +324,7 @@ void Anim::SaveGif( const char* filename )
         f = EGifOpenFileName(filename, 0);
 
         if( !f )
-            throw Wobbly( "couldn't open '%s' (gif code %d)", filename, GifLastError() );
+            throw Exception( "couldn't open '%s' (gif code %d)", filename, GifLastError() );
 
         // TODO: per-frame palette support
         ColorMapObject* cmap = MakeMapObject( m_Palette.NumColours(), NULL);
@@ -346,7 +346,7 @@ void Anim::SaveGif( const char* filename )
             0,  // GifBackGround,
             cmap) != GIF_OK )
         {
-            throw Wobbly( "gif error (code %d)", filename, GifLastError() );
+            throw Exception( "gif error (code %d)", filename, GifLastError() );
         }
 
         if(TransparentIdx()!=-1) {
@@ -373,7 +373,7 @@ void Anim::SaveGif( const char* filename )
         {
             Img const& img = GetFrameConst(n);
             if(img.Fmt() != FMT_I8)
-                throw Wobbly("Sorry... must be paletted image (for now)");
+                throw Exception("Sorry... must be paletted image (for now)");
 /*
  * anim delay and transparent colour in extension?
             int EGifPutExtension(
@@ -389,7 +389,7 @@ void Anim::SaveGif( const char* filename )
                 FALSE,
                 NULL) != GIF_OK )
             {
-                throw Wobbly( "gif error (code %d)", filename, GifLastError() );
+                throw Exception( "gif error (code %d)", filename, GifLastError() );
             }
 
             int y;
@@ -398,7 +398,7 @@ void Anim::SaveGif( const char* filename )
                 GifPixelType* pix = (GifPixelType*)img.PtrConst_I8(0,y);
                 if(EGifPutLine(f, pix, img.W()) != GIF_OK)
                 {
-                    throw Wobbly( "gif error (code %d)", filename, GifLastError() );
+                    throw Exception( "gif error (code %d)", filename, GifLastError() );
                 }
             }
 

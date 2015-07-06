@@ -6,10 +6,10 @@
 #include "../app.h" // for NUM_STD_BRUSHES
 #include "../projectlistener.h"
 
-#include <QWidget>
+#include <QtWidgets/QtWidgets>
+#include <QtWidgets/QWidget>
 #include <QIcon>
 #include <QColor>
-#include <QToolButton>
 
 class EditViewWidget;
 class PaletteEditor;
@@ -25,9 +25,9 @@ class QTabWidget;
 
 class CurrentColourWidget : public QWidget
 {
-    Q_OBJECT;
+    Q_OBJECT
 public:
-    CurrentColourWidget( QWidget* parent=0 ) :
+    CurrentColourWidget(QWidget* parent=0 ) :
         QWidget(parent),
         m_FG(QColor(0,0,0)),
         m_BG(QColor(0,0,0) )

@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include "colours.h"
 #include "util.h"
-#include "wobbly.h"
+#include "exception.h"
 #include <string>
 #include <vector>
 
@@ -52,12 +52,12 @@ Palette* Palette::Load( const char* filename )
     Palette* palette = new Palette();
     FILE* fp = fopen( filename, "rb" );
     if( !fp )
-        throw Wobbly( "fopen failed" );
+        throw Exception( "fopen failed" );
     try
     {
         LoadGimpPalette(fp,*palette);
     }
-    catch( Wobbly const& e )
+    catch( Exception const& e )
     {
 
         fclose(fp);
@@ -92,7 +92,7 @@ static void LoadGimpPalette(FILE* fp, Palette& pal)
             if(args.size()==2 && args[0] == "GIMP" && args[1] == "Palette")
                 gotcookie = true;
             else
-                throw Wobbly("not a GIMP palette");
+                throw Exception("not a GIMP palette");
         }
 
         if( args[0] == "Name:" )
@@ -120,7 +120,7 @@ static void LoadGimpPalette(FILE* fp, Palette& pal)
 
     if( !feof(fp ) )
     {
-        throw Wobbly( "read error" );
+        throw Exception( "read error" );
     }
 
     pal.SetNumColours(idx);

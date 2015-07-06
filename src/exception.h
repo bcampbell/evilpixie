@@ -1,14 +1,14 @@
 
 
-#ifndef WOBBLY_H
-#define WOBBLY_H
+#ifndef Exception_H
+#define Exception_H
 
 // Exception class
 
-class Wobbly
+class Exception
 {
 public:
-	Wobbly( const char* fmt, ... );
+	Exception( const char* fmt, ... );
 	const char* what() const;
 protected:
 	enum { MAXLEN=256 };
@@ -16,7 +16,7 @@ protected:
 };
 
 
-inline const char* Wobbly::what() const
+inline const char* Exception::what() const
 {
 	return m_Message;
 }

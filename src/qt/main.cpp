@@ -1,7 +1,7 @@
 #include "qtapp.h"
 #include <IL/il.h>
 #include "../anim.h"
-#include "../wobbly.h"
+#include "../exception.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     {
         a.Load("examples/favicon.gif");
     }
-    catch( Wobbly e )
+    catch( Exception e )
     {
         printf("ERROR: %s\n",e.what());
     }

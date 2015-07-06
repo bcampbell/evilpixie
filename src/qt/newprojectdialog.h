@@ -2,7 +2,9 @@
 #define NEWPROJECTDIALOG_H
 
 #include <QDialog>
+#include <QtWidgets/QDialog>
 #include "../colours.h"
+
 //class QDialogButtonBox;
 //class QLabel;
 class QLineEdit;

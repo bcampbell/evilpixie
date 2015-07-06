@@ -1,7 +1,7 @@
 #include "rgbwidget.h"
-#include <QSlider>
-#include <QLabel>
-#include <QGridLayout>
+#include <QtWidgets/QSlider>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QGridLayout>
 #include <cstdio>
 
 

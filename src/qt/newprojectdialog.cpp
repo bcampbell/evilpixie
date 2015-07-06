@@ -1,4 +1,5 @@
-#include <QtGui>
+#include <QtWidgets/QtWidgets>
+#include <QtWidgets/QWidget>
 
 #include "newprojectdialog.h"
 
