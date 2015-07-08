@@ -79,7 +79,7 @@ void Anim::Load( const char* filename )
     if( err != IL_NO_ERROR )
     {
         ilDeleteImages(1,&im);
-        throw Exception( "ILerror: 0x%x", err );
+        throw Exception( "ILerror during load: 0x%x", err );
     }
 
     int num_frames = ilGetInteger(IL_NUM_IMAGES);
@@ -255,42 +255,67 @@ void Anim::Save( const char* filename )
 
     // OK then... just save first frame
     Img const& img = GetFrameConst(0);
-    if(img.Fmt() != FMT_I8)
-        throw Exception("Sorry... only paletted images supported right now...");
 
-    ilSetInteger(IL_PNG_ALPHA_INDEX,TransparentIdx());
 
     ILuint im;
     ilGenImages( 1, &im );
     ilBindImage( im );
 
-    if( !ilTexImage( img.W(), img.H(), 1, 1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, NULL ) )
+    //ILboolean ilTexImage(ILuint Width, ILuint Height, ILuint Depth, ILubyte NumChannels, ILenum Format, ILenum Type, void *Data);
+    //
+    if (img.Fmt() == FMT_I8)
     {
-        ilDeleteImages(1,&im);
-        throw Exception( "ilTexImage() failed)" );
-    }
+        ilSetInteger(IL_PNG_ALPHA_INDEX,TransparentIdx());
 
-    /* copy in image, flipped (ilTexImage sets ORIGIN_LOWER_LEFT) */
-    int y;
-    for( y=0; y<img.H(); ++y )
+        if( !ilTexImage( img.W(), img.H(), 1, 1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, NULL ) )
+        {
+            ilDeleteImages(1,&im);
+            throw Exception( "ilTexImage() failed)" );
+        }
+
+        /* copy in image, flipped (ilTexImage sets ORIGIN_LOWER_LEFT) */
+        int y;
+        for( y=0; y<img.H(); ++y )
+        {
+            I8 const* src = img.PtrConst_I8( 0, (img.H()-1)-y );
+            ilSetPixels( 0,y,0, img.W(),1,1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, (void*)src );
+        }
+
+
+
+        uint8_t tmp_palette[3*m_Palette.NumColours()];
+        int i;
+        uint8_t* p = tmp_palette;
+        for( i=0; i<=m_Palette.NumColours(); ++i )
+        {
+            RGBx c = m_Palette.GetColour(i);
+            *p++ = c.r;
+            *p++ = c.g;
+            *p++ = c.b;
+        }
+        ilRegisterPal( tmp_palette, 3*m_Palette.NumColours(), IL_PAL_RGB24 );
+    }
+    else if (img.Fmt() == FMT_RGBX8)
     {
-        const uint8_t* src = img.PtrConst_I8( 0, (img.H()-1)-y );
-        ilSetPixels( 0,y,0, img.W(),1,1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, (void*)src );
+        if( !ilTexImage( img.W(), img.H(), 1, 3, IL_RGB, IL_UNSIGNED_BYTE, NULL ) )
+        {
+            ilDeleteImages(1,&im);
+            throw Exception( "ilTexImage() failed)" );
+        }
+
+        /* copy in image, flipped (ilTexImage sets ORIGIN_LOWER_LEFT) */
+        int y;
+        for( y=0; y<img.H(); ++y )
+        {
+            RGBX8 const* src = img.PtrConst_RGBX8( 0, (img.H()-1)-y );
+            // KLUDGE: note IL_BGRA order (to match our real in-memory order BGRx. See colours.h)
+            ilSetPixels( 0,y,0, img.W(),1,1, IL_BGRA, IL_UNSIGNED_BYTE, (void*)src );
+        }
     }
-
-
-
-    uint8_t tmp_palette[3*m_Palette.NumColours()];
-    int i;
-    uint8_t* p = tmp_palette;
-    for( i=0; i<=m_Palette.NumColours(); ++i )
+    else
     {
-        RGBx c = m_Palette.GetColour(i);
-        *p++ = c.r;
-        *p++ = c.g;
-        *p++ = c.b;
+        assert(false);  // uhoh...
     }
-    ilRegisterPal( tmp_palette, 3*m_Palette.NumColours(), IL_PAL_RGB24 );
 
     ilEnable(IL_FILE_OVERWRITE);
     if( !ilSaveImage( filename ) )
