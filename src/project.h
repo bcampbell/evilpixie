@@ -18,6 +18,21 @@ class Tool;
 class ProjectListener;
 class Cmd;
 
+struct ProjSettings
+{
+    ProjSettings() :
+        PixW(1),
+        PixH(1)
+    {}
+
+    // pixel ratio. Usually 1:1 but might be 2:1 (C64 multicolour)
+    // or 1:2 (Amiga hires) say...
+    int PixW;
+    int PixH;
+};
+
+
+
 class Project
 {
 public:
@@ -25,6 +40,9 @@ public:
 	Project( PixelFormat fmt, int w, int h, Palette* palette=0, int num_frames=1 );
     Project(std::string const& filename);
 	virtual ~Project();
+
+
+    ProjSettings const& Settings() { return m_Settings; }
 
 	void AddListener( ProjectListener* l )
 		{ m_Listeners.insert( l ); }
@@ -120,6 +138,8 @@ public:
 
 private:
     Project( Project const& );  // disallowed
+
+    ProjSettings m_Settings;
 
     bool m_Expendable;
 

@@ -19,11 +19,12 @@ static void FloodFill_RGBX8( Img& img, Point const& start, RGBX8 newcolour, Box&
 static void clip_blit(
     Box const& srcbounds, Box& srcbox,
     Box const& destbounds, Box& destbox,
-    int zoom=1 )
+    int xzoom=1,
+    int yzoom=1 )
 {
     // srcbox has blit dimensions
-    destbox.w = srcbox.w*zoom;
-    destbox.h = srcbox.h*zoom;
+    destbox.w = srcbox.w*xzoom;
+    destbox.h = srcbox.h*yzoom;
 
     // clip destbox, then adjust srcbox to take into account any
     // modifications
@@ -31,10 +32,10 @@ static void clip_blit(
     int desty = destbox.y;
     destbox.ClipAgainst( destbounds );
 
-    srcbox.x += (destbox.x - destx)/zoom;
-    srcbox.y += (destbox.y - desty)/zoom;
-    srcbox.w = destbox.w/zoom;
-    srcbox.h = destbox.h/zoom;
+    srcbox.x += (destbox.x - destx)/xzoom;
+    srcbox.y += (destbox.y - desty)/yzoom;
+    srcbox.w = destbox.w/xzoom;
+    srcbox.h = destbox.h/yzoom;
 }
 
 
@@ -187,16 +188,18 @@ void BlitZoomTransparent(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
     Palette const& palette,
-    int zoom,
+    int xzoom,
+    int yzoom,
     PenColour const& transparentcolour)
 {
     assert( destimg.Fmt()==FMT_RGBX8);
     assert( srcimg.Bounds().Contains( srcbox ) );
-    assert( zoom >= 1 );
+    assert( xzoom >= 1 );
+    assert( yzoom >= 1 );
 
     Box destclipped( destbox );
     Box srcclipped( srcbox );
-    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped, zoom );
+    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped, xzoom, yzoom );
 
     int y;
     for( y=0; y<destclipped.H(); ++y )
@@ -207,7 +210,7 @@ void BlitZoomTransparent(
         {
         case FMT_I8:
             {
-                I8 const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                I8 const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom );
                 int n=0;
                 for( x=0; x<destclipped.W(); ++x )
                 {
@@ -217,7 +220,7 @@ void BlitZoomTransparent(
                         *dest = c;
                     }
                     ++dest;
-                    if( ++n >= zoom )
+                    if( ++n >= xzoom )
                     {
                         ++src;
                         n=0;
@@ -227,7 +230,7 @@ void BlitZoomTransparent(
             break;
         case FMT_RGBX8:
             {
-                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom );
                 int n=0;
                 for( x=0; x<destclipped.W(); ++x )
                 {
@@ -235,7 +238,7 @@ void BlitZoomTransparent(
                     if( c != transparentcolour.rgb())
                         *dest = c;
                     ++dest;
-                    if( ++n >= zoom )
+                    if( ++n >= xzoom )
                     {
                         ++src;
                         n=0;
@@ -252,17 +255,19 @@ void BlitZoomTransparent(
 void BlitZoomMatte(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
-    int zoom,
+    int xzoom,
+    int yzoom,
     PenColour const& transparentcolour,
     PenColour const& mattecolour )
 {
     assert( destimg.Fmt()==FMT_RGBX8);
     assert( srcimg.Bounds().Contains( srcbox ) );
-    assert( zoom >= 1 );
+    assert( xzoom >= 1 );
+    assert( yzoom >= 1 );
 
     Box destclipped( destbox );
     Box srcclipped( srcbox );
-    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped, zoom );
+    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped, xzoom,yzoom );
 
     int y;
     for( y=0; y<destclipped.H(); ++y )
@@ -273,14 +278,14 @@ void BlitZoomMatte(
         {
         case FMT_I8:
             {
-                I8 const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                I8 const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom );
                 int n=0;
                 for( x=0; x<destclipped.W(); ++x )
                 {
                     if( *src != transparentcolour.idx())
                         *dest = mattecolour.rgb();
                     ++dest;
-                    if( ++n >= zoom )
+                    if( ++n >= xzoom )
                     {
                         ++src;
                         n=0;
@@ -290,14 +295,14 @@ void BlitZoomMatte(
             break;
         case FMT_RGBX8:
             {
-                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.XMin()+0, srcclipped.YMin()+y/zoom );
+                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom );
                 int n=0;
                 for( x=0; x<destclipped.W(); ++x )
                 {
                     if( *src != transparentcolour.rgb())
                         *dest = mattecolour.rgb();
                     ++dest;
-                    if( ++n >= zoom )
+                    if( ++n >= xzoom )
                     {
                         ++src;
                         n=0;

@@ -15,6 +15,8 @@ EditView::EditView( Editor& editor, int w, int h ) :
     m_Panning(false),
     m_PanAnchor(0,0)
 {
+    m_XZoom = m_Zoom*editor.Proj().Settings().PixW;
+    m_YZoom = m_Zoom*editor.Proj().Settings().PixH;
     CenterView();
     DrawView(m_ViewBox);
     Proj().AddListener( this );
@@ -67,6 +69,8 @@ void EditView::SetZoom( int zoom )
     if(zoom == m_Zoom)
         return;
     m_Zoom = zoom;
+    m_XZoom = Proj().Settings().PixW*zoom;
+    m_YZoom = Proj().Settings().PixH*zoom;
     ConfineView();
     DrawView(m_ViewBox);
     Redraw(m_ViewBox);
@@ -281,8 +285,8 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
                     I8 const* src = img.PtrConst_I8( p.x,p.y );
                     while(x<=xmax)
                     {
-                        int cx = x + (m_Offset.x*m_Zoom);
-                        int pixstop = x + (m_Zoom-(cx%m_Zoom));
+                        int cx = x + (m_Offset.x*m_XZoom);
+                        int pixstop = x + (m_XZoom-(cx%m_XZoom));
                         if(pixstop>xmax)
                             pixstop=xmax+1;
                         RGBX8 c(Proj().PaletteConst().GetColour(*src++));
@@ -299,8 +303,8 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
                     RGBX8 const* src = img.PtrConst_RGBX8( p.x,p.y );
                     while(x<=xmax)
                     {
-                        int cx = x + (m_Offset.x*m_Zoom);
-                        int pixstop = x + (m_Zoom-(cx%m_Zoom));
+                        int cx = x + (m_Offset.x*m_XZoom);
+                        int pixstop = x + (m_XZoom-(cx%m_XZoom));
                         if(pixstop>xmax)
                             pixstop=xmax+1;
                         RGBX8 c = *src++;

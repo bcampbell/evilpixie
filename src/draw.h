@@ -28,13 +28,13 @@ void BlitSwap( Img& srcimg, Box const& srcbox, Img& destimg, Box& destbox);
 // Blit with a integer zoom factor, and a transparent colour
 // (palette required to blit from indexed to rgb image)
 void BlitZoomTransparent( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox,
-    Palette const& palette, int zoom,
+    Palette const& palette, int xzoom, int yzoom,
     PenColour const& transparentcolour);
 
 
 // Blit with a integer zoom factor, and a transparent colour
 void BlitZoomMatte( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox,
-    int zoom, PenColour const& transparentcolour, PenColour const& mattecolour );
+    int xzoom, int yzoom, PenColour const& transparentcolour, PenColour const& mattecolour );
 
 
 // sets damage to bounding rect for affected area

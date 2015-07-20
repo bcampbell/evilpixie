@@ -40,6 +40,8 @@ public:
 
 	Point const& Offset() const { return m_Offset; }
 	int Zoom() const { return m_Zoom; }
+	int XZoom() const { return m_XZoom; }
+	int YZoom() const { return m_YZoom; }
     int Frame() const { return m_Frame; }
 
 	void OnMouseDown( Point const& viewpos, Button button );
@@ -83,6 +85,8 @@ private:
     int m_Frame;
 
 	int m_Zoom;
+	int m_XZoom;
+	int m_YZoom;
 	// In project coords
 	Point m_Offset;
 
@@ -101,16 +105,16 @@ private:
 inline Point EditView::ViewToProj( Point const& viewpos ) const
 {
 	return Point(
-		viewpos.x/m_Zoom + m_Offset.x,
-		viewpos.y/m_Zoom + m_Offset.y
+		viewpos.x/m_XZoom + m_Offset.x,
+		viewpos.y/m_YZoom + m_Offset.y
 		);
 }
 
 inline Point EditView::ProjToView( Point const& projpos ) const
 {
 	return Point(
-		(projpos.x-m_Offset.x)*m_Zoom,
-		(projpos.y-m_Offset.y)*m_Zoom
+		(projpos.x-m_Offset.x)*m_XZoom,
+		(projpos.y-m_Offset.y)*m_YZoom
 		);
 }
 
@@ -118,16 +122,16 @@ inline Box EditView::ViewToProj( Box const& viewbox ) const
 {
     return Box(
         ViewToProj( viewbox.TopLeft() ),
-        viewbox.w/m_Zoom,
-        viewbox.h/m_Zoom );
+        viewbox.w/m_XZoom,
+        viewbox.h/m_YZoom );
 }
 
 inline Box EditView::ProjToView( Box const& projbox ) const
 {
     return Box(
         ProjToView( projbox.TopLeft() ),
-        projbox.w*m_Zoom,
-        projbox.h*m_Zoom );
+        projbox.w*m_XZoom,
+        projbox.h*m_YZoom );
 }
 
 

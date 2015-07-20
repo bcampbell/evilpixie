@@ -25,7 +25,8 @@ void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
     {
         BlitZoomMatte( b, b.Bounds(),
             view.Canvas(), viewdmg,
-            view.Zoom(),
+            view.XZoom(),
+            view.YZoom(),
             b.TransparentColour(),
             view.Ed().FGPen() );
     }
@@ -34,7 +35,8 @@ void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
         BlitZoomTransparent( b, b.Bounds(),
             view.Canvas(), viewdmg,
             view.Proj().PaletteConst(),
-            view.Zoom(),
+            view.XZoom(),
+            view.YZoom(),
             b.TransparentColour());
     }
 }
@@ -50,7 +52,8 @@ void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
 
     BlitZoomMatte( b, b.Bounds(),
         view.Canvas(), viewdmg,
-        view.Zoom(),
+        view.XZoom(),
+        view.YZoom(),
         b.TransparentColour(),
         view.Ed().BGPen() );
 }
@@ -106,14 +109,15 @@ void PlonkBrushToProj( EditView& view, Point const& pos, Box& projdmg, Button bu
 void DrawCrossHairCursor( EditView& view, Point const& centre, RGBx const& c )
 {
     Box const& bnd = view.Canvas().Bounds();
-    int zoom = view.Zoom();
+    int yzoom = view.XZoom();
+    int xzoom = view.YZoom();
     Point p = view.ProjToView(centre);
 
-    Box hbox( bnd.XMin(), p.y, bnd.W(), 1*zoom );
+    Box hbox( bnd.XMin(), p.y, bnd.W(), 1*xzoom );
     view.Canvas().FillBox( c,hbox );
     view.AddCursorDamage( hbox );
 
-    Box vbox( p.x, bnd.YMin(), 1*zoom, bnd.H() );
+    Box vbox( p.x, bnd.YMin(), 1*yzoom, bnd.H() );
     view.Canvas().FillBox( c,vbox );
     view.AddCursorDamage( vbox );
 }
