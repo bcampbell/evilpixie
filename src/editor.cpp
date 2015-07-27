@@ -4,6 +4,7 @@
 #include "brush.h"
 #include "project.h"
 #include "app.h"
+#include "cmd.h"
 
 #include <cassert>
 #include <stdint.h>
@@ -31,6 +32,7 @@ Editor::Editor( Project* proj ) :
 Editor::~Editor()
 {
     m_Project->RemoveListener(this);
+    DiscardUndoAndRedos();
 
     // ugliness - tool dtor might call Editor::SetMouseStyle()
     // we really want it to call the one in the derived (GUI-specific) class
@@ -164,4 +166,94 @@ void Editor::SetBGPen( PenColour const& pen )
     m_BGPen = pen;
     OnPenChanged();
 }
+
+
+
+// Adds a command to the undo stack, and calls its Do() fn
+void Editor::AddCmd( Cmd* cmd )
+{
+    const int maxundos = 128;
+
+    m_UndoStack.push_back( cmd );
+    if( cmd->State() == Cmd::NOT_DONE )
+        cmd->Do();
+
+    // adding a new command renders the redo stack obsolete.
+    while( !m_RedoStack.empty() )
+    {
+        delete m_RedoStack.back();
+        m_RedoStack.pop_back();
+    }
+
+    // limit amount of undos to something reasonable.
+    int trimcount = m_UndoStack.size() - maxundos;
+    while( trimcount > 0 )
+    {
+        delete m_UndoStack.front();
+        m_UndoStack.pop_front();
+        --trimcount;
+    }
+
+    m_Project->SetModifiedFlag( true );
+    OnUndoRedoChanged();
+}
+
+
+void Editor::Undo()
+{
+    if( m_UndoStack.empty() )
+    {
+        return;
+    }
+//    HideToolCursor();
+
+    Cmd* cmd = m_UndoStack.back();
+    m_UndoStack.pop_back();
+    cmd->Undo();
+    m_RedoStack.push_back( cmd );
+
+    OnUndoRedoChanged();
+//    ShowToolCursor();
+}
+
+void Editor::Redo()
+{
+    if( m_RedoStack.empty() )
+        return;
+//    HideToolCursor();
+    Cmd* cmd = m_RedoStack.back();
+    m_RedoStack.pop_back();
+    cmd->Do();
+    m_UndoStack.push_back( cmd );
+
+    OnUndoRedoChanged();
+//    ShowToolCursor();
+}
+
+
+void Editor::DiscardUndoAndRedos()
+{
+//    bool stacksempty = m_UndoStack.empty() && m_RedoStack.empty();
+
+    while( !m_UndoStack.empty() )
+    {
+        delete m_UndoStack.back();
+        m_UndoStack.pop_back();
+    }
+    while( !m_RedoStack.empty() )
+    {
+        delete m_RedoStack.back();
+        m_RedoStack.pop_back();
+    }
+
+    /* pointless - editor is going away anyway!
+    if( !stacksempty )
+    {
+        OnUndoRedoChanged();
+    }
+    */
+}
+
+
+
 

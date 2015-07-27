@@ -47,6 +47,7 @@ public:
     virtual void GUIShowError( const char* msg ) = 0;
     virtual void UpdateMouseInfo( Point const& ) =0;
     virtual void SetMouseStyle( MouseStyle ) {} // see note in ~Editor()
+    virtual void OnUndoRedoChanged() {}
 
     // the project that this editor owns
     Project& Proj() { return *m_Project; }
@@ -62,11 +63,24 @@ public:
     void ShowToolCursor();
     void HideToolCursor();
 
+	// Add a cmd to the undo stack.
+	// cmd->Do() will be called.
+	// Ownership of cmd passes to Project.
+	void AddCmd( Cmd* cmd );
+
+	// undo last cmd (or do nothing)
+	void Undo();
+	// redo last undo (or do nothing)
+	void Redo();
+
+	bool CanUndo() const;
+	bool CanRedo() const;
+
+    // projectlistener implementation:
     // editor is a projectlistener so that gui can react to changes
     // (editviews owned by the editor are also projectlisteners)
 	virtual void OnDamaged( Box const& ) {}
     virtual void OnPaletteChanged( int, RGBx const& ) {}
-    virtual void OnUndoRedoChanged() {}
 
 
 protected:
@@ -98,8 +112,20 @@ private:
 
     PenColour m_FGPen;
     PenColour m_BGPen;
+
+    // undo/redo stuff
+	std::list< Cmd* > m_UndoStack;
+	std::list< Cmd* > m_RedoStack;
+
+    void DiscardUndoAndRedos();
 };
 
+
+inline bool Editor::CanUndo() const
+    { return !m_UndoStack.empty(); }
+
+inline bool Editor::CanRedo() const
+    { return !m_RedoStack.empty(); }
 
 
 

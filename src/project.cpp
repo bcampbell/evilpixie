@@ -1,10 +1,8 @@
 #include "project.h"
 #include "projectlistener.h"
-#include "editview.h"
 #include "draw.h"
 #include "cmd.h"
 #include "colours.h"
-#include "editor.h"
 #include "util.h"
 #include "exception.h"
 
@@ -61,32 +59,6 @@ Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frame
 
 Project::~Project()
 {
-    DiscardUndoAndRedos();
-}
-
-void Project::DiscardUndoAndRedos()
-{
-    bool stacksempty = m_UndoStack.empty() && m_RedoStack.empty();
-
-    while( !m_UndoStack.empty() )
-    {
-        delete m_UndoStack.back();
-        m_UndoStack.pop_back();
-    }
-    while( !m_RedoStack.empty() )
-    {
-        delete m_RedoStack.back();
-        m_RedoStack.pop_back();
-    }
-
-    if( !stacksempty )
-    {
-        std::set<ProjectListener*>::iterator it;
-        for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-        {
-            (*it)->OnUndoRedoChanged();
-        }
-    }
 }
 
 void Project::SetModifiedFlag( bool newmodifiedflag )
@@ -156,8 +128,6 @@ void Project::Damage_FramesRemoved(int first, int last)
 }
 
 
-
-// TODO: get rid of this... build up the drawing operation in a Cmd_Draw object held by the tool instead.
 void Project::Draw_Begin( Tool* tool, int frame )
 {
     assert( m_DrawTool == 0 );
@@ -185,12 +155,13 @@ void Project::Draw_Damage( Box const& b )
 }
 
 
-void Project::Draw_Commit()
+Cmd* Project::Draw_Commit()
 {
     assert( m_DrawTool != 0 );
+
     Cmd* c = new Cmd_Draw( *this, m_DrawFrame, m_DrawDamage, m_DrawBackup );
-    AddCmd( c );
     m_DrawTool = 0;
+    return c;
 }
 
 void Project::Draw_Rollback()
@@ -210,79 +181,9 @@ void Project::Draw_Rollback()
 }
 
 
-// Adds a command to the undo stack, and calls its Do() fn
-void Project::AddCmd( Cmd* cmd )
-{
-    const int maxundos = 128;
-
-    m_UndoStack.push_back( cmd );
-    if( cmd->State() == Cmd::NOT_DONE )
-        cmd->Do();
-
-    // adding a new command renders the redo stack obsolete.
-    while( !m_RedoStack.empty() )
-    {
-        delete m_RedoStack.back();
-        m_RedoStack.pop_back();
-    }
-
-    // limit amount of undos to something reasonable.
-    int trimcount = m_UndoStack.size() - maxundos;
-    while( trimcount > 0 )
-    {
-        delete m_UndoStack.front();
-        m_UndoStack.pop_front();
-        --trimcount;
-    }
-
-    SetModifiedFlag( true );
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnUndoRedoChanged();
-    }
-
-}
 
 
-void Project::Undo()
-{
-    if( m_UndoStack.empty() )
-    {
-        return;
-    }
-//    HideToolCursor();
 
-    Cmd* cmd = m_UndoStack.back();
-    m_UndoStack.pop_back();
-    cmd->Undo();
-    m_RedoStack.push_back( cmd );
-
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnUndoRedoChanged();
-    }
-//    ShowToolCursor();
-}
-
-void Project::Redo()
-{
-    if( m_RedoStack.empty() )
-        return;
-//    HideToolCursor();
-    Cmd* cmd = m_RedoStack.back();
-    m_RedoStack.pop_back();
-    cmd->Do();
-    m_UndoStack.push_back( cmd );
-
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnUndoRedoChanged();
-    }
-//    ShowToolCursor();
-}
 
 
 void Project::PaletteChange_Begin()
@@ -341,5 +242,6 @@ PenColour Project::PickUpPen(Point const& pt, int frame) const
         }
         break;
     }
+    return PenColour();
 }
 

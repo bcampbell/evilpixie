@@ -476,8 +476,8 @@ void EditorWindow::prevColour()
 void EditorWindow::update_menu_states()
 {
     assert( m_ActionUndo && m_ActionRedo );
-    m_ActionUndo->setEnabled( Proj().CanUndo() );
-    m_ActionRedo->setEnabled( Proj().CanRedo() );
+    m_ActionUndo->setEnabled( CanUndo() );
+    m_ActionRedo->setEnabled( CanRedo() );
     m_ActionGridOnOff->setChecked( GridActive() );
     m_ActionSaveBGAsTransparent->setChecked( m_SaveBGAsTransparent );
     m_ActionUseBrushPalette->setEnabled( GetBrush() == -1 );
@@ -490,14 +490,14 @@ void EditorWindow::update_menu_states()
 
 void EditorWindow::do_undo()
 {
-    if( Proj().CanUndo() )
-        Proj().Undo();
+    if( CanUndo() )
+        Undo();
 }
 
 void EditorWindow::do_redo()
 {
-    if( Proj().CanRedo() )
-        Proj().Redo();
+    if( CanRedo() )
+        Redo();
 }
 
 void EditorWindow::do_gridonoff( bool checked )
@@ -521,7 +521,7 @@ void EditorWindow::do_resize()
             Box(0,0,area.width(),area.height()),
             0,
             Proj().GetAnim().NumFrames(), BGPen() );
-        Proj().AddCmd(c);
+        AddCmd(c);
     }
 }
 
@@ -578,7 +578,7 @@ void EditorWindow::do_addframe()
 {
     int frame = m_ViewWidget->Frame();
     Cmd* c = new Cmd_InsertFrames(Proj(), frame, 1);
-    Proj().AddCmd(c);
+    AddCmd(c);
 }
 
 void EditorWindow::do_zapframe()
@@ -586,7 +586,7 @@ void EditorWindow::do_zapframe()
     assert(Proj().GetAnim().NumFrames() > 1);
     int frame = m_ViewWidget->Frame();
     Cmd* c= new Cmd_DeleteFrames(Proj(), frame, frame+1);
-    Proj().AddCmd(c);
+    AddCmd(c);
 }
 
 void EditorWindow::do_prevframe()

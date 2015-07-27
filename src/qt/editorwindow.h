@@ -68,12 +68,12 @@ public:
     virtual void UpdateMouseInfo( Point const& mousepos );
     virtual void SetMouseStyle( MouseStyle s );
     virtual void OnPenChanged();
+    virtual void OnUndoRedoChanged() { update_menu_states(); }
 
     // projectlistener stuff
     virtual void OnPaletteChanged( int n, RGBx const& c );
     virtual void OnPaletteReplaced();
     virtual void OnModifiedFlagChanged( bool modified );
-    virtual void OnUndoRedoChanged() { update_menu_states(); }
     virtual void OnFramesAdded(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
     virtual void OnFramesRemoved(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
 

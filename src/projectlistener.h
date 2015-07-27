@@ -19,8 +19,6 @@ public:
     virtual void OnFramesAdded(int /*first*/, int /*last*/) {}
     virtual void OnFramesRemoved(int /*first*/, int /*last*/) {}
 
-    // called when undo or redo stacks are altered (ie project changed)
-    virtual void OnUndoRedoChanged() {}
 private:
 
 };

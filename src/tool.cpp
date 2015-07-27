@@ -180,7 +180,8 @@ void PencilTool::OnUp( EditView& view, Point const& p, Button b )
     m_Pos = p;
     m_DownButton = NONE;
     m_View = 0;
-    view.Proj().Draw_Commit();
+    Cmd* c = view.Proj().Draw_Commit();
+    Owner().AddCmd(c);
 }
 
 void PencilTool::DrawCursor( EditView& view )
@@ -275,7 +276,8 @@ void LineTool::OnUp( EditView& view, Point const& p, Button b )
 
     view.Proj().Draw_Begin(this,view.Frame());
     WalkLine( m_From.x, m_From.y, m_To.x, m_To.y, Plot_cb, this );
-    view.Proj().Draw_Commit();
+    Cmd* c = view.Proj().Draw_Commit();
+    Owner().AddCmd(c);
     m_DownButton = NONE;
     m_View = 0;
     m_From = m_To;
@@ -427,7 +429,8 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
         proj.Draw_Begin(this,view.Frame());
         proj.GetAnim().GetFrame(view.Frame()).FillBox( Owner().BGPen(), pickup );
         proj.Draw_Damage( pickup );
-        proj.Draw_Commit();
+        Cmd* c = proj.Draw_Commit();
+        Owner().AddCmd(c);
     }
 
     // NOTE: this is effectively "delete this!"
@@ -495,7 +498,8 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
     else
     {
         proj.Draw_Damage( dmg );
-        proj.Draw_Commit();
+        Cmd* c = proj.Draw_Commit();
+        Owner().AddCmd(c);
     }
 }
 
@@ -608,7 +612,8 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     }
     view.Proj().Draw_Damage( dmg );
 
-    view.Proj().Draw_Commit();
+    Cmd* c = view.Proj().Draw_Commit();
+    Owner().AddCmd(c);
     m_DownButton = NONE;
     m_From = m_To;
 }
@@ -729,7 +734,8 @@ void FilledRectTool::OnUp( EditView& view, Point const& p, Button b )
         img.FillBox( Owner().BGPen(),r );
     
     proj.Draw_Damage( r );
-    proj.Draw_Commit();
+    Cmd* c = proj.Draw_Commit();
+    Owner().AddCmd(c);
     m_DownButton = NONE;
     m_From = m_To;
 }    
@@ -806,7 +812,8 @@ void CircleTool::OnUp( EditView& view, Point const& p, Button b )
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
     WalkEllipse( m_From.x, m_From.y, rx, ry, Plot_cb, this );
-    view.Proj().Draw_Commit();
+    Cmd* c= view.Proj().Draw_Commit();
+    Owner().AddCmd(c);
     m_DownButton = NONE;
     m_View = 0;
     m_From = m_To;
@@ -941,7 +948,8 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
     WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
-    view.Proj().Draw_Commit();
+    Cmd* c = view.Proj().Draw_Commit();
+    Owner().AddCmd(c);
     m_DownButton = NONE;
     m_View = 0;
     m_From = m_To;

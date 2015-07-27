@@ -33,6 +33,10 @@ struct ProjSettings
 
 
 
+
+// Project holds all the frames and image data.
+// Listeners can register with a project to hear whenever changes are made.
+
 class Project
 {
 public:
@@ -49,18 +53,6 @@ public:
 	void RemoveListener( ProjectListener* l )
 		{ m_Listeners.erase( l ); }
 
-	// Add a cmd to the undo stack.
-	// cmd->Do() will be called.
-	// Ownership of cmd passes to Project.
-	void AddCmd( Cmd* cmd );
-
-	// undo last cmd (or do nothing)
-	void Undo();
-	// redo last undo (or do nothing)
-	void Redo();
-
-	bool CanUndo() const;
-	bool CanRedo() const;
 
     bool ModifiedFlag() const { return m_Modified; }
 
@@ -103,6 +95,13 @@ public:
     // tell project it's been modified
     // (within draw operation, use Draw_Damage() instead!)
 	void Damage( Box const& b );
+
+
+    // TODO: all this transactional stuff (Begin/Commit/whatever) should be moved out
+    // into separate code. Probably into Cmd.
+    // The project should only have functions for direct
+    // manipulation.
+
     // notify operations on frames in range [first,last)
     void Damage_FramesAdded(int first, int last);
     void Damage_FramesRemoved(int first, int last);
@@ -111,7 +110,8 @@ public:
     // interface for tools to use, to enable the capturing of multiple
     // modifications into a single cmd.
     // TODO: KILLKILLKILL!
-    // (use a Cmd_Draw held by the tool instead)
+    // (use a Cmd_Draw held by the tool instead? Or some sort of separate
+    // transaction object?)
 
     // a tool which modified the image starts here...
     void Draw_Begin( Tool* tool, int frame );
@@ -121,9 +121,11 @@ public:
 	// (will be passed on to the listeners so the display can be updated)
 	void Draw_Damage( Box const& b );
 
-    // when finished, commit() stores the modifications into a single Cmd,
-    // ready for undoing.
-    void Draw_Commit();
+    // when finished, commit() stores the modifications into a single Cmd.
+    // ownership of the Cmd is passed to the caller, and the Cmd is already
+    // in DONE state (ie the drawing has already been performed) and is ready
+    // for undoing.
+    Cmd* Draw_Commit();
 
     // or just abort the drawing and restore the image to what it was.
     void Draw_Rollback();
@@ -136,8 +138,11 @@ public:
     void PaletteChange_Rollback();
 
 
+    void SetModifiedFlag( bool newmodifiedflag );
 private:
     Project( Project const& );  // disallowed
+
+	std::set< ProjectListener* > m_Listeners;
 
     ProjSettings m_Settings;
 
@@ -147,13 +152,7 @@ private:
     // anim stores all the image data (even if it's a single frame anim :-)
     Anim m_Anim;
 
-	std::set< ProjectListener* > m_Listeners;
 
-	std::list< Cmd* > m_UndoStack;
-	std::list< Cmd* > m_RedoStack;
-
-    void DiscardUndoAndRedos();
-    void SetModifiedFlag( bool newmodifiedflag );
 
     //
     Tool* m_DrawTool;
@@ -171,12 +170,6 @@ private:
     std::string m_Filename;
 };
 
-
-inline bool Project::CanUndo() const
-    { return !m_UndoStack.empty(); }
-
-inline bool Project::CanRedo() const
-    { return !m_RedoStack.empty(); }
 
 #endif // PROJECT_H
 
