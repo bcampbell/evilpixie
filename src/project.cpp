@@ -87,12 +87,12 @@ void Project::Save( std::string const& filename, bool /* savetransparency */ )
 
 
 
-void Project::Damage( Box const& b )
+void Project::Damage( int frame, Box const& b )
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
-        (*it)->OnDamaged( b );
+        (*it)->OnDamaged( frame,b );
     }
 }
 

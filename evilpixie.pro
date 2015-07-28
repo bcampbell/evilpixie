@@ -1,5 +1,5 @@
 TARGET = evilpixie
-#CONFIG += qt
+CONFIG += qt debug
 QT += widgets
 
 win32 {
@@ -10,7 +10,9 @@ win32 {
     RC_FILE = win32/evilpixie.rc
 }
 
-unix:LIBS = -lgif -lXpm -lIL
+unix:LIBS = -lgif -lXpm -lDevIL
+#unix:LIBS = -L/usr/local/lib -lgif -lXpm -lDevIL
+
 
 SOURCES += src/anim.cpp \
     src/app.cpp \

@@ -19,7 +19,7 @@ void Cmd_Draw::Do()
     assert( State() == NOT_DONE );
     Box dirty( m_Affected );
     BlitSwap( m_Img, m_Img.Bounds(), Proj().GetAnim().GetFrame(m_Frame), dirty );
-    Proj().Damage( dirty );
+    Proj().Damage( m_Frame, dirty );
     SetState( DONE );
 }
 
@@ -28,7 +28,7 @@ void Cmd_Draw::Undo()
     assert( State() == DONE );
     Box dirty( m_Affected );
     BlitSwap( m_Img, m_Img.Bounds(), Proj().GetAnim().GetFrame(m_Frame), dirty );
-    Proj().Damage( dirty );
+    Proj().Damage( m_Frame, dirty );
     SetState( NOT_DONE );
 }
 
@@ -73,7 +73,11 @@ void Cmd_Resize::Swap()
     Proj().GetAnim().CalcBounds(b1, m_First, m_Last);
     m_FrameSwap.CalcBounds(b2, 0, m_FrameSwap.NumFrames());
     b1.Merge(b2);
-    Proj().Damage(b1);
+    int n;
+    for( n=m_First; n<m_Last; ++n)
+    {
+        Proj().Damage(n, b1);
+    }
 }
 
 void Cmd_Resize::Do()

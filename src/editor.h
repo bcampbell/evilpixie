@@ -79,7 +79,7 @@ public:
     // projectlistener implementation:
     // editor is a projectlistener so that gui can react to changes
     // (editviews owned by the editor are also projectlisteners)
-	virtual void OnDamaged( Box const& ) {}
+	virtual void OnDamaged( int, Box const& ) {}
     virtual void OnPaletteChanged( int, RGBx const& ) {}
 
 

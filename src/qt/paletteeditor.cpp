@@ -69,7 +69,7 @@ void PaletteEditor::SetSelected(int idx)
     m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
 }
 
-void PaletteEditor::OnDamaged( Box const& )
+void PaletteEditor::OnDamaged(int frame, Box const& )
 {
     // don't care about image changes.
 }

@@ -93,7 +93,7 @@ public:
     //
     // tell project it's been modified
     // (within draw operation, use Draw_Damage() instead!)
-	void Damage( Box const& b );
+	void Damage( int frame, Box const& b );
 
 
     // notify operations on frames in range [first,last)

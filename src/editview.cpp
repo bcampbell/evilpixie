@@ -337,8 +337,11 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 
 
 // called when project has been modified
-void EditView::OnDamaged( Box const& projdmg )
+void EditView::OnDamaged( int frame, Box const& projdmg )
 {
+    if (frame != m_Frame)
+        return;
+
     Box viewdirtied;
 
     // just redraw the damaged part of the project...

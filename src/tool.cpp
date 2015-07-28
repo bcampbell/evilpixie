@@ -54,9 +54,9 @@ DrawTransaction::DrawTransaction( Project& proj, int frame) :
 
 void DrawTransaction::AddDamage(int frame, Box const& b)
 {
-    assert(frame==m_Frame);
+    assert(frame==m_Frame); // don't yet support drawing across multiple frames in one go...
     assert( m_Backup.Bounds().Contains(b) );
-    m_Proj.Damage(b);
+    m_Proj.Damage(frame,b);
     m_Affected.Merge(b);
 }
 
@@ -72,7 +72,7 @@ void DrawTransaction::Rollback()
 {
     Box dirty(m_Affected);
     Blit(m_Backup,m_Affected, m_Proj.GetAnim().GetFrame(m_Frame), dirty);
-    m_Proj.Damage(dirty);
+    m_Proj.Damage(m_Frame, dirty);
 }
 
 
