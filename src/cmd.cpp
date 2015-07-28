@@ -33,8 +33,6 @@ void Cmd_Draw::Undo()
 }
 
 
-
-
 Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast, PenColour const& fillpen) :
     Cmd(proj,NOT_DONE),
     m_First(framefirst),

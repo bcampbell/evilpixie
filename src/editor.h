@@ -4,7 +4,7 @@
 class EditView;
 class Brush;
 class Tool;
-
+class Cmd;
 
 #include "project.h"
 #include "projectlistener.h"

@@ -16,7 +16,6 @@
 
 class Tool;
 class ProjectListener;
-class Cmd;
 
 struct ProjSettings
 {
@@ -97,40 +96,12 @@ public:
 	void Damage( Box const& b );
 
 
-    // TODO: all this transactional stuff (Begin/Commit/whatever) should be moved out
-    // into separate code. Probably into Cmd.
-    // The project should only have functions for direct
-    // manipulation.
-
     // notify operations on frames in range [first,last)
     void Damage_FramesAdded(int first, int last);
     void Damage_FramesRemoved(int first, int last);
 
-    //--------------------------------------
-    // interface for tools to use, to enable the capturing of multiple
-    // modifications into a single cmd.
-    // TODO: KILLKILLKILL!
-    // (use a Cmd_Draw held by the tool instead? Or some sort of separate
-    // transaction object?)
 
-    // a tool which modified the image starts here...
-    void Draw_Begin( Tool* tool, int frame );
-
-	// inform the project that a change has been made - tool calls this
-	// as many times as required.
-	// (will be passed on to the listeners so the display can be updated)
-	void Draw_Damage( Box const& b );
-
-    // when finished, commit() stores the modifications into a single Cmd.
-    // ownership of the Cmd is passed to the caller, and the Cmd is already
-    // in DONE state (ie the drawing has already been performed) and is ready
-    // for undoing.
-    Cmd* Draw_Commit();
-
-    // or just abort the drawing and restore the image to what it was.
-    void Draw_Rollback();
-
-
+    // TODO: move these out of project into their own class (like DrawTransaction)
     void PaletteChange_Begin();
     void PaletteChange_Alter( int n, RGBx const& c );
     void PaletteChange_Replace( Palette const& p );
@@ -152,16 +123,6 @@ private:
     // anim stores all the image data (even if it's a single frame anim :-)
     Anim m_Anim;
 
-
-
-    //
-    Tool* m_DrawTool;
-    int m_DrawFrame;
-
-    // backup copy of image, used for rollback or undo generation during
-    // drawing operation
-    Img m_DrawBackup;
-    Box m_DrawDamage;
 
     // has project been modified?
     bool m_Modified;

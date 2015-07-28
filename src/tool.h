@@ -25,6 +25,8 @@ enum ToolType
 
 
 class Editor;
+class DrawTransaction;
+
 
 class Tool
 {
@@ -51,6 +53,7 @@ class PencilTool : public Tool
 {
 public:
 	PencilTool( Editor& owner );
+	~PencilTool();
 	virtual void OnDown( EditView& view, Point const& p, Button b );
 	virtual void OnMove( EditView& view, Point const& p);
 	virtual void OnUp( EditView& view, Point const& p, Button b );
@@ -60,6 +63,7 @@ private:
 	Point m_Pos;
 	Button m_DownButton;
     EditView* m_View;
+    DrawTransaction* m_Tx;
 };
 
 
@@ -67,6 +71,7 @@ class LineTool : public Tool
 {
 public:
     LineTool( Editor& owner );
+    virtual ~LineTool();
 	virtual void OnDown( EditView& view, Point const& p, Button b );
 	virtual void OnMove( EditView& view, Point const& p);
 	virtual void OnUp( EditView& view, Point const& p, Button b );
@@ -79,6 +84,7 @@ private:
     Button m_DownButton;
     EditView* m_View;
     Box m_CursorDamage;
+    DrawTransaction* m_Tx;
 };
 
 
@@ -159,6 +165,7 @@ class CircleTool : public Tool
 {
 public:
     CircleTool( Editor& owner );
+    virtual ~CircleTool();
 	virtual void OnDown( EditView& view, Point const& p, Button b );
 	virtual void OnMove( EditView& view, Point const& p);
 	virtual void OnUp( EditView& view, Point const& p, Button b );
@@ -171,6 +178,7 @@ private:
     Button m_DownButton;
     EditView* m_View;
     Box m_CursorDamage;
+    DrawTransaction* m_Tx;
 };
 
 
@@ -179,6 +187,7 @@ class FilledCircleTool : public Tool
 {
 public:
     FilledCircleTool( Editor& owner );
+    virtual ~FilledCircleTool();
 	virtual void OnDown( EditView& view, Point const& p, Button b );
 	virtual void OnMove( EditView& view, Point const& p);
 	virtual void OnUp( EditView& view, Point const& p, Button b );
@@ -191,6 +200,7 @@ private:
     Button m_DownButton;
     EditView* m_View;
     Box m_CursorDamage;
+    DrawTransaction* m_Tx;
 };
 
 

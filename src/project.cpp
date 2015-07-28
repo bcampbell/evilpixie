@@ -1,7 +1,6 @@
 #include "project.h"
 #include "projectlistener.h"
 #include "draw.h"
-#include "cmd.h"
 #include "colours.h"
 #include "util.h"
 #include "exception.h"
@@ -12,9 +11,6 @@
 
 Project::Project( std::string const& filename ) :
     m_Expendable(false),
-    m_DrawTool(0),
-    m_DrawFrame(0),
-    m_DrawBackup(FMT_I8,1,1),
     m_Modified( false )
 {
     m_Anim.Load( filename.c_str() );
@@ -24,9 +20,6 @@ Project::Project( std::string const& filename ) :
 
 Project::Project() :
     m_Expendable(true),
-    m_DrawTool(0),
-    m_DrawFrame(0),
-    m_DrawBackup(FMT_I8,1,1), // ugh
     m_Modified( false )
 {
     int w = 128;
@@ -41,9 +34,6 @@ Project::Project() :
 
 Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frames ) :
     m_Expendable(false),
-    m_DrawTool(0),
-    m_DrawFrame(0),
-    m_DrawBackup(fmt,1,1), // ugh
     m_Modified( false )
 {
     assert(num_frames>=1);
@@ -99,7 +89,6 @@ void Project::Save( std::string const& filename, bool /* savetransparency */ )
 
 void Project::Damage( Box const& b )
 {
-    assert( m_DrawTool == 0 );  // not allowed during draw
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
@@ -109,7 +98,6 @@ void Project::Damage( Box const& b )
 
 void Project::Damage_FramesAdded(int first, int last)
 {
-    assert( m_DrawTool == 0 );  // not allowed during draw
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
@@ -119,67 +107,12 @@ void Project::Damage_FramesAdded(int first, int last)
 
 void Project::Damage_FramesRemoved(int first, int last)
 {
-    assert( m_DrawTool == 0 );  // not allowed during draw
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
         (*it)->OnFramesRemoved( first,last );
     }
 }
-
-
-void Project::Draw_Begin( Tool* tool, int frame )
-{
-    assert( m_DrawTool == 0 );
-    m_DrawFrame = frame;
-
-    m_DrawTool = tool;
-    m_DrawDamage.SetEmpty();
-    // take a copy of the pristine image so we can
-    // generate an undo buffer or roll back
-    m_DrawBackup.Copy(ImgConst(m_DrawFrame));
-}
-
-
-void Project::Draw_Damage( Box const& b )
-{
-    assert( m_DrawTool != 0 );
-    assert( m_Anim.GetFrameConst(m_DrawFrame).Bounds().Contains(b) );
-    m_DrawDamage.Merge(b);
-
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnDamaged( b );
-    }
-}
-
-
-Cmd* Project::Draw_Commit()
-{
-    assert( m_DrawTool != 0 );
-
-    Cmd* c = new Cmd_Draw( *this, m_DrawFrame, m_DrawDamage, m_DrawBackup );
-    m_DrawTool = 0;
-    return c;
-}
-
-void Project::Draw_Rollback()
-{
-    assert( m_DrawTool != 0 );
-    m_DrawTool = 0;
-
-    Box b( m_DrawDamage );
-    Blit( m_DrawBackup, m_DrawDamage,
-        m_Anim.GetFrame(m_DrawFrame), b );
-
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnDamaged( b );
-    }
-}
-
 
 
 
