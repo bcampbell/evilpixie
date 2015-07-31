@@ -147,7 +147,7 @@ void Anim::Load( const char* filename )
             Img* img = new Img(FMT_I8,w,h,pixels);
             m_Frames.push_back(img);
         }
-        else if( fmt == IL_RGB || fmt == IL_RGBA || fmt == IL_BGR || fmt == IL_BGRA )
+        else if( fmt == IL_RGB || fmt == IL_BGR )
         {
             ilConvertImage( IL_RGB, IL_UNSIGNED_BYTE );
 
@@ -169,10 +169,33 @@ void Anim::Load( const char* filename )
             }
             m_Frames.push_back(img);
         }
+        else if( fmt == IL_RGBA || fmt == IL_BGRA )
+        {
+            ilConvertImage( IL_RGBA, IL_UNSIGNED_BYTE );
+
+            const uint8_t* raw = ilGetData();
+            Img* img = new Img(FMT_RGBA8,w,h);
+            int y;
+            for(y=0;y<h;++y)
+            {
+                RGBA8 *dest = img->Ptr_RGBA8(0,y);
+                int x;
+                for( x=0;x<w;++x)
+                {
+                    RGBA8 c;
+                    c.r = *raw++;
+                    c.g = *raw++;
+                    c.b = *raw++;
+                    c.a = *raw++;
+                    *dest++ = c;
+                }
+            }
+            m_Frames.push_back(img);
+        }
         else
         {
             ilDeleteImages(1,&im);
-            throw Exception( "No palette - not an indexed image" );
+            throw Exception( "unsupported pixelformat" );
         }
 
     }
@@ -309,6 +332,23 @@ void Anim::Save( const char* filename )
         for( y=0; y<img.H(); ++y )
         {
             RGBX8 const* src = img.PtrConst_RGBX8( 0, (img.H()-1)-y );
+            // KLUDGE: note IL_BGRA order (to match our real in-memory order BGRx. See colours.h)
+            ilSetPixels( 0,y,0, img.W(),1,1, IL_BGRA, IL_UNSIGNED_BYTE, (void*)src );
+        }
+    }
+    else if (img.Fmt() == FMT_RGBA8)
+    {
+        if( !ilTexImage( img.W(), img.H(), 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, NULL ) )
+        {
+            ilDeleteImages(1,&im);
+            throw Exception( "ilTexImage() failed)" );
+        }
+
+        /* copy in image, flipped (ilTexImage sets ORIGIN_LOWER_LEFT) */
+        int y;
+        for( y=0; y<img.H(); ++y )
+        {
+            RGBA8 const* src = img.PtrConst_RGBA8( 0, (img.H()-1)-y );
             // KLUDGE: note IL_BGRA order (to match our real in-memory order BGRx. See colours.h)
             ilSetPixels( 0,y,0, img.W(),1,1, IL_BGRA, IL_UNSIGNED_BYTE, (void*)src );
         }
