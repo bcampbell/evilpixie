@@ -62,6 +62,8 @@ public:
     // helpers to get single pixel
 	RGBX8 Get_RGBX8( const Point& p ) const
 		{ return *PtrConst_RGBX8(p.x,p.y); }
+	RGBA8 Get_RGBA8( const Point& p ) const
+		{ return *PtrConst_RGBA8(p.x,p.y); }
 	I8 Get_I8( const Point& p ) const
 		{ return *PtrConst_I8(p.x,p.y); }
 

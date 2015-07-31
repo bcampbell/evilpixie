@@ -174,6 +174,17 @@ PenColour Project::PickUpPen(Point const& pt, int frame) const
             return PenColour(*src);
         }
         break;
+    case FMT_RGBA8:
+        {
+            RGBA8 const* src = srcimg.PtrConst_RGBA8(pt.x,pt.y);
+            // TODO: could search for a palette index too...
+            RGBA8 c = *src;
+            return PenColour(c);
+        }
+        break;
+    default:
+        assert(false);
+        break;
     }
     return PenColour();
 }

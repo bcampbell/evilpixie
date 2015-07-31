@@ -1,4 +1,4 @@
-#include "edftview.h"
+#include "editview.h"
 #include "editor.h"
 #include <cstdio>
 #include <cassert>
