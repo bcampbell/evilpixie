@@ -71,7 +71,7 @@ public:
     virtual void OnUndoRedoChanged() { update_menu_states(); }
 
     // projectlistener stuff
-    virtual void OnPaletteChanged( int n, RGBx const& c );
+    virtual void OnPaletteChanged( int n, Colour const& c );
     virtual void OnPaletteReplaced();
     virtual void OnModifiedFlagChanged( bool modified );
     virtual void OnFramesAdded(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
@@ -83,8 +83,8 @@ public slots:
     void brushclicked( QAbstractButton* b );
     void fgColourPicked( int c );
     void bgColourPicked( int c );
-    void fgColourPickedRGB( RGBx c );
-    void bgColourPickedRGB( RGBx c );
+    void fgColourPickedRGB( Colour c );
+    void bgColourPickedRGB( Colour c );
     void togglepaletteeditor();
     void useeyedroppertool();
     void nextColour();

@@ -18,7 +18,7 @@ public:
 
     // projectlistener stuff
 	virtual void OnDamaged( int frame, Box const& viewdmg );
-    virtual void OnPaletteChanged( int n, RGBx const& c );
+    virtual void OnPaletteChanged( int n, Colour const& c );
     virtual void OnPaletteReplaced();
 
 public slots:

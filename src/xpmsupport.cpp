@@ -7,7 +7,7 @@
 
 // NOTE: Not actually included in build right now, but left in for easy reference
 
-bool LoadXPM( IndexedImg& img, RGBx* palette, const char* filename )
+bool LoadXPM( IndexedImg& img, Colour* palette, const char* filename )
 {
     XpmImage image;
     XpmInfo info;
@@ -33,7 +33,7 @@ bool LoadXPM( IndexedImg& img, RGBx* palette, const char* filename )
     {
         XpmColor const& c = image.colorTable[i];
         printf("%d: '%s'\n", i, c.c_color );
-//        palette[i] = RGBx( c.Red, c.Green, c.Blue );
+//        palette[i] = Colour( c.Red, c.Green, c.Blue );
     }
 
     IndexedImg tmp( image.width, image.height );
@@ -97,7 +97,7 @@ int CountUsedColours( const int* hist )
 }
 
 #if 0
-void SaveXPM( IndexedImg& img, RGBx* palette, char* filename )
+void SaveXPM( IndexedImg& img, Colour* palette, char* filename )
 {
     // use same chars as gimp
     static const char linenoise [] =

@@ -9,7 +9,7 @@
 
 // TODO: implement custom error handler to capture libpng error message
 
-void LoadPNG( Img& img, RGBx* palette, const char* filename )
+void LoadPNG( Img& img, Colour* palette, const char* filename )
 {
     FILE *fp = fopen(filename, "rb");
     if (!fp)
@@ -104,13 +104,13 @@ void LoadPNG( Img& img, RGBx* palette, const char* filename )
     while( i<num_colours )
     {
         png_color c = colours[i];
-        palette[i] = RGBx( c.red, c.green, c.blue );
+        palette[i] = Colour( c.red, c.green, c.blue );
         ++i;
     }
     // black out any missing colours
     while( i<=255 )
     {
-        palette[i] = RGBx(0,0,0);
+        palette[i] = Colour(0,0,0);
         ++i;
     }
 
@@ -122,7 +122,7 @@ void LoadPNG( Img& img, RGBx* palette, const char* filename )
 }
 
 
-void SavePNG( Img const& img, RGBx const* palette, const char* filename )
+void SavePNG( Img const& img, Colour const* palette, const char* filename )
 {
     assert(img.Format()==Img::INDEXED8BIT);
     // TODO: set error handler to capture error msg?

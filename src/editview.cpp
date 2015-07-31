@@ -1,4 +1,4 @@
-#include "editview.h"
+#include "edftview.h"
 #include "editor.h"
 #include <cstdio>
 #include <cassert>
@@ -242,12 +242,28 @@ void EditView::OnMouseUp( Point const & viewpos, Button button )
 
 
 
+// within canvas
+static RGBX8 checker(int x,int y) {
+    if((x & 16) ^ (y & 16))
+        return RGBX8(192,192,192);
+    else
+        return RGBX8(224,224,224);
+}
+
+// outside canvas
+static RGBX8 checker2(int x,int y) {
+    if((x & 16) ^ (y & 16))
+        return RGBX8(192/2,192/2,192/2);
+    else
+        return RGBX8(224/2,224/2,224/2);
+}
+
 
 void EditView::DrawView( Box const& viewbox, Box* affectedview )
 {
     // note: projbox can be outside the project boundary
 
-    RGBx checkerboard[2] = { RGBx(192,192,192), RGBx(224,224,224) }; 
+//    Colour checkerboard[2] = { Colour(192,192,192), Colour(224,224,224) }; 
 
     Box vb(viewbox);
     vb.ClipAgainst(m_ViewBox);
@@ -272,7 +288,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
             // left of canvas
             while(x<xmin)
             {
-                *dest++ = checkerboard[((x & 16) ^ (y & 16)) ? 0:1];
+                *dest++ = checker2(x,y);
                 ++x;
             }
 
@@ -316,6 +332,25 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
                     }
                 }
                 break;
+            case FMT_RGBA8:
+                {
+                    RGBA8 const* src = img.PtrConst_RGBA8( p.x,p.y );
+                    while(x<=xmax)
+                    {
+                        int cx = x + (m_Offset.x*m_XZoom);
+                        int pixstop = x + (m_XZoom-(cx%m_XZoom));
+                        if(pixstop>xmax)
+                            pixstop=xmax+1;
+                        RGBA8 c = *src++;
+                        while(x<pixstop)
+                        {
+                            RGBX8 foo(c.r,c.g,c.b);
+                            *dest++ = Lerp(checker(x,y),foo,c.a);
+                            ++x;
+                        }
+                    }
+                }
+                break;
             default:
                 assert(false);
                 break;
@@ -325,7 +360,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
         // right of canvas (and above and below)
         while(x<=vb.XMax())
         {
-            *dest++ = checkerboard[((x & 16) ^ (y & 16)) ? 0:1];
+            *dest++ = checker2(x,y);
             ++x;
         }
     }
@@ -353,7 +388,7 @@ void EditView::OnDamaged( int frame, Box const& projdmg )
 }
 
 
-void EditView::OnPaletteChanged( int, RGBx const& )
+void EditView::OnPaletteChanged( int, Colour const& )
 {
     OnPaletteReplaced();
 }

@@ -25,7 +25,7 @@ public:
 
     // ProjectListener Implementation
 	virtual void OnDamaged( int frame, Box const& projdmg );
-    virtual void OnPaletteChanged( int n, RGBx const& c );
+    virtual void OnPaletteChanged( int n, Colour const& c );
     virtual void OnPaletteReplaced();
     virtual void OnFramesAdded(int first, int last);
     virtual void OnFramesRemoved(int first, int last);

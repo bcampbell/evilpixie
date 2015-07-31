@@ -18,7 +18,7 @@ public:
     void SetPalette( Palette const& pal )
         { m_Palette = pal; update(); }
 
-    void SetColour( int n, RGBx c )
+    void SetColour( int n, Colour c )
         { m_Palette.SetColour(n,c); update(); }
 
     void EnableRangePicking( bool yesno )

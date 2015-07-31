@@ -40,6 +40,11 @@ public:
 	RGBX8 const* PtrConst_RGBX8( int x, int y ) const
 		{ assert(Fmt()==FMT_RGBX8); return (RGBX8*)PtrConst(x,y); }
 
+	RGBA8* Ptr_RGBA8( int x, int y )
+		{ assert(Fmt()==FMT_RGBA8); return (RGBA8*)Ptr(x,y); }
+	RGBA8 const* PtrConst_RGBA8( int x, int y ) const
+		{ assert(Fmt()==FMT_RGBA8); return (RGBA8*)PtrConst(x,y); }
+
     Box const& Bounds() const
         { return m_Bounds; }
 

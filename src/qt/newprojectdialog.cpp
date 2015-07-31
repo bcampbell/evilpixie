@@ -66,7 +66,7 @@ void NewProjectDialog::formatChanged( int idx )
     num_colours = m_Format->itemData(idx).toInt();
     if( num_colours == -1 )
     {
-        pixel_format = FMT_RGBX8;
+        pixel_format = FMT_RGBA8;
         num_colours = 32;   // kludge for now
     }
     else

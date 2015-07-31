@@ -8,7 +8,7 @@
 // NOTE: Not actually included in build right now, but left in for easy reference
 
 
-void LoadGIF( Img& img, RGBx* palette, const char* filename )
+void LoadGIF( Img& img, Colour* palette, const char* filename )
 {
     GifFileType* f = DGifOpenFileName( filename );
     if( !f )
@@ -37,7 +37,7 @@ void LoadGIF( Img& img, RGBx* palette, const char* filename )
     for( i=0; i<cm->ColorCount; ++i )
     {
         GifColorType const& c = cm->Colors[i];
-        palette[i] = RGBx( c.Red, c.Green, c.Blue );
+        palette[i] = Colour( c.Red, c.Green, c.Blue );
     }
 
     Img tmp( Img::INDEXED8BIT, si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits );
@@ -46,7 +46,7 @@ void LoadGIF( Img& img, RGBx* palette, const char* filename )
 }
 
 
-void SaveGIF( Img const& img, RGBx const* palette, const char* filename )
+void SaveGIF( Img const& img, Colour const* palette, const char* filename )
 {
     int status;
     assert(img.Format()==Img::IndexedImg);

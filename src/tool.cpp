@@ -172,7 +172,7 @@ void PlonkBrushToProj( EditView& view, Point const& pos, Box& projdmg, Button bu
 
 
 // helper - draw a crosshair cursor, centred on the given point (project coords)
-void DrawCrossHairCursor( EditView& view, Point const& centre, RGBx const& c )
+void DrawCrossHairCursor( EditView& view, Point const& centre, Colour const& c )
 {
     Box const& bnd = view.Canvas().Bounds();
     int yzoom = view.XZoom();
@@ -530,8 +530,8 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
 
 void BrushPickupTool::DrawCursor( EditView& view )
 {
-    RGBx white(255,255,255);
-    RGBx black(0,0,0);
+    Colour white(255,255,255);
+    Colour black(0,0,0);
 
     if( m_DownButton == NONE )
     {
@@ -601,8 +601,8 @@ void FloodFillTool::OnUp( EditView& , Point const& , Button )
 
 void FloodFillTool::DrawCursor( EditView& view )
 {
-    RGBx white(255,255,255);
-    RGBx black(0,0,0);
+    Colour white(255,255,255);
+    Colour black(0,0,0);
     Box c( m_Pos, 1,1 );
     Box vb = view.ProjToView( c );
     view.Canvas().OutlineBox( white,vb );
@@ -714,7 +714,7 @@ void RectTool::DrawCursor( EditView& view )
     if( m_DownButton == NONE )
     {
         // not rubberbanding
-        RGBx white(255,255,255);
+        Colour white(255,255,255);
         DrawCrossHairCursor( view, m_From, white );
         PlonkBrushToView( view, m_From, dmg, DRAW );
         view.AddCursorDamage( dmg );
@@ -835,7 +835,7 @@ void FilledRectTool::DrawCursor( EditView& view )
 {
     if( m_DownButton == NONE )
     {
-        RGBx white(255,255,255);
+        Colour white(255,255,255);
         // not rubberbanding
         DrawCrossHairCursor( view, m_From, white );
         return;
@@ -961,7 +961,7 @@ void CircleTool::DrawCursor( EditView& view )
     m_CursorDamage.SetEmpty();
     if( m_DownButton == NONE )
     {
-        RGBx white(255,255,255);
+        Colour white(255,255,255);
         DrawCrossHairCursor( view, m_From, white );
         PlonkBrushToViewFG( view, m_From, m_CursorDamage );
     }
@@ -1083,7 +1083,7 @@ void FilledCircleTool::DrawCursor( EditView& view )
     m_CursorDamage.SetEmpty();
     if( m_DownButton == NONE )
     {
-        RGBx white(255,255,255);
+        Colour white(255,255,255);
         DrawCrossHairCursor( view, m_From, white );
         PlonkBrushToViewFG( view, m_From, m_CursorDamage );
     }
@@ -1166,8 +1166,8 @@ void EyeDropperTool::DrawCursor( EditView& )
 /*
     Box c( m_Pos, 1,1 );
     Box vb = view.ProjToView( c );
-    RGBx white( RGBx(255,255,255) );
-    RGBx black( RGBx(0,0,0) );
+    Colour white( Colour(255,255,255) );
+    Colour black( Colour(0,0,0) );
     view.Canvas().OutlineBox( white,vb );
     vb.Expand(-1);
     view.Canvas().OutlineBox( black,vb );

@@ -19,15 +19,15 @@ public:
 	~RGBPickerWidget();
 
     // set the selected colour (but don't emit pickedLeft/RightButton() signal)
-    void SetLeftSelected( RGBx c );
-    void SetRightSelected( RGBx c );
+    void SetLeftSelected( Colour c );
+    void SetRightSelected( Colour c );
 
-    RGBx LeftSelected() const { return PointToRGB(m_RightSel); }
-    RGBx RightSelected() const { return PointToRGB(m_LeftSel); }
+    Colour LeftSelected() const { return PointToRGB(m_RightSel); }
+    Colour RightSelected() const { return PointToRGB(m_LeftSel); }
 
 signals:
-    void pickedLeftButton( RGBx c );
-    void pickedRightButton( RGBx c );
+    void pickedLeftButton( Colour c );
+    void pickedRightButton( Colour c );
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -45,8 +45,8 @@ private:
     void UpdateBacking();
     QImage* m_Backing;
 
-    QPoint RGBToPoint(RGBx c) const;
-    RGBx PointToRGB(QPoint const&p) const;
+    QPoint RGBToPoint(Colour c) const;
+    Colour PointToRGB(QPoint const&p) const;
     QPoint m_LeftSel;
     QPoint m_RightSel;
 };

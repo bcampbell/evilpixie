@@ -184,7 +184,7 @@ void PaletteWidget::DrawCell( QPainter& painter, int n )
  //   outline.adjust(-1,-1,-1,-1);
     cellrect.adjust(0,0,-1,-1);
 
-    RGBx c(m_Palette.GetColour(n));
+    Colour c(m_Palette.GetColour(n));
     painter.setBrush(QColor(c.r, c.g, c.b));
     painter.setPen(Qt::NoPen);
     painter.drawRect( cellrect );

@@ -174,6 +174,39 @@ void BlitMatte(
                 }
             }
             break;
+        case FMT_RGBA8:
+            {
+                RGBA8* dest = destimg.Ptr_RGBA8( destclipped.x+0, destclipped.y+y );
+                if(srcimg.Fmt()==FMT_I8)
+                {
+                    I8 const* src = srcimg.PtrConst_I8( srcclipped.x+0, srcclipped.y+y );
+                    int x;
+                    for( x=0; x<destclipped.w; ++x )
+                    {
+                        I8 c = *src++;
+                        if( c != transparentcolour.idx() )
+                            *dest = mattecolour.rgb();
+                        ++dest;
+                    }
+                }
+                else if(srcimg.Fmt()==FMT_RGBX8)
+                {
+                    RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
+                    int x;
+                    for( x=0; x<destclipped.w; ++x )
+                    {
+                        RGBX8 c = *src++;
+                        if( c != transparentcolour.rgb() )
+                            *dest = mattecolour.rgb();
+                        ++dest;
+                    }
+                }
+                else
+                {
+                    assert(false);
+                }
+            }
+            break;
         default:
             assert(false);
             break;
@@ -343,6 +376,13 @@ void Blit(
             {
                 RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
                 RGBX8* dest = destimg.Ptr_RGBX8( destclipped.x+0, destclipped.y+y );
+                std::copy( src,src+destclipped.w, dest);
+            }
+            break;
+        case FMT_RGBA8:
+            {
+                RGBA8 const* src = srcimg.PtrConst_RGBA8( srcclipped.x+0, srcclipped.y+y );
+                RGBA8* dest = destimg.Ptr_RGBA8( destclipped.x+0, destclipped.y+y );
                 std::copy( src,src+destclipped.w, dest);
             }
             break;

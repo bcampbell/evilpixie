@@ -125,7 +125,7 @@ void Project::PaletteChange_Begin()
 
 
 // TODO: add palette changes to the undo stack
-void Project::PaletteChange_Alter( int n, RGBx const& c )
+void Project::PaletteChange_Alter( int n, Colour const& c )
 {
     SetColour( n,c );
     std::set<ProjectListener*>::iterator it;

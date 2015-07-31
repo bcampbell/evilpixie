@@ -16,10 +16,7 @@ Palette::Palette(int numcolours) :
     m_NumColours(numcolours)
 {
     int i;
-    RGBx black;
-    black.r=0;
-    black.g=0;
-    black.b=0;
+    Colour black(0,0,0);
     for( i=0;i<256;++i)
         SetColour(i,black);
 }
@@ -27,7 +24,7 @@ Palette::Palette(int numcolours) :
 
 // TODO: BUG: not quite right off-by-one error...
 //
-void Palette::LerpRange( int n0, RGBx const& c0, int n1, RGBx const& c1 )
+void Palette::LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 )
 {
     if( n0==n1 )
         return;
@@ -38,10 +35,11 @@ void Palette::LerpRange( int n0, RGBx const& c0, int n1, RGBx const& c1 )
     {
 
         int t = ((n-n0)*S) / (n1-n0);
-        RGBx& c = m_Colours[n];
+        Colour& c = m_Colours[n];
         c.r = c0.r + ((c1.r-c0.r)*t)/S;
         c.g = c0.g + ((c1.g-c0.g)*t)/S;
         c.b = c0.b + ((c1.b-c0.b)*t)/S;
+        c.a = c0.a + ((c1.a-c0.a)*t)/S;
     }
 }
 
@@ -107,7 +105,7 @@ static void LoadGimpPalette(FILE* fp, Palette& pal)
 
         if( args.size() >= 3 && idx <=255 )
         {
-            RGBx c;
+            Colour c;
             c.r = atoi( args[0].c_str() );
             c.g = atoi( args[1].c_str() );
             c.b = atoi( args[2].c_str() );

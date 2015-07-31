@@ -10,17 +10,17 @@ public:
     Palette(int numcolours=256);
 
     int NumColours() const {return m_NumColours;}
-    RGBx const& GetColour( int n ) const { return m_Colours[n]; }
-    void SetColour( int n, RGBx const& c ) { m_Colours[n]=c; }
+    Colour const& GetColour( int n ) const { return m_Colours[n]; }
+    void SetColour( int n, Colour const& c ) { m_Colours[n]=c; }
 
-    void LerpRange( int n0, RGBx const& c0, int n1, RGBx const& c1 );
+    void LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 );
 
     static Palette* Load(const char* filename);
 
     void SetNumColours(int ncolours) {m_NumColours=ncolours;}
 private:
     int m_NumColours;
-    RGBx m_Colours[256];
+    Colour m_Colours[256];
 };
 
 

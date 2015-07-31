@@ -56,6 +56,7 @@ void Img::init()
     {
         case FMT_I8: m_BytesPerPixel=1; break;
         case FMT_RGBX8: m_BytesPerPixel=4; break;
+        case FMT_RGBA8: m_BytesPerPixel=4; break;
     }
     assert(m_BytesPerPixel>0);
     m_BytesPerRow = m_Bounds.w*m_BytesPerPixel;
@@ -94,6 +95,14 @@ void Img::HLine( PenColour const& pen, int xbegin, int xend, int y)
                     *dest++ = pen.rgb();
             }
             break;
+        case FMT_RGBA8:
+            {
+                // XYZZY: blending!
+                RGBA8* dest = Ptr_RGBA8(xbegin,y);
+                for( x=xbegin; x<xend; ++x )
+                    *dest++ = pen.rgb();
+            }
+            break;
         default: assert(false); // not implemented
     }
 }
@@ -128,6 +137,12 @@ void Img::XFlip()
                 std::reverse(begin,begin+W());
             }
             break;
+        case FMT_RGBA8:
+            {
+                RGBA8* begin = Ptr_RGBA8(0,y);
+                std::reverse(begin,begin+W());
+            }
+            break;
         default: assert(false); // not implemented
         }
     }
@@ -151,6 +166,13 @@ void Img::YFlip()
             {
                 RGBX8* a = Ptr_RGBX8(0,y);
                 RGBX8* b = Ptr_RGBX8(0,(H()-1)-y);
+                std::swap_ranges(a,a+W(),b);
+            }
+            break;
+        case FMT_RGBA8:
+            {
+                RGBA8* a = Ptr_RGBA8(0,y);
+                RGBA8* b = Ptr_RGBA8(0,(H()-1)-y);
                 std::swap_ranges(a,a+W(),b);
             }
             break;

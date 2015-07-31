@@ -151,8 +151,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         if(Proj().Fmt() == FMT_RGBX8)
         {
             m_RGBPicker = new RGBPickerWidget();
-            connect(m_RGBPicker, SIGNAL(pickedLeftButton(RGBx)), this, SLOT( fgColourPickedRGB(RGBx)));
-            connect(m_RGBPicker, SIGNAL(pickedRightButton(RGBx)), this, SLOT( bgColourPickedRGB(RGBx)));
+            connect(m_RGBPicker, SIGNAL(pickedLeftButton(Colour)), this, SLOT( fgColourPickedRGB(Colour)));
+            connect(m_RGBPicker, SIGNAL(pickedRightButton(Colour)), this, SLOT( bgColourPickedRGB(Colour)));
             m_ColourTab->addTab(m_RGBPicker, "RGB");
         }
 
@@ -323,8 +323,8 @@ void EditorWindow::OnPenChanged()
 {
     // new fg or bg pen
     {
-        RGBx fg = FGPen().rgb();
-        RGBx bg = BGPen().rgb();
+        Colour fg = FGPen().rgb();
+        Colour bg = BGPen().rgb();
         m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
         m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
 
@@ -340,7 +340,7 @@ void EditorWindow::OnPenChanged()
     }
 }
 
-void EditorWindow::OnPaletteChanged( int n, RGBx const& c )
+void EditorWindow::OnPaletteChanged( int n, Colour const& c )
 {
     // make sure the gui reflects any palette changes
     m_PaletteWidget->SetColour(n,c);
@@ -352,7 +352,7 @@ void EditorWindow::OnPaletteReplaced()
     int n;
     for( n=0; n<=255; ++n )
     {
-        RGBx c = Proj().GetColour(n);
+        Colour c = Proj().GetColour(n);
         m_PaletteWidget->SetColour(n,c);
     }
 }
@@ -415,24 +415,24 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 void EditorWindow::fgColourPicked( int idx )
 {
-    RGBx c = Proj().GetColour(idx);
+    Colour c = Proj().GetColour(idx);
     SetFGPen( PenColour(c,idx) );
 }
 
 void EditorWindow::bgColourPicked( int idx )
 {
-    RGBx c = Proj().GetColour(idx);
+    Colour c = Proj().GetColour(idx);
     SetBGPen( PenColour(c,idx) );
 }
 
 
-void EditorWindow::fgColourPickedRGB( RGBx c )
+void EditorWindow::fgColourPickedRGB( Colour c )
 {
     // TODO: look up a palette index
     SetFGPen( PenColour(c) );
 }
 
-void EditorWindow::bgColourPickedRGB( RGBx c )
+void EditorWindow::bgColourPickedRGB( Colour c )
 {
     // TODO: look up a palette index
     SetBGPen(PenColour(c));

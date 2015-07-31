@@ -79,9 +79,9 @@ public:
 
     // kill!
     // palette manipulation
-	RGBx const& GetColour(int n ) const { return GetAnimConst().GetPaletteConst().GetColour(n); }
-	void SetColour( int n, RGBx const& c ) { GetAnim().GetPalette().SetColour(n,c); }
-//    RGBx const* GetPaletteConst() const { return GetAnimConst().GetPaletteConst().rawconst(); }
+	Colour const& GetColour(int n ) const { return GetAnimConst().GetPaletteConst().GetColour(n); }
+	void SetColour( int n, Colour const& c ) { GetAnim().GetPalette().SetColour(n,c); }
+//    Colour const* GetPaletteConst() const { return GetAnimConst().GetPaletteConst().rawconst(); }
 
     Palette const& PaletteConst() const { return m_Anim.GetPaletteConst(); }
 
@@ -103,7 +103,7 @@ public:
 
     // TODO: move these out of project into their own class (like DrawTransaction)
     void PaletteChange_Begin();
-    void PaletteChange_Alter( int n, RGBx const& c );
+    void PaletteChange_Alter( int n, Colour const& c );
     void PaletteChange_Replace( Palette const& p );
     void PaletteChange_Commit();
     void PaletteChange_Rollback();

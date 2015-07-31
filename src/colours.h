@@ -8,13 +8,16 @@
 // Raw pixel types:
 enum PixelFormat {
     FMT_I8=0,
-    FMT_RGBX8,
+    FMT_RGBX8,  // rgb only, alpha ignored
+    FMT_RGBA8,
 };
 
 
-// RGBx
+// Colour, 8 bits/channel
 struct RGBX8
 {
+    RGBX8() {}
+    RGBX8(uint8_t red, uint8_t green, uint8_t blue) : b(blue),g(green),r(red),pad(255) {}
     // KLUDGE: this order for QT version (QImage ARGB fmt assumes native byte order...)
 	uint8_t b;
 	uint8_t g;
@@ -24,6 +27,34 @@ struct RGBX8
 inline bool operator==(const RGBX8& a, const RGBX8& b){ return a.r==b.r && a.g==b.g && a.b==b.b; } 
 inline bool operator!=(const RGBX8& a, const RGBX8& b){return !operator==(a,b);}
 
+// RGBA 8 bits/channel
+struct RGBA8
+{
+    RGBA8() {}
+    RGBA8(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) : b(blue),g(green),r(red),a(alpha) {}
+    RGBA8(RGBX8 rgb) : b(rgb.b),g(rgb.g),r(rgb.r),a(255) {}
+    // KLUDGE: this order for QT version (QImage ARGB fmt assumes native byte order...)
+	uint8_t b;
+	uint8_t g;
+	uint8_t r;
+	uint8_t a;
+
+};
+inline bool operator==(const RGBA8& a, const RGBA8& b){ return a.r==b.r && a.g==b.g && a.b==b.b && a.a==b.a; }
+inline bool operator!=(const RGBA8& a, const RGBA8& b){return !operator==(a,b);}
+
+
+
+
+inline RGBX8 Lerp(RGBX8 a, RGBX8 b, uint8_t t) {
+    uint8_t inv = 255-t;
+    RGBX8 out;
+    out.r = (a.r*inv + b.r*t)/255;
+    out.g = (a.g*inv + b.g*t)/255;
+    out.b = (a.b*inv + b.b*t)/255;
+    return out;
+}
+
 // indexed, 8-bit
 typedef uint8_t I8;
 
@@ -31,20 +62,27 @@ typedef uint8_t I8;
 
 // higher-level colour handling:
 // TODO: rename to Colour or something
-struct RGBx
+struct Colour
 {
-    RGBx(uint8_t red=0, uint8_t green=0, uint8_t blue=8 ) :
+    Colour(uint8_t red=0, uint8_t green=0, uint8_t blue=0, uint8_t alpha=255 ) :
         b(blue),
         g(green),
         r(red),
-        pad(255)
+        a(alpha)
     {
     }
-    RGBx(RGBX8 raw) :
+    Colour(RGBX8 raw) :
         b(raw.b),
         g(raw.g),
         r(raw.r),
-        pad(255)
+        a(255)
+    {
+    }
+    Colour(RGBA8 raw) :
+        b(raw.b),
+        g(raw.g),
+        r(raw.r),
+        a(raw.a)
     {
     }
 
@@ -52,20 +90,23 @@ struct RGBx
 	uint8_t b;
 	uint8_t g;
 	uint8_t r;
-	uint8_t pad;
+	uint8_t a;
 
     operator RGBX8() const
         { RGBX8 tmp; tmp.r=r; tmp.g=g; tmp.b=b; tmp.pad=255; return tmp; }
+    operator RGBA8() const
+        { RGBA8 tmp; tmp.r=r; tmp.g=g; tmp.b=b; tmp.a=a; return tmp; }
 };
 
-inline RGBx Lerp(RGBx const& a, RGBx const& b, float t)
+inline Colour Lerp(Colour const& a, Colour const& b, float t)
 {
     assert(t>=0.0f && t <= 1.0f);
     float inv = 1-t;
-    return RGBx(
+    return Colour(
         (int)(a.r*inv + b.r*t),
         (int)(a.g*inv + b.g*t),
-        (int)(a.b*inv + b.b*t));
+        (int)(a.b*inv + b.b*t),
+        (int)(a.a*inv + b.a*t));
 }
 
 
@@ -85,18 +126,18 @@ public:
     {
     }
 
-    PenColour( RGBx c, int i=-1) :
+    PenColour( Colour c, int i=-1) :
         m_rgb(c),
         m_idx(i)
     {
     }
 
-    RGBx rgb() const {return m_rgb; }
+    Colour rgb() const {return m_rgb; }
     int idx() const { assert(IdxValid());return m_idx; }
 
     bool IdxValid() const { return m_idx>=0; }
 private:
-    RGBx m_rgb;
+    Colour m_rgb;
     int m_idx; // -1 = invalid
 };
 

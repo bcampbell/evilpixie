@@ -134,10 +134,11 @@ void Anim::Load( const char* filename )
             int i=0;
             while(i<num_cols)
             {
-                RGBx c;
+                Colour c;
                 c.r = *p++;
                 c.g = *p++;
                 c.b = *p++;
+                c.a = 255;
                 m_Palette.SetColour(i,c);
                 ++i;
             }
@@ -208,7 +209,7 @@ void Anim::LoadGif( const char* filename )
     while(i<cm->ColorCount)
     {
         GifColorType const& c = cm->Colors[i];
-        m_Palette.SetColour(i,RGBx( c.Red, c.Green, c.Blue ));
+        m_Palette.SetColour(i,Colour( c.Red, c.Green, c.Blue ));
         ++i;
     }
 
@@ -226,11 +227,11 @@ void Anim::LoadGif( const char* filename )
         Palette* pal = new Palette();
         int i;
         for(i=0;i<256;++i)
-            pal->SetColour(i,RGBx(0,0,0));
+            pal->SetColour(i,Colour(0,0,0));
         for( i=0; i<cm->ColorCount; ++i )
         {
             GifColorType const& c = cm->Colors[i];
-            pal->SetColour(i,RGBx( c.Red, c.Green, c.Blue ));
+            pal->SetColour(i,Colour( c.Red, c.Green, c.Blue ));
         }
 */
         Img* tmp = new Img(FMT_I8, si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits);
@@ -288,7 +289,7 @@ void Anim::Save( const char* filename )
         uint8_t* p = tmp_palette;
         for( i=0; i<=m_Palette.NumColours(); ++i )
         {
-            RGBx c = m_Palette.GetColour(i);
+            Colour c = m_Palette.GetColour(i);
             *p++ = c.r;
             *p++ = c.g;
             *p++ = c.b;
@@ -357,7 +358,7 @@ void Anim::SaveGif( const char* filename )
         for( i=0; i<m_Palette.NumColours(); ++i)
         {
             GifColorType& c = cmap->Colors[i];
-            RGBx rgb = m_Palette.GetColour(i);
+            Colour rgb = m_Palette.GetColour(i);
             c.Red = rgb.r;
             c.Green = rgb.g;
             c.Blue = rgb.b;

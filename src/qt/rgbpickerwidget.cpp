@@ -43,54 +43,54 @@ void RGBPickerWidget::UpdateBacking()
         int x;
         for(x=0;x<W; ++x)
         {
-            RGBx c = PointToRGB(QPoint(x,y));
+            Colour c = PointToRGB(QPoint(x,y));
             *dest++ = qRgb(c.r, c.g, c.b);
         }
     }
 }
 
 
-void RGBPickerWidget::SetLeftSelected( RGBx c )
+void RGBPickerWidget::SetLeftSelected( Colour c )
 {
     m_LeftSel = RGBToPoint(c);
     update();
 }
 
-void RGBPickerWidget::SetRightSelected( RGBx c )
+void RGBPickerWidget::SetRightSelected( Colour c )
 {
     m_RightSel = RGBToPoint(c);
     update();
 }
 
 
-QPoint RGBPickerWidget::RGBToPoint( RGBx c ) const
+QPoint RGBPickerWidget::RGBToPoint( Colour c ) const
 {
     return QPoint(0,0);
 }
 
-RGBx RGBPickerWidget::PointToRGB( QPoint const& p ) const
+Colour RGBPickerWidget::PointToRGB( QPoint const& p ) const
 {
     float x = (float)p.x() / (float)size().width();
     float y = (float)p.y() / (float)size().height();
     int zone = (int)(y*6.0f);
     float t = fmod(y,1.0f/6.0f) * 6.0f;
     assert(zone>=0 && zone<6);
-    RGBx a,b;
+    Colour a,b;
     switch(zone)
     {
-        case 0: a=RGBx(255,0,0); b=RGBx(255,255,0); break;
-        case 1: a=RGBx(255,255,0); b=RGBx(0,255,0); break;
-        case 2: a=RGBx(0,255,0); b=RGBx(0,255,255); break;
-        case 3: a=RGBx(0,255,255); b=RGBx(0,0,255); break;
-        case 4: a=RGBx(0,0,255); b=RGBx(255,0,255); break;
-        case 5: a=RGBx(255,0,255); b=RGBx(255,0,0); break;
+        case 0: a=Colour(255,0,0); b=Colour(255,255,0); break;
+        case 1: a=Colour(255,255,0); b=Colour(0,255,0); break;
+        case 2: a=Colour(0,255,0); b=Colour(0,255,255); break;
+        case 3: a=Colour(0,255,255); b=Colour(0,0,255); break;
+        case 4: a=Colour(0,0,255); b=Colour(255,0,255); break;
+        case 5: a=Colour(255,0,255); b=Colour(255,0,0); break;
     } 
 
     if( x<0.5) {
-        RGBx white(255,255,255);
+        Colour white(255,255,255);
         return Lerp(white,Lerp(a,b,t),x*2.0f);
     } else {
-        RGBx black(0,0,0);
+        Colour black(0,0,0);
         return Lerp(Lerp(a,b,t),black,(x-0.5f)*2.0f);
     }
 
@@ -108,14 +108,14 @@ void RGBPickerWidget::mousePressEvent(QMouseEvent *event)
     {
         QPoint p = event->pos();
         m_LeftSel = p;
-        RGBx c = PointToRGB(p);
+        Colour c = PointToRGB(p);
         emit pickedLeftButton( c );
     }
     if( event->button() == Qt::RightButton )
     {
         QPoint p = event->pos();
         m_RightSel = p;
-        RGBx c = PointToRGB(p);
+        Colour c = PointToRGB(p);
         emit pickedRightButton( c );
     }
     update();
