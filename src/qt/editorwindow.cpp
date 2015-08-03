@@ -148,7 +148,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         m_ColourTab->setDocumentMode(true);
         layout->addWidget( m_ColourTab, 5,1 );
 
-        if(Proj().Fmt() == FMT_RGBX8)
+        if(Proj().Fmt() == FMT_RGBX8 || Proj().Fmt() == FMT_RGBA8 )
         {
             m_RGBPicker = new RGBPickerWidget();
             connect(m_RGBPicker, SIGNAL(pickedLeftButton(Colour)), this, SLOT( fgColourPickedRGB(Colour)));
@@ -532,7 +532,10 @@ void EditorWindow::do_new()
     {
         QSize sz = dlg.GetSize();
         Palette* pal = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
-        pal->SetNumColours(dlg.num_colours);
+        if( dlg.pixel_format == FMT_I8)
+            pal->SetNumColours(dlg.num_colours);
+        else
+            pal->SetNumColours(256);
         Project* p = new Project( dlg.pixel_format, sz.width(), sz.height(), pal, dlg.num_frames );
 //        printf("%d frames, %d colours\n",dlg.num_frames,dlg.num_colours);
         EditorWindow* fenster = new EditorWindow(p);
