@@ -17,8 +17,26 @@ void Blit( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox);
 void BlitMatte( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox,
     PenColour const& transparentcolour, PenColour const& mattecolour );
 
+// Blit matte of an I8 img onto another img, colourkeyed.
+void BlitMatteI8Keyed(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    int transparentIdx,
+    PenColour const& mattecolour );
+
+void BlitMatteRGBX8Keyed(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    RGBX8 transparent,
+    RGBA8 matte );
+
+void BlitMatteRGBA8(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    RGBA8 matte );
+
 // destbox is changed to reflect the final clipped area on the dest Img
-void BlitTransparent( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox,
+void BlitTransparent( Img const& srcimg, Box const& srcbox, Palette const& srcpalette, Img& destimg, Box& destbox,
     PenColour const& transparentcolour );
 
 // Same as Blit, except that srcimg is replaced by destimg

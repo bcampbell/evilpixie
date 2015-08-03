@@ -22,7 +22,7 @@ public:
     BrushStyle Style() const          { return m_Style; }
 
     // TODO: image could carry it's own palette
-    Palette const& GetPalette()
+    Palette const& GetPalette() const
         { return m_Palette; }
 
     void SetPalette( Palette const& pal )

@@ -344,8 +344,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
                         RGBA8 c = *src++;
                         while(x<pixstop)
                         {
-                            RGBX8 foo(c.r,c.g,c.b);
-                            *dest++ = Lerp(checker(x,y),foo,c.a);
+                            *dest++ = Blend(c,checker(x,y));
                             ++x;
                         }
                     }

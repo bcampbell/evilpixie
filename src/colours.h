@@ -23,7 +23,9 @@ struct RGBX8
 	uint8_t g;
 	uint8_t r;
 	uint8_t pad;
+
 };
+
 inline bool operator==(const RGBX8& a, const RGBX8& b){ return a.r==b.r && a.g==b.g && a.b==b.b; } 
 inline bool operator!=(const RGBX8& a, const RGBX8& b){return !operator==(a,b);}
 
@@ -38,14 +40,33 @@ struct RGBA8
 	uint8_t g;
 	uint8_t r;
 	uint8_t a;
-
 };
+
 inline bool operator==(const RGBA8& a, const RGBA8& b){ return a.r==b.r && a.g==b.g && a.b==b.b && a.a==b.a; }
 inline bool operator!=(const RGBA8& a, const RGBA8& b){return !operator==(a,b);}
 
 
+inline RGBX8 Blend(RGBA8 src, RGBX8 dest)
+{
+    uint8_t t = src.a;
+    uint8_t inv = 255-src.a;
+    return RGBX8(
+        (dest.r*inv + src.r*t)/255,
+        (dest.g*inv + src.g*t)/255,
+        (dest.b*inv + src.b*t)/255 );
+}
 
-
+inline RGBA8 Blend(RGBA8 src, RGBA8 dest)
+{
+    uint8_t t = src.a;
+    uint8_t inv = 255-src.a;
+    return RGBA8(
+        (dest.r*inv + src.r*t)/255,
+        (dest.g*inv + src.g*t)/255,
+        (dest.b*inv + src.b*t)/255,
+        (dest.a*inv + src.a*t)/255 );
+}
+/*
 inline RGBX8 Lerp(RGBX8 a, RGBX8 b, uint8_t t) {
     uint8_t inv = 255-t;
     RGBX8 out;
@@ -54,6 +75,7 @@ inline RGBX8 Lerp(RGBX8 a, RGBX8 b, uint8_t t) {
     out.b = (a.b*inv + b.b*t)/255;
     return out;
 }
+*/
 
 // indexed, 8-bit
 typedef uint8_t I8;

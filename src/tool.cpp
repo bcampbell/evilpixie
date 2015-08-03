@@ -155,7 +155,9 @@ void PlonkBrushToProj( EditView& view, Point const& pos, Box& projdmg, Button bu
         }
         else
         {
-            BlitTransparent( brush, brush.Bounds(),
+            BlitTransparent( brush,
+                brush.Bounds(),
+                brush.GetPalette(),
                 target, dmg,
                 brush.TransparentColour() );
         }
@@ -295,7 +297,9 @@ void PencilTool::Plot_cb( int x, int y, void* user )
         }
         else
         {
-            BlitTransparent( brush, brush.Bounds(),
+            BlitTransparent( brush,
+                brush.Bounds(),
+                brush.GetPalette(), 
                 target, dmg,
                 brush.TransparentColour() );
         }
@@ -394,7 +398,9 @@ void LineTool::Plot_cb( int x, int y, void* user )
         }
         else
         {
-            BlitTransparent( brush, brush.Bounds(),
+            BlitTransparent( brush,
+                brush.Bounds(),
+                brush.GetPalette(),
                 target, dmg,
                 brush.TransparentColour());
         }
@@ -938,7 +944,9 @@ void CircleTool::Plot_cb( int x, int y, void* user )
         }
         else
         {
-            BlitTransparent( brush, brush.Bounds(),
+            BlitTransparent( brush,
+                brush.Bounds(),
+                brush.GetPalette(),
                 target, dmg,
                 brush.TransparentColour());
         }
