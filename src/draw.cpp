@@ -235,7 +235,7 @@ static void scan_matte_I8_RGBX8_keyed(I8 const* src, RGBX8* dest, int w, I8 tran
     }
 }
 
-static void scan_matte_I8_RGBA8_keyed(I8 const* src, RGBA8* dest, int w, I8 transparent, RGBX8 matte )
+static void scan_matte_I8_RGBA8_keyed(I8 const* src, RGBA8* dest, int w, I8 transparent, RGBA8 matte )
 {
     int x;
     for( x=0; x<w; ++x )
