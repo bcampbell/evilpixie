@@ -23,12 +23,13 @@ signals:
     void colourChanged();
 
 private:
-    QSlider* m_Sliders[3];
-    QLabel* m_Labels[3];
+    QSlider* m_Sliders[4];
+    QLabel* m_Labels[4];
 private slots:
     void redChanged(int);
     void greenChanged(int);
     void blueChanged(int);
+    void alphaChanged(int);
 };
 
 #endif // RGBWIDGET_H

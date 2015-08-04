@@ -34,7 +34,7 @@ PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :
 
     {
         Colour c( m_Proj.GetColour( m_Selected ) );
-        m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
+        m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
     }
     connect( m_RGBWidget, SIGNAL( colourChanged() ), this, SLOT( colourChanged() ) );
     connect( m_PaletteWidget, SIGNAL( rangeAltered() ), this, SLOT( paletteRangeAltered() ) );
@@ -56,7 +56,7 @@ void PaletteEditor::colourPicked(int idx)
 {
     m_Selected = idx;
     Colour c( m_Proj.GetColour( idx ) );
-    m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
+    m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
 }
 
 void PaletteEditor::SetSelected(int idx)
@@ -66,7 +66,7 @@ void PaletteEditor::SetSelected(int idx)
     m_Selected = idx;
     m_PaletteWidget->SetLeftSelected(idx);
     Colour c( m_Proj.GetColour( idx ) );
-    m_RGBWidget->setColour( QColor( c.r, c.g, c.b ) );
+    m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
 }
 
 void PaletteEditor::OnDamaged(int frame, Box const& )
@@ -90,7 +90,7 @@ void PaletteEditor::colourChanged()
     QColor qc = m_RGBWidget->colour();
 
     m_Proj.PaletteChange_Begin();
-    Colour c( qc.red(), qc.green(), qc.blue() );
+    Colour c( qc.red(), qc.green(), qc.blue(), qc.alpha() );
     m_Proj.PaletteChange_Alter(m_Selected, c );
     m_Proj.PaletteChange_Commit();
 }
