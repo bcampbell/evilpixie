@@ -8,6 +8,14 @@ class Box;
 class Point;
 class Palette;
 
+
+enum DrawMode {
+    DM_NORMAL=0, // use brush colour and transparency rules
+    DM_COLOUR,  // use normal transparency rules, but replace colour with constant
+    DM_REPLACE  // replace wholesale.
+};
+
+
 void Blit( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox);
 
 

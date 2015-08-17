@@ -106,6 +106,7 @@ public slots:
     void do_usebrushpalette();
     void do_xflipbrush();
     void do_yflipbrush();
+    void do_drawmodeChanged(QAction* act);
 
     void do_addframe();
     void do_zapframe();
@@ -125,6 +126,8 @@ private:
     QLayout* CreateBrushButtons();
     QLayout* CreateToolButtons();
     QMenuBar* CreateMenuBar();
+    void CreateActions();
+
 
     QAbstractButton* FindButton( QButtonGroup* grp, const char* propname, QVariant const& val );
 
@@ -141,6 +144,10 @@ private:
     QAction* m_ActionZapFrame;
     QAction* m_ActionPrevFrame;
     QAction* m_ActionNextFrame;
+
+    QAction* m_ActionDrawmodeNormal;
+    QAction* m_ActionDrawmodeColour;
+    QAction* m_ActionDrawmodeReplace;
  
     // status bar items
     QLabel* m_StatusViewInfo;

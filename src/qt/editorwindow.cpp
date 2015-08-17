@@ -113,6 +113,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     layout->setSpacing(0);
     layout->setMargin(0);
 
+    CreateActions();
     QMenuBar* menubar = CreateMenuBar();
     layout->addWidget( menubar,0,0,1,2 );
 
@@ -510,6 +511,11 @@ void EditorWindow::do_togglesavebgastransparent( bool checked )
     m_SaveBGAsTransparent = checked;
 }
 
+void EditorWindow::do_drawmodeChanged( QAction* act )
+{
+    printf("BING %d\n", act->data().toInt());
+}
+
 void EditorWindow::do_resize()
 {
     Box b = Proj().GetAnim().GetFrame(m_ViewWidget->Frame()).Bounds();
@@ -841,7 +847,51 @@ QMenuBar* EditorWindow::CreateMenuBar()
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 
+    // Draw menu
+    /*
+    {
+        QMenu* m = menubar->addMenu("&Draw");
+        m->addAction( m_ActionDrawmodeNormal);
+        m->addAction( m_ActionDrawmodeColour);
+        m->addAction( m_ActionDrawmodeReplace);
+        //connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
+    }
+    */
     return menubar;
+}
+
+
+// TODO: move most of the actions out of CreateMenuBar and put them here instead...
+void EditorWindow::CreateActions()
+{
+    QAction* a;
+  
+    // draw modes 
+    a = m_ActionDrawmodeNormal = new QAction("&Normal", this);
+    a->setData(0);
+    a->setCheckable(true);
+    //a->setShortcuts(QKeySequence::New);
+    a->setStatusTip("Normal drawing");
+
+    a = m_ActionDrawmodeColour = new QAction("&Colour", this);
+    a->setData(1);
+    a->setCheckable(true);
+    //a->setShortcuts(QKeySequence::New);
+    a->setStatusTip("Draw with current colour");
+
+    a = m_ActionDrawmodeReplace = new QAction("&Replace", this);
+    a->setData(2);
+    a->setCheckable(true);
+    //a->setShortcuts(QKeySequence::New);
+    //a->setStatusTip("");
+
+    QActionGroup* grp = new QActionGroup(this);
+    grp->addAction(m_ActionDrawmodeNormal);
+    grp->addAction(m_ActionDrawmodeColour);
+    grp->addAction(m_ActionDrawmodeReplace);
+    m_ActionDrawmodeNormal->setChecked(true);
+    connect(grp, SIGNAL(triggered(QAction*)), this, SLOT(do_drawmodeChanged(QAction*)));
+
 }
 
 
