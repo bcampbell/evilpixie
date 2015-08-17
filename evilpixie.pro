@@ -38,6 +38,7 @@ SOURCES += src/anim.cpp \
     src/qt/rgbpickerwidget.cpp \
     src/qt/resizeprojectdialog.cpp \
     src/qt/qtapp.cpp \
+    src/qt/guistuff.cpp \
     src/qt/main.cpp
 
 HEADERS += src/anim.h \
@@ -64,7 +65,8 @@ HEADERS += src/anim.h \
     src/qt/rgbwidget.h \
     src/qt/rgbpickerwidget.h \
     src/qt/resizeprojectdialog.h \
-    src/qt/editviewwidget.h
+    src/qt/editviewwidget.h \
+    src/qt/guistuff.h
 
 !win32 {
     isEmpty( PREFIX ) {

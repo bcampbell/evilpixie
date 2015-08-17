@@ -1,11 +1,14 @@
 #include "qtapp.h"
+#include "guistuff.h"
 
 #include "../editor.h"
 #include "../exception.h"
+
 #include "editorwindow.h"
 #include <cstdio>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+
 
 
 
@@ -15,12 +18,16 @@ QTApp::QTApp()
 
 QTApp::~QTApp()
 {
+    freeGUIStuff();
 }
 
 
 int QTApp::Run( int argc, char* argv[] )
 {
     QApplication app(argc, argv);
+
+
+    initGUIStuff();
 
     QStringList args = app.arguments();
 

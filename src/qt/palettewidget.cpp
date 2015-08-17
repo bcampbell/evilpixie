@@ -1,4 +1,5 @@
 #include "palettewidget.h"
+#include "guistuff.h"
 
 #include "../project.h"
 
@@ -133,7 +134,8 @@ void PaletteWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
    	painter.setPen(Qt::NoPen);
-    painter.setBrush( QColor( 0,0,0) );
+    //painter.setBrush( QColor( 0,0,0) );
+    painter.setBrush( *g_GUIStuff.checkerboard );
    	painter.drawRect( rect() );
 
     int n;
@@ -180,26 +182,11 @@ void PaletteWidget::DrawCell( QPainter& painter, int n )
     QRect cellrect;
     CalcCellRect( n, cellrect );
 
-  //  QRect outline( cellrect );
- //   outline.adjust(-1,-1,-1,-1);
-    cellrect.adjust(0,0,-1,-1);
+    //cellrect.adjust(0,0,-1,-1);
 
     Colour c(m_Palette.GetColour(n));
 
     painter.setPen(Qt::NoPen);
-
-    // cheesiness for alphaness.
-    int x = cellrect.x();
-    int y = cellrect.y();
-    int w = cellrect.width()/2;
-    int h = cellrect.height()/2;
-    painter.setBrush(QColor(255,255,255));
-    painter.drawRect(QRect(x,y,w,h));
-    painter.drawRect(QRect(x+w,y+h,w,h));
-    painter.setBrush(QColor(128,128,128));
-    painter.drawRect(QRect(x+w,y,w,h));
-    painter.drawRect(QRect(x,y+h,w,h));
-
 
     painter.setBrush(QColor(c.r, c.g, c.b, c.a));
     painter.drawRect( cellrect );

@@ -4,6 +4,7 @@
 #include "../util.h"
 #include "../exception.h"
 #include "../cmd.h"
+#include "guistuff.h"
 #include "editorwindow.h"
 #include "editviewwidget.h"
 #include "palettewidget.h"
@@ -47,10 +48,13 @@
 #define ICONDIR EVILPIXIE_DATA_DIR "/icons"
 
 
+
 void CurrentColourWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     painter.setPen(Qt::NoPen);
+    painter.setBrush( *g_GUIStuff.checkerboard);
+    painter.drawRect( rect() );
     painter.setBrush( m_BG );
     painter.drawRect( rect() );
 
@@ -58,6 +62,8 @@ void CurrentColourWidget::paintEvent(QPaintEvent *)
     int h = rect().height();
 
     QRect inner( rect().left()+w/4, rect().top()+h/4, w/2, h/2 );
+    painter.setBrush( *g_GUIStuff.checkerboard /*m_BG*/ );
+    painter.drawRect( inner );
     painter.setBrush( m_FG );
     painter.drawRect( inner );
 }
@@ -326,8 +332,8 @@ void EditorWindow::OnPenChanged()
     {
         Colour fg = FGPen().rgb();
         Colour bg = BGPen().rgb();
-        m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b ) );
-        m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b ) );
+        m_CurrentColourWidget->setFGColour( QColor( fg.r, fg.g, fg.b, fg.a ) );
+        m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b, bg.a ) );
 
         //assert(Proj().GetAnimConst().Fmt()==FMT_I8);
         if(FGPen().IdxValid())
