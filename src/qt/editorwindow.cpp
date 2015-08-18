@@ -339,8 +339,8 @@ void EditorWindow::OnPenChanged()
         if(FGPen().IdxValid())
         {
             m_PaletteWidget->SetLeftSelected( FGPen().idx() );
-            if( m_PaletteEditor )
-                m_PaletteEditor->SetSelected(FGPen().idx());
+        //    if( m_PaletteEditor )
+        //        m_PaletteEditor->SetSelected(FGPen().idx());
         }
         if(BGPen().IdxValid())
             m_PaletteWidget->SetLeftSelected( BGPen().idx() );
@@ -351,6 +351,17 @@ void EditorWindow::OnPaletteChanged( int n, Colour const& c )
 {
     // make sure the gui reflects any palette changes
     m_PaletteWidget->SetColour(n,c);
+
+    // one of the active pens changed?
+    if( FGPen().IdxValid() && FGPen().idx()==n )
+    {
+        SetFGPen( PenColour(c,n) );
+    }
+    if( BGPen().IdxValid() && BGPen().idx()==n )
+    {
+        SetBGPen( PenColour(c,n) );
+    }
+
 }
 
 
