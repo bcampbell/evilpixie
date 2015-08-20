@@ -10,7 +10,6 @@
 
 
 Anim::Anim() :
-    m_TransparentIdx(-1),
     m_FPS(10)
 {
 }
@@ -236,6 +235,9 @@ void Anim::LoadGif( const char* filename )
         ++i;
     }
 
+    
+
+
     int n;
     for( n=0; n<f->ImageCount; ++n)
     {
@@ -257,6 +259,21 @@ void Anim::LoadGif( const char* filename )
             pal->SetColour(i,Colour( c.Red, c.Green, c.Blue ));
         }
 */
+        // transparent-colour?
+        for( i=0; i<si->ExtensionBlockCount; ++i) {
+            ExtensionBlock* eb = &si->ExtensionBlocks[i];
+            if( eb->Function==GRAPHICS_EXT_FUNC_CODE && eb->ByteCount==4 )
+            {
+                if( eb->Bytes[0] & 1)
+                {
+                    // set the colourkeyed palette entry to transparent
+                    int key = (int)eb->Bytes[3];
+                    Colour c = m_Palette.GetColour(key);
+                    c.a = 0;
+                    m_Palette.SetColour(key,c);
+                }
+            }
+        }
         Img* tmp = new Img(FMT_I8, si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits);
 
         Append(tmp);
@@ -289,7 +306,6 @@ void Anim::Save( const char* filename )
     //
     if (img.Fmt() == FMT_I8)
     {
-        ilSetInteger(IL_PNG_ALPHA_INDEX,TransparentIdx());
 
         if( !ilTexImage( img.W(), img.H(), 1, 1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, NULL ) )
         {
@@ -396,6 +412,7 @@ void Anim::SaveGif( const char* filename )
         // TODO: per-frame palette support
         ColorMapObject* cmap = MakeMapObject( m_Palette.NumColours(), NULL);
         int i;
+        int colourkey=-1;
         for( i=0; i<m_Palette.NumColours(); ++i)
         {
             GifColorType& c = cmap->Colors[i];
@@ -403,6 +420,12 @@ void Anim::SaveGif( const char* filename )
             c.Red = rgb.r;
             c.Green = rgb.g;
             c.Blue = rgb.b;
+
+            // use first totally-transparent colour (if any) as colourkey
+            if(rgb.a == 0 && colourkey==-1)
+            {
+                colourkey = i;
+            }
         }
         Box screen;
         CalcBounds(screen,0,NumFrames());
@@ -416,13 +439,13 @@ void Anim::SaveGif( const char* filename )
             throw Exception( "gif error (code %d)", filename, GifLastError() );
         }
 
-        if(TransparentIdx()!=-1) {
+        if(colourkey!=-1) {
             uint16_t delay = 100/FPS(); // in 1/100ths of a second
 
             unsigned char gc_ext[4] = {
                 0x09, /* transparency=1, disposal=2 (Restore to background color) */
                 delay&0xff, delay>>8, /* delay time (little endian) */
-                TransparentIdx()
+                colourkey
             };
             EGifPutExtension(f, GRAPHICS_EXT_FUNC_CODE, 4, gc_ext);
         }

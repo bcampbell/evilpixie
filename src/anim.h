@@ -32,8 +32,8 @@ public:
     void CalcBounds(Box& bound, int first, int last);
 
     // which palette index is transparent (-1=none)
-    int TransparentIdx() const { return m_TransparentIdx; }
-    void SetTransparentIdx(int idx) { m_TransparentIdx=idx; }
+    //int TransparentIdx() const { return m_TransparentIdx; }
+    //void SetTransparentIdx(int idx) { m_TransparentIdx=idx; }
 
     // frame rate control (in fps)
     int FPS() const { return m_FPS; }
