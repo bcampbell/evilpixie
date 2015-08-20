@@ -114,10 +114,10 @@ void Anim::Load( const char* filename )
 
             /* make sure everything is in the format we expect! */
             ilConvertImage( IL_COLOUR_INDEX, IL_UNSIGNED_BYTE );
-            ilConvertPal( IL_PAL_RGB24 );
+            ilConvertPal( IL_PAL_RGBA32 );
 
             int pal_bytesperpixel = (int)ilGetInteger( IL_PALETTE_BPP );
-            if( pal_bytesperpixel != 3 )
+            if( pal_bytesperpixel != 4 )
             {
                 ilDeleteImages(1,&im);
                 throw Exception( "Unsupported palette type (%d bytes/pixel)", pal_bytesperpixel );
@@ -138,7 +138,7 @@ void Anim::Load( const char* filename )
                 c.r = *p++;
                 c.g = *p++;
                 c.b = *p++;
-                c.a = 255;
+                c.a = *p++;
                 m_Palette.SetColour(i,c);
                 ++i;
             }
@@ -307,7 +307,7 @@ void Anim::Save( const char* filename )
 
 
 
-        uint8_t tmp_palette[3*m_Palette.NumColours()];
+        uint8_t tmp_palette[4*m_Palette.NumColours()];
         int i;
         uint8_t* p = tmp_palette;
         for( i=0; i<=m_Palette.NumColours(); ++i )
@@ -316,8 +316,9 @@ void Anim::Save( const char* filename )
             *p++ = c.r;
             *p++ = c.g;
             *p++ = c.b;
+            *p++ = c.a;
         }
-        ilRegisterPal( tmp_palette, 3*m_Palette.NumColours(), IL_PAL_RGB24 );
+        ilRegisterPal( tmp_palette, 4*m_Palette.NumColours(), IL_PAL_RGBA32 );
     }
     else if (img.Fmt() == FMT_RGBX8)
     {
