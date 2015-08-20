@@ -305,10 +305,11 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
                         int pixstop = x + (m_XZoom-(cx%m_XZoom));
                         if(pixstop>xmax)
                             pixstop=xmax+1;
-                        RGBX8 c(Proj().PaletteConst().GetColour(*src++));
+                        RGBA8 c = Proj().PaletteConst().GetColour(*src++);
                         while(x<pixstop)
                         {
-                            *dest++ = c;
+                            //*dest++ = c;
+                            *dest++ = Blend(c,checker(x,y));
                             ++x;
                         }
                     }
