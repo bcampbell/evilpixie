@@ -62,7 +62,7 @@ public:
     // replace palette, informing listeners. ownership is passed to proj.
     void ReplacePalette(Palette* newpalette);
 
-    void Save( std::string const& filename, bool savetransparency );
+    void Save( std::string const& filename);
 
     // pixel access
     Anim& GetAnim() { return m_Anim; }

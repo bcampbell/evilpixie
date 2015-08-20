@@ -497,7 +497,6 @@ void EditorWindow::update_menu_states()
     m_ActionUndo->setEnabled( CanUndo() );
     m_ActionRedo->setEnabled( CanRedo() );
     m_ActionGridOnOff->setChecked( GridActive() );
-    m_ActionSaveBGAsTransparent->setChecked( m_SaveBGAsTransparent );
     m_ActionUseBrushPalette->setEnabled( GetBrush() == -1 );
 
     int nframes= Proj().GetAnim().NumFrames();
@@ -521,11 +520,6 @@ void EditorWindow::do_redo()
 void EditorWindow::do_gridonoff( bool checked )
 {
     ActivateGrid( checked );
-}
-
-void EditorWindow::do_togglesavebgastransparent( bool checked )
-{
-    m_SaveBGAsTransparent = checked;
 }
 
 void EditorWindow::do_drawmodeChanged( QAction* act )
@@ -708,7 +702,7 @@ void EditorWindow::do_save()
         do_saveas();
     try
     {
-        Proj().Save( Proj().Filename(), m_SaveBGAsTransparent );
+        Proj().Save( Proj().Filename());
     }
     catch( Exception const& e )
     {
@@ -746,7 +740,7 @@ void EditorWindow::do_saveas()
 
     try
     {
-        Proj().Save( filename.toStdString(), m_SaveBGAsTransparent );
+        Proj().Save( filename.toStdString() );
     }
     catch( Exception const& e )
     {
@@ -837,9 +831,6 @@ QMenuBar* EditorWindow::CreateMenuBar()
 
 
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
-        a->setCheckable(true);
-
-        m_ActionSaveBGAsTransparent = a = m->addAction( "Save bg colour as transparent (png only)?", this, SLOT( do_togglesavebgastransparent(bool)));
         a->setCheckable(true);
 
         a = m->addAction( "Resize...", this, SLOT(do_resize()));

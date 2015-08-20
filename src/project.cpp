@@ -77,9 +77,8 @@ void Project::ReplacePalette(Palette* newpalette)
 }
 
 
-void Project::Save( std::string const& filename, bool /* savetransparency */ )
+void Project::Save( std::string const& filename )
 {
-    //m_Anim.SetTransparentIdx(savetransparency ? BGPen().i : -1);
     m_Anim.Save(filename.c_str());
     SetModifiedFlag(false);
     m_Filename = filename;
