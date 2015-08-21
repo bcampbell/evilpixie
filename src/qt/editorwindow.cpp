@@ -699,7 +699,11 @@ void EditorWindow::do_open()
 void EditorWindow::do_save()
 {
     if( Proj().Filename().empty() )
+    {
         do_saveas();
+        return;
+    }
+
     try
     {
         Proj().Save( Proj().Filename());

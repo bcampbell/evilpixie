@@ -51,6 +51,7 @@ void Anim::Load( const char* filename )
     std::string ext = ToLower( ExtName(filename) );
     if(ext == ".gif")
     {
+        // TODO: try using DevIL Gif loader
         LoadGif(filename);
         return;
     }
@@ -78,7 +79,11 @@ void Anim::Load( const char* filename )
     if( err != IL_NO_ERROR )
     {
         ilDeleteImages(1,&im);
-        throw Exception( "ILerror during load: 0x%x", err );
+        if(err==IL_INVALID_VALUE)
+        {
+            throw Exception( "Load failed - mistaken or badly formed %s file?", ext.c_str() );
+        }
+        throw Exception( "Load failed (code: 0x%x)", err );
     }
 
     int num_frames = ilGetInteger(IL_NUM_IMAGES);
@@ -284,9 +289,16 @@ void Anim::LoadGif( const char* filename )
 
 void Anim::Save( const char* filename )
 {
+    Img const& img = GetFrameConst(0);
+
     std::string ext = ToLower( ExtName(filename) );
     if(ext == ".gif")
     {
+        if( img.Fmt() != FMT_I8) {
+            throw Exception("Sorry... .gif only handles paletted images (maybe try .png instead?)");
+        }
+
+        // DevIL lib doesn't save Gifs
         SaveGif(filename);
         return;
     }
@@ -295,8 +307,10 @@ void Anim::Save( const char* filename )
         throw Exception("Sorry... to save anims you need to use GIF format (for now)");
 
     // OK then... just save first frame
-    Img const& img = GetFrameConst(0);
-
+    ILenum fileType = ilTypeFromExt(filename);
+    if( fileType == IL_TYPE_UNKNOWN) {
+        throw Exception("Sorry... unknown/unsupported file type");
+    }
 
     ILuint im;
     ilGenImages( 1, &im );
@@ -382,7 +396,8 @@ void Anim::Save( const char* filename )
         ILenum err = ilGetError();
 
         if( err == IL_INVALID_EXTENSION )
-            throw Exception( "Invalid filename extension" );
+            // if we got this far, INVALID_EXTENSION really just means we can't save in that format.
+            throw Exception( "Sorry, can't save in that file format" );
         if( err == IL_FORMAT_NOT_SUPPORTED )
             throw Exception( "File format not supported" );
         else
