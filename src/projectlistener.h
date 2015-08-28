@@ -18,6 +18,7 @@ public:
     virtual void OnPenChange() {}
     virtual void OnFramesAdded(int /*first*/, int /*last*/) {}
     virtual void OnFramesRemoved(int /*first*/, int /*last*/) {}
+    virtual void OnAnimReplaced() {}
 
 private:
 

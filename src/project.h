@@ -99,6 +99,7 @@ public:
     // notify operations on frames in range [first,last)
     void Damage_FramesAdded(int first, int last);
     void Damage_FramesRemoved(int first, int last);
+    void Damage_AnimReplaced();
 
 
     // TODO: move these out of project into their own class (like DrawTransaction)

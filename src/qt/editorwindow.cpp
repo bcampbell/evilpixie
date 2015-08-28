@@ -630,6 +630,10 @@ void EditorWindow::do_nextframe()
 
 void EditorWindow::do_loadpalette()
 {
+    Cmd* c= new Cmd_ToSpriteSheet(Proj(), 4);
+    AddCmd(c);
+    return;
+
     QString filename = QFileDialog::getOpenFileName(
                     this,
                     "Choose a file",

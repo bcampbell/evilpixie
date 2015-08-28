@@ -413,12 +413,18 @@ void EditView::OnFramesRemoved(int first, int last)
     if(Frame()>=first)
     {
         int newframe = Frame()-(last-first);
-        if(newframe<first)
-            newframe=first;
+        if(newframe<0)
+            newframe=0;
         if(newframe>Proj().GetAnim().NumFrames()-1)
             newframe = Proj().GetAnim().NumFrames()-1;
         SetFrame(newframe);
     }
+}
+
+void EditView::OnAnimReplaced()
+{
+    assert(Proj().GetAnim().NumFrames() > 0);
+    SetFrame(0);
 }
 
 void EditView::AddCursorDamage( Box const& viewdmg )

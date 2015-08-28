@@ -25,6 +25,7 @@ SOURCES += src/anim.cpp \
     src/img.cpp \
     src/palette.cpp \
     src/project.cpp \
+    src/sheet.cpp \
     src/tool.cpp \
     src/exception.cpp \
     src/util.cpp \

@@ -94,6 +94,18 @@ private:
 };
 
 
+class Cmd_ToSpriteSheet : public Cmd
+{
+public:
+    Cmd_ToSpriteSheet(Project& proj, int maxAcross);
+    virtual ~Cmd_ToSpriteSheet();
+    virtual void Do();
+    virtual void Undo();
+private:
+    int m_NumFrames;
+    int m_NWide;
+};
+
 
 #endif // CMD_H
 

@@ -113,6 +113,15 @@ void Project::Damage_FramesRemoved(int first, int last)
     }
 }
 
+void Project::Damage_AnimReplaced()
+{
+    std::set<ProjectListener*>::iterator it;
+    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
+    {
+        (*it)->OnAnimReplaced();
+    }
+}
+
 
 
 

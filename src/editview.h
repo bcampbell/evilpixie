@@ -29,6 +29,7 @@ public:
     virtual void OnPaletteReplaced();
     virtual void OnFramesAdded(int first, int last);
     virtual void OnFramesRemoved(int first, int last);
+    virtual void OnAnimReplaced();
 
 	// these will all cause listener RedrawAll request
 	void Resize( int w, int h );

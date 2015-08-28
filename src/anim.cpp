@@ -28,6 +28,26 @@ void Anim::Zap()
     }
 }
 
+
+/*
+void Anim::Dump() const
+{
+    printf("Dump---\n");
+    unsigned int i;
+    for (i=0; i<m_Frames.size(); ++i )
+    {
+        Img* im = m_Frames[i];
+        printf("%d: %p", i, im);
+        if(im) {
+            Box const& b = im->Bounds();
+            printf(" %d %d %d %d\n",b.x,b.y,b.w,b.h);
+        } else {
+            printf("\n");
+        }
+    }
+}
+*/
+
 PixelFormat Anim::Fmt() const
     { return m_Frames.front()->Fmt(); }
 
@@ -37,7 +57,7 @@ void Anim::TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst)
     m_Frames.erase(m_Frames.begin()+srcfirst, m_Frames.begin()+srclast);
 }
 
-void Anim::CalcBounds(Box& bound, int first, int last)
+void Anim::CalcBounds(Box& bound, int first, int last) const
 {
     int n;
     bound = GetFrameConst(first).Bounds();

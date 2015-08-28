@@ -29,16 +29,13 @@ public:
     // transfer frames in range [srcfirst, srclast) to another animation
     void TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst);
     // work out bounds of selection of anim (ie union of frames)
-    void CalcBounds(Box& bound, int first, int last);
-
-    // which palette index is transparent (-1=none)
-    //int TransparentIdx() const { return m_TransparentIdx; }
-    //void SetTransparentIdx(int idx) { m_TransparentIdx=idx; }
+    void CalcBounds(Box& bound, int first, int last) const;
 
     // frame rate control (in fps)
     int FPS() const { return m_FPS; }
     void SetFPS(int fps) { m_FPS=fps; }
 
+    void Dump() const;
 
     PixelFormat Fmt() const;
 private:
@@ -46,7 +43,6 @@ private:
     void SaveGif(const char* filename);
 
     std::vector< Img* > m_Frames;
-    int m_TransparentIdx;   // -1 for none
     int m_FPS;
     Palette m_Palette;
 };

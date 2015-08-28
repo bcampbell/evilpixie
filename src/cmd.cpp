@@ -1,6 +1,7 @@
 #include "cmd.h"
 #include "anim.h"
 #include "draw.h"
+#include "sheet.h"
 #include "project.h"
 #include <assert.h>
 #include <cstdio>
@@ -160,6 +161,59 @@ void Cmd_DeleteFrames::Undo()
 {
     m_FrameSwap.TransferFrames( 0,m_FrameSwap.NumFrames(), Proj().GetAnim(), m_First);
     Proj().Damage_FramesAdded(m_First,m_Last);
+    SetState( NOT_DONE );
+}
+
+
+
+//-----------
+//
+Cmd_ToSpriteSheet::Cmd_ToSpriteSheet(Project& proj, int nWide) :
+    Cmd(proj,NOT_DONE),
+    m_NumFrames(proj.NumFrames()),
+    m_NWide(nWide)
+{
+    if( m_NWide>m_NumFrames)
+    {
+        m_NWide = m_NumFrames;
+    }
+}
+
+Cmd_ToSpriteSheet::~Cmd_ToSpriteSheet()
+{
+}
+
+
+
+void Cmd_ToSpriteSheet::Do()
+{
+    Anim& anim = Proj().GetAnim();
+    Img* sheet = GenerateSpriteSheet(anim,m_NWide);
+    m_NumFrames = anim.NumFrames();
+
+    anim.Zap();
+    anim.Append(sheet);
+
+    Proj().Damage_AnimReplaced();
+    SetState( DONE );
+}
+
+
+void Cmd_ToSpriteSheet::Undo()
+{
+    Anim& anim = Proj().GetAnim();
+    assert(anim.NumFrames()==1);
+    Img const& src = anim.GetFrameConst(0);
+
+    std::vector<Img*> frames;
+    FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
+    anim.Zap();
+    int n;
+    for(n=0;n<frames.size();++n)
+    {
+        anim.Append(frames[n]);
+    }
+    Proj().Damage_AnimReplaced();
     SetState( NOT_DONE );
 }
 
