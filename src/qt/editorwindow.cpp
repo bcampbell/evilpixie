@@ -12,6 +12,7 @@
 #include "paletteeditor.h"
 #include "newprojectdialog.h"
 #include "resizeprojectdialog.h"
+#include "spritesheetdialogs.h"
 #include "miscwindows.h"
 
 #include <cassert>
@@ -503,6 +504,9 @@ void EditorWindow::update_menu_states()
     m_ActionZapFrame->setEnabled(nframes>1);
     m_ActionNextFrame->setEnabled(nframes>1);
     m_ActionPrevFrame->setEnabled(nframes>1);
+
+    m_ActionToSpritesheet->setEnabled(nframes>1);
+    m_ActionFromSpritesheet->setEnabled(nframes==1);
 }
 
 void EditorWindow::do_undo()
@@ -628,11 +632,25 @@ void EditorWindow::do_nextframe()
 }
 
 
+void EditorWindow::do_tospritesheet()
+{
+    ToSpritesheetDialog dlg(this, &Proj());
+    if( dlg.exec() == QDialog::Accepted )
+    {
+        Cmd* c= new Cmd_ToSpriteSheet(Proj(), dlg.NumAcross());
+        AddCmd(c);
+    }
+}
+
+void EditorWindow::do_fromspritesheet()
+{
+    Cmd* c= new Cmd_FromSpriteSheet(Proj(), 4,9);
+    AddCmd(c);
+}
+
+
 void EditorWindow::do_loadpalette()
 {
-    Cmd* c= new Cmd_ToSpriteSheet(Proj(), 4);
-    AddCmd(c);
-    return;
 
     QString filename = QFileDialog::getOpenFileName(
                     this,
@@ -853,6 +871,9 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addSeparator();
         m_ActionPrevFrame = m->addAction( "Previous Frame", this, SLOT( do_prevframe()),QKeySequence("1"));
         m_ActionNextFrame = m->addAction( "Next Frame", this, SLOT( do_nextframe()),QKeySequence("2"));
+        m->addSeparator();
+        m->addAction( m_ActionToSpritesheet);
+        m->addAction( m_ActionFromSpritesheet);
     }
 
     // Help menu
@@ -882,6 +903,12 @@ void EditorWindow::CreateActions()
 {
     QAction* a;
   
+    m_ActionToSpritesheet = new QAction("Anim to spritesheet...", this);
+    m_ActionFromSpritesheet = new QAction("Spritesheet to Anim...", this);
+
+    connect(m_ActionToSpritesheet, SIGNAL(triggered()), this, SLOT(do_tospritesheet()));
+    connect(m_ActionFromSpritesheet, SIGNAL(triggered()), this, SLOT(do_fromspritesheet()));
+
     // draw modes 
     a = m_ActionDrawmodeNormal = new QAction("&Normal", this);
     a->setData(0);

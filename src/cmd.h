@@ -106,6 +106,18 @@ private:
     int m_NWide;
 };
 
+class Cmd_FromSpriteSheet : public Cmd
+{
+public:
+    Cmd_FromSpriteSheet(Project& proj, int maxAcross, int numFrames);
+    virtual ~Cmd_FromSpriteSheet();
+    virtual void Do();
+    virtual void Undo();
+private:
+    int m_NumFrames;
+    int m_NWide;
+};
+
 
 #endif // CMD_H
 

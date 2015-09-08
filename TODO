@@ -1,6 +1,9 @@
 TODO
 ====
 
+BUG: tool.cpp:57 assert triggers if painting while changing frames.
+BUG: titlebar doesn't update upon to/from spritesheet
+
 misc:
 
 - brush rotate (by 90 degrees)

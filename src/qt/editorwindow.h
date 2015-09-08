@@ -23,6 +23,14 @@ class QMenuBar;
 class QAction;
 class QTabWidget;
 
+
+struct EditorActions {
+    QAction* Undo, Redo, GridOnOff, UseBrushPalette,
+        ZapFrame, PrevFrame, NextFrame,
+        DrawmodeNormal, DrawmodeColour, DrawmodeReplace;
+};
+
+
 class CurrentColourWidget : public QWidget
 {
     Q_OBJECT
@@ -107,6 +115,9 @@ public slots:
     void do_yflipbrush();
     void do_drawmodeChanged(QAction* act);
 
+    void do_tospritesheet();
+    void do_fromspritesheet();
+
     void do_addframe();
     void do_zapframe();
     void do_prevframe();
@@ -142,6 +153,9 @@ private:
     QAction* m_ActionZapFrame;
     QAction* m_ActionPrevFrame;
     QAction* m_ActionNextFrame;
+
+    QAction* m_ActionToSpritesheet;
+    QAction* m_ActionFromSpritesheet;
 
     QAction* m_ActionDrawmodeNormal;
     QAction* m_ActionDrawmodeColour;
