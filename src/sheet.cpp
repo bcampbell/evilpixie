@@ -4,6 +4,38 @@
 #include "anim.h"
 #include <cstdio>
 
+Box LayoutSpritesheet(Anim const& src, int nWide, std::vector<Box>& frames)
+{
+    assert(src.NumFrames()>0);
+    assert(frames.empty());
+
+    // calc max frame size
+    int f;
+    Box contain;
+    for (f=0; f<src.NumFrames(); ++f)
+    {
+        Box const& b = src.GetFrameConst(f).Bounds();
+        contain.Merge(b);
+    }
+    assert(!contain.Empty());
+
+    // lay out frames
+
+    Box  extent;
+    for (f=0; f<src.NumFrames(); ++f)
+    {
+        Point offset(
+            (f % nWide) * contain.w,
+            (f / nWide) * contain.h );
+        Box b( src.GetFrameConst(f).Bounds() );
+        b += offset;
+        frames.push_back(b);
+        extent.Merge(b);
+    }
+
+    return extent;
+}
+
 
 
 // TODO: should return a set of bounding boxes for the offets
