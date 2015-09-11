@@ -4,6 +4,7 @@
 #include "../util.h"
 #include "../exception.h"
 #include "../cmd.h"
+#include "../sheet.h"
 #include "guistuff.h"
 #include "editorwindow.h"
 #include "editviewwidget.h"
@@ -644,8 +645,16 @@ void EditorWindow::do_tospritesheet()
 
 void EditorWindow::do_fromspritesheet()
 {
-    Cmd* c= new Cmd_FromSpriteSheet(Proj(), 4,9);
-    AddCmd(c);
+    FromSpritesheetDialog dlg(this, &Proj());
+    if( dlg.exec() == QDialog::Accepted )
+    {
+        std::vector<Box> frames;
+        SplitSpritesheet(Proj().ImgConst(0).Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
+
+        // TODO: pass in frames
+        Cmd* c= new Cmd_FromSpriteSheet(Proj(), dlg.getNWide(), frames.size());
+        AddCmd(c);
+    }
 }
 
 

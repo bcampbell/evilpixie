@@ -4,9 +4,10 @@
 #include <QtWidgets/QDialog>
 
 //class QDialogButtonBox;
-//class QLabel;
-//class QLineEdit;
-class QSlider;
+class QLabel;
+class QLineEdit;
+//class QSlider;
+class QSpinBox;
 
 #include <vector>
 
@@ -16,7 +17,9 @@ class QSlider;
 class Project;
 
 
-
+//---------------------------------------
+// display a scaled-down sprite sheet layout
+// for use as a preview
 class SheetPreviewWidget : public QWidget
 {
     Q_OBJECT
@@ -24,20 +27,25 @@ class SheetPreviewWidget : public QWidget
 //    Q_PROPERTY(int frames READ getFrames WRITE setFrames)
 public:
     SheetPreviewWidget(QWidget* parent) :
-        QWidget(parent)
+        QWidget(parent),
+        m_Contain(0,0,0,0)
         {}
 
     virtual QSize sizeHint () const;
     virtual QSize minimumSizeHint () const;
 
-    void setFrames(std::vector<Box> const& frames);
+    // set the frame layout, and the overall size of the containing image
+    void setFrames(std::vector<Box> const& frames, Box const& contain);
 protected:
      void paintEvent(QPaintEvent *event);
 private:
-    Box m_Extent;
+    Box m_Contain;
     std::vector<Box> m_Frames; 
 };
 
+//---------------------------------------
+// GUI for converting an anim into a single image spritesheet
+//
 class ToSpritesheetDialog : public QDialog, ProjectListener
 {
     Q_OBJECT
@@ -55,12 +63,43 @@ public:
 
 private:
     Project *m_Proj;
-    QSlider *m_Width;
+    QSpinBox *m_Width;
     SheetPreviewWidget *m_Preview;
     void rethinkPreview();
 
 private slots:
     void widthChanged(int);
+};
+
+
+
+//---------------------------------------
+// GUI for splitting up a single image spritesheet back into an anim
+//
+class FromSpritesheetDialog : public QDialog, ProjectListener
+{
+    Q_OBJECT
+
+public:
+    FromSpritesheetDialog(QWidget *parent, Project* proj);
+    virtual ~FromSpritesheetDialog();
+
+    int getNWide();
+    int getNHigh();
+
+
+    // projectlistener implementation
+    void OnFramesAdded(int /*first*/, int /*last*/);
+    void OnFramesRemoved(int /*first*/, int /*last*/);
+
+private:
+    Project *m_Proj;
+    QSpinBox *m_NWide;
+    QSpinBox *m_NHigh;
+    SheetPreviewWidget *m_Preview;
+
+private slots:
+    void rethinkPreview();
 };
 
 #endif

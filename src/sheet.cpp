@@ -21,7 +21,7 @@ Box LayoutSpritesheet(Anim const& src, int nWide, std::vector<Box>& frames)
 
     // lay out frames
 
-    Box  extent;
+    Box  extent(0,0,0,0);
     for (f=0; f<src.NumFrames(); ++f)
     {
         Point offset(
@@ -36,6 +36,26 @@ Box LayoutSpritesheet(Anim const& src, int nWide, std::vector<Box>& frames)
     return extent;
 }
 
+
+
+
+void SplitSpritesheet(Box const& srcBox, int nWide, int nHigh, std::vector<Box>& frames)
+{
+    assert(frames.empty());
+
+    int nFrames = nWide*nHigh;
+    int frameW = srcBox.w / nWide;
+    int frameH = srcBox.h / nHigh;
+
+    int f;
+    for( f=0; f<nFrames; ++f)
+    {
+        int x = f%nWide;
+        int y = f/nWide;
+        Box b(x*frameW, y*frameH, frameW, frameH);
+        frames.push_back(b);
+    }
+}
 
 
 // TODO: should return a set of bounding boxes for the offets
