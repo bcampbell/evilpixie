@@ -26,11 +26,7 @@ class SheetPreviewWidget : public QWidget
 //    Q_PROPERTY(int nwide READ getNWide WRITE setNWide)
 //    Q_PROPERTY(int frames READ getFrames WRITE setFrames)
 public:
-    SheetPreviewWidget(QWidget* parent) :
-        QWidget(parent),
-        m_Contain(0,0,0,0)
-        {}
-
+    SheetPreviewWidget(QWidget* parent);
     virtual QSize sizeHint () const;
     virtual QSize minimumSizeHint () const;
 
@@ -65,6 +61,7 @@ private:
     Project *m_Proj;
     QSpinBox *m_Width;
     SheetPreviewWidget *m_Preview;
+    QLabel *m_Info;
     void rethinkPreview();
 
 private slots:
