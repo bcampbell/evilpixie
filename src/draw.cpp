@@ -121,6 +121,85 @@ void BlitI8Keyed(
     destbox = destclipped;
 }
 
+//-------------------------------------------------------------------
+
+static void scan_RGBX8_I8_keyed(RGBX8 const* src, I8* dest, int w, RGBX8 transparent)
+{
+    int x;
+    for( x=0; x<w; ++x )
+    {
+        RGBX8 c = *src++;
+        if( c != transparent)
+            *dest = 1;      // TODO:!!!!
+        ++dest;
+    }
+}
+
+static void scan_RGBX8_RGBX8_keyed(RGBX8 const* src, RGBX8* dest, int w, RGBX8 transparent)
+{
+    int x;
+    for( x=0; x<w; ++x )
+    {
+        RGBX8 c = *src++;
+        if( c != transparent)
+            *dest = c;
+        ++dest;
+    }
+}
+
+static void scan_RGBX8_RGBA8_keyed(RGBX8 const* src, RGBA8* dest, int w, RGBX8 transparent)
+{
+    int x;
+    for( x=0; x<w; ++x )
+    {
+        RGBX8 c = *src++;
+        if( c != transparent)
+            *dest = c;
+        ++dest;
+    }
+}
+
+
+
+
+// blit from an RGBX8 source to any target, with colourkey transparency
+void BlitRGBX8Keyed(
+    Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
+    RGBX8 transparent )
+{
+    assert(srcimg.Fmt()==FMT_RGBX8);
+
+    Box destclipped( destbox );
+    Box srcclipped( srcbox );
+    clip_blit( srcimg.Bounds(), srcclipped, destimg.Bounds(), destclipped );
+
+    const int w = destclipped.w;
+
+    int y;
+    for( y=0; y<destclipped.h; ++y )
+    {
+        RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.x+0, srcclipped.y+y );
+        switch(destimg.Fmt())
+        {
+        case FMT_I8:
+            scan_RGBX8_I8_keyed(src, destimg.Ptr_I8(destclipped.x+0,destclipped.y+y), w, transparent);
+            break;
+        case FMT_RGBX8:
+            scan_RGBX8_RGBX8_keyed(src, destimg.Ptr_RGBX8(destclipped.x+0,destclipped.y+y), w, transparent);
+            break;
+        case FMT_RGBA8:
+            scan_RGBX8_RGBA8_keyed(src, destimg.Ptr_RGBA8(destclipped.x+0,destclipped.y+y), w, transparent);
+            break;
+        default:
+            assert(false);
+            break;
+        }
+    }
+
+    destbox = destclipped;
+}
+
 
 
 // blit src upon dest, blending with src.alpha
@@ -1076,6 +1155,7 @@ void BlitTransparent(
             BlitI8Keyed(srcimg,srcbox,srcpalette, destimg, destbox, transparentcolour.idx());
             return;
         case FMT_RGBX8:
+            BlitRGBX8Keyed(srcimg,srcbox, destimg, destbox, transparentcolour.rgb());
             return;
         case FMT_RGBA8:
             BlitRGBA8(srcimg, srcbox, destimg, destbox);
