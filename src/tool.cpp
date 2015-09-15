@@ -88,38 +88,41 @@ static void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
     viewdmg = view.ProjToView( pb );
     DrawMode dm = view.Ed().Mode();
 
-    if (dm.mode == DrawMode::DM_REPLACE)
+    PenColour pen = view.Ed().FGPen();
+
+
+    if (dm.mode == DrawMode::DM_NORMAL)
     {
-        if( b.Style() == MASK )
-        {
-            RectFill( view.Canvas(), viewdmg, view.Ed().FGPen());
-        }
-        else
-        {
-            BlitZoom( b, b.Bounds(),
+        // force mode to COLOUR when blitting rgb brush onto I8 project
+        PixelFormat projfmt = view.Proj().ImgConst(0).Fmt();
+        if (projfmt==FMT_I8 && b.Fmt() != FMT_I8)
+                dm.mode = DrawMode::DM_COLOUR;
+
+        // force mask brushes to use pen colour
+        if (b.Style()==MASK)
+            dm.mode = DrawMode::DM_COLOUR;
+    }
+
+    switch (dm.mode)
+    {
+        case DrawMode::DM_NORMAL:
+            BlitZoomTransparent( b, b.Bounds(),
                 view.Canvas(), viewdmg,
-                b.GetPalette(),
+                view.Proj().PaletteConst(),
                 view.XZoom(),
-                view.YZoom());
-        }
-    }
-    else if( b.Style() == MASK || dm.mode == DrawMode::DM_COLOUR )
-    {
-        BlitZoomMatte( b, b.Bounds(),
-            view.Canvas(), viewdmg,
-            view.XZoom(),
-            view.YZoom(),
-            b.TransparentColour(),
-            view.Ed().FGPen() );
-    }
-    else
-    {
-        BlitZoomTransparent( b, b.Bounds(),
-            view.Canvas(), viewdmg,
-            view.Proj().PaletteConst(),
-            view.XZoom(),
-            view.YZoom(),
-            b.TransparentColour());
+                view.YZoom(),
+                b.TransparentColour());
+            break;
+        case DrawMode::DM_COLOUR:
+            BlitZoomMatte( b, b.Bounds(),
+                view.Canvas(), viewdmg,
+                view.XZoom(),
+                view.YZoom(),
+                b.TransparentColour(),
+                pen );
+            break;
+        default:
+            break;
     }
 }
 
@@ -163,45 +166,43 @@ static void PlonkBrushToProj( Editor& ed, int frame, Point const& pos, Box& proj
 
     Img& target = proj.GetAnim().GetFrame(frame); 
     DrawMode dm = ed.Mode();
-    if( button == DRAW )
+
+    PenColour pen = (button==DRAW) ? ed.FGPen() : ed.BGPen();
+
+    if (dm.mode == DrawMode::DM_NORMAL)
     {
-    
-        if (dm.mode == DrawMode::DM_REPLACE)
-        {
-            if( brush.Style() == MASK )
-                RectFill( target, dmg, ed.FGPen());
-            else
-                Blit( brush, brush.Bounds(), target, dmg);
-        }
-        else if( brush.Style() == MASK || dm.mode == DrawMode::DM_COLOUR )
-        {
-            BlitMatte( brush, brush.Bounds(),
-                target, dmg,
-                brush.TransparentColour(), ed.FGPen() );
-        }
-        else
-        {
+        if (button==ERASE)
+            dm.mode = DrawMode::DM_COLOUR;
+
+        // force mask brushes to use pen colour
+        if (brush.Style()==MASK)
+            dm.mode = DrawMode::DM_COLOUR;
+
+        // fudge if blitting rgb brush onto I8 image
+        // draw in COLOUR mode instead.
+        // TODO: work out a decent remapping-on-the-fly scheme :-)
+        if (target.Fmt()==FMT_I8 && brush.Fmt()!=FMT_I8)
+            dm.mode = DrawMode::DM_COLOUR;
+    }
+
+ 
+    switch (dm.mode)
+    {
+        case DrawMode::DM_NORMAL:
             BlitTransparent( brush,
                 brush.Bounds(),
                 brush.GetPalette(),
                 target, dmg,
                 brush.TransparentColour() );
-        }
-    }
-    else if( button == ERASE )
-    {
-        if (dm.mode == DrawMode::DM_REPLACE)
-        {
-            RectFill( target, dmg, ed.BGPen());
-        }
-        else
-        {
+            break;
+        case DrawMode::DM_COLOUR:
             BlitMatte( brush, brush.Bounds(),
                 target, dmg,
-                brush.TransparentColour(), ed.BGPen() );
-        }
+                brush.TransparentColour(), pen );
+            break;
+        default:
+            break;
     }
-
     projdmg=dmg;
 }
 
