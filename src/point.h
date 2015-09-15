@@ -19,6 +19,7 @@ public:
 
 	friend Point operator+( Point const& a, Point const& b );
 	friend Point operator-( Point const& a, Point const& b );
+	friend Point operator-( Point const& a );
 };
 
 
@@ -28,6 +29,8 @@ inline Point operator+( Point const& a, Point const& b )
 inline Point operator-( Point const& a, Point const& b )
 	{ return Point( a.x - b.x, a.y - b.y ); }
 
+inline Point operator-( Point const& a )
+	{ return Point(-a.x, -a.y); }
 
 #endif // POINT_H
 

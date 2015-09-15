@@ -20,6 +20,8 @@ SOURCES += src/anim.cpp \
     src/brush.cpp \
     src/cmd.cpp \
     src/draw.cpp \
+    src/draw_blit.cpp \
+    src/draw_blitzoom.cpp \
     src/editor.cpp \
     src/editview.cpp \
     src/img.cpp \

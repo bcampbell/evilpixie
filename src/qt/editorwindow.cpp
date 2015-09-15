@@ -525,11 +525,15 @@ void EditorWindow::do_redo()
 void EditorWindow::do_gridonoff( bool checked )
 {
     ActivateGrid( checked );
+    // TODO: should be some sort of Editor callback notification
 }
 
 void EditorWindow::do_drawmodeChanged( QAction* act )
 {
-    printf("BING %d\n", act->data().toInt());
+    DrawMode::Mode newMode = (DrawMode::Mode)act->data().toInt();
+    SetMode(DrawMode(newMode)); 
+    // TODO: should be some sort of Editor callback notification
+    RethinkWindowTitle();
 }
 
 void EditorWindow::do_resize()
@@ -885,6 +889,16 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addAction( m_ActionFromSpritesheet);
     }
 
+    // DrawMode menu
+    {
+        QMenu* m = menubar->addMenu("&DrawMode");
+        m->addAction( m_ActionDrawmodeNormal);
+        m->addAction( m_ActionDrawmodeColour);
+        // TODO: REPLACE mode not yet working
+        //m->addAction( m_ActionDrawmodeReplace);
+        connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
+    }
+
     // Help menu
     {
         QMenu* m = menubar->addMenu("&Help");
@@ -893,16 +907,6 @@ QMenuBar* EditorWindow::CreateMenuBar()
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 
-    // Draw menu
-    /*
-    {
-        QMenu* m = menubar->addMenu("&Draw");
-        m->addAction( m_ActionDrawmodeNormal);
-        m->addAction( m_ActionDrawmodeColour);
-        m->addAction( m_ActionDrawmodeReplace);
-        //connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
-    }
-    */
     return menubar;
 }
 
@@ -920,22 +924,22 @@ void EditorWindow::CreateActions()
 
     // draw modes 
     a = m_ActionDrawmodeNormal = new QAction("&Normal", this);
-    a->setData(0);
+    a->setData(DrawMode::DM_NORMAL);
     a->setCheckable(true);
     //a->setShortcuts(QKeySequence::New);
     a->setStatusTip("Normal drawing");
 
     a = m_ActionDrawmodeColour = new QAction("&Colour", this);
-    a->setData(1);
+    a->setData(DrawMode::DM_COLOUR);
     a->setCheckable(true);
     //a->setShortcuts(QKeySequence::New);
     a->setStatusTip("Draw with current colour");
 
     a = m_ActionDrawmodeReplace = new QAction("&Replace", this);
-    a->setData(2);
+    a->setData(DrawMode::DM_REPLACE);
     a->setCheckable(true);
     //a->setShortcuts(QKeySequence::New);
-    //a->setStatusTip("");
+    a->setStatusTip("Ignore transparency");
 
     QActionGroup* grp = new QActionGroup(this);
     grp->addAction(m_ActionDrawmodeNormal);
@@ -959,9 +963,16 @@ void EditorWindow::RethinkWindowTitle()
     char dim[32];
     sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->Frame()+1,Proj().NumFrames() );
 
+
     std::string title = "[*]";
     title += f;
     title += dim;
+    switch (Mode().mode) {
+        case DrawMode::DM_NORMAL: title += " NORMAL"; break;
+        case DrawMode::DM_COLOUR: title += " COLOUR"; break;
+        case DrawMode::DM_REPLACE: title += " REPLACE"; break;
+        default: break;
+    }
     title += " - EvilPixie";
 
     setWindowModified( Proj().ModifiedFlag() );

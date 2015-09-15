@@ -80,14 +80,30 @@ void DrawTransaction::Rollback()
 
 
 // helper for drawing cursor (using FG pen)
-void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
+static void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
 {
     Brush& b = view.Ed().CurrentBrush();
     Box pb( pos-b.Handle(), b.W(), b.H() );
 
     viewdmg = view.ProjToView( pb );
+    DrawMode dm = view.Ed().Mode();
 
-    if( b.Style() == MASK )
+    if (dm.mode == DrawMode::DM_REPLACE)
+    {
+        if( b.Style() == MASK )
+        {
+            RectFill( view.Canvas(), viewdmg, view.Ed().FGPen());
+        }
+        else
+        {
+            BlitZoom( b, b.Bounds(),
+                view.Canvas(), viewdmg,
+                b.GetPalette(),
+                view.XZoom(),
+                view.YZoom());
+        }
+    }
+    else if( b.Style() == MASK || dm.mode == DrawMode::DM_COLOUR )
     {
         BlitZoomMatte( b, b.Bounds(),
             view.Canvas(), viewdmg,
@@ -109,7 +125,7 @@ void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
 
 // helper for drawing cursor (using BG colour, _overriding_ any colour
 // in the brush)
-void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
+static void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
 {
     Brush& b = view.Ed().CurrentBrush();
     Box pb( pos-b.Handle(), b.W(), b.H() );
@@ -125,7 +141,8 @@ void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
 }
 
 
-void PlonkBrushToView( EditView& view, Point const& pos, Box& viewdmg, Button button )
+// helper to draw the current brush on a view, using the current editor settings
+static void PlonkBrushToView( EditView& view, Point const& pos, Box& viewdmg, Button button )
 {
     if( button==DRAW )
         PlonkBrushToViewFG( view,pos,viewdmg );
@@ -135,23 +152,32 @@ void PlonkBrushToView( EditView& view, Point const& pos, Box& viewdmg, Button bu
 
 
 
-// helper to draw the current brush on the project
-void PlonkBrushToProj( EditView& view, Point const& pos, Box& projdmg, Button button )
+// helper to draw the current brush on the project, using the current editor settings
+static void PlonkBrushToProj( Editor& ed, int frame, Point const& pos, Box& projdmg, Button button )
 {
-    Project& proj = view.Proj();
-    Brush const& brush = view.Ed().CurrentBrush();
-    Box dmg(
-        pos.x - brush.Handle().x,
-        pos.y - brush.Handle().y,
-        0,0);
-    Img& target = proj.GetAnim().GetFrame(view.Frame()); 
+    Project& proj = ed.Proj();
+    Brush const& brush = ed.CurrentBrush();
+    Box dmg = brush.Bounds();
+    dmg.Translate(pos);
+    dmg.Translate(-brush.Handle());
+
+    Img& target = proj.GetAnim().GetFrame(frame); 
+    DrawMode dm = ed.Mode();
     if( button == DRAW )
     {
-        if( brush.Style() == MASK )
+    
+        if (dm.mode == DrawMode::DM_REPLACE)
+        {
+            if( brush.Style() == MASK )
+                RectFill( target, dmg, ed.FGPen());
+            else
+                Blit( brush, brush.Bounds(), target, dmg);
+        }
+        else if( brush.Style() == MASK || dm.mode == DrawMode::DM_COLOUR )
         {
             BlitMatte( brush, brush.Bounds(),
                 target, dmg,
-                brush.TransparentColour(), view.Ed().FGPen() );
+                brush.TransparentColour(), ed.FGPen() );
         }
         else
         {
@@ -164,9 +190,16 @@ void PlonkBrushToProj( EditView& view, Point const& pos, Box& projdmg, Button bu
     }
     else if( button == ERASE )
     {
-        BlitMatte( brush, brush.Bounds(),
-            target, dmg,
-            brush.TransparentColour(), view.Ed().BGPen() );
+        if (dm.mode == DrawMode::DM_REPLACE)
+        {
+            RectFill( target, dmg, ed.BGPen());
+        }
+        else
+        {
+            BlitMatte( brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour(), ed.BGPen() );
+        }
     }
 
     projdmg=dmg;
@@ -278,38 +311,10 @@ void PencilTool::Plot_cb( int x, int y, void* user )
 
     PencilTool* that = (PencilTool*)user;
     Editor& ed = that->Owner();
-    Brush const& brush = ed.CurrentBrush();
-    Project& proj = that->m_View->Proj();
     EditView& view = *that->m_View;
 
-    Img& target = proj.GetAnim().GetFrame(view.Frame());
-    Box dmg(
-        x - brush.Handle().x,
-        y - brush.Handle().y,
-        0,0);
-    if( that->m_DownButton == DRAW )
-    {
-        if( brush.Style() == MASK )
-        {
-            BlitMatte( brush, brush.Bounds(),
-                target, dmg,
-                brush.TransparentColour(), ed.FGPen() );
-        }
-        else
-        {
-            BlitTransparent( brush,
-                brush.Bounds(),
-                brush.GetPalette(), 
-                target, dmg,
-                brush.TransparentColour() );
-        }
-    }
-    else if( that->m_DownButton == ERASE )
-    {
-        BlitMatte( brush, brush.Bounds(),
-            target, dmg,
-            brush.TransparentColour(), ed.BGPen());
-    }
+    Box dmg;
+    PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
 
     assert(that->m_Tx != 0);
     that->m_Tx->AddDamage( view.Frame(),dmg );
@@ -377,40 +382,10 @@ void LineTool::Plot_cb( int x, int y, void* user )
 {
     LineTool* that = (LineTool*)user;
     Editor& ed = that->Owner();
-    Brush const& brush = ed.CurrentBrush();
-    Project& proj = that->m_View->Proj();
     EditView& view = *that->m_View;
 
-
-
-    Box dmg(
-        x - brush.Handle().x,
-        y - brush.Handle().y,
-        0,0);
-    Img& target = proj.GetAnim().GetFrame(view.Frame());
-    if( that->m_DownButton == DRAW )
-    {
-        if( brush.Style() == MASK )
-        {
-            BlitMatte( brush, brush.Bounds(),
-                target, dmg,
-                brush.TransparentColour(), ed.FGPen());
-        }
-        else
-        {
-            BlitTransparent( brush,
-                brush.Bounds(),
-                brush.GetPalette(),
-                target, dmg,
-                brush.TransparentColour());
-        }
-    }
-    else if( that->m_DownButton == ERASE )
-    {
-        BlitMatte( brush, brush.Bounds(),
-            target, dmg,
-            brush.TransparentColour(), ed.BGPen());
-    }
+    Box dmg;
+    PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
 
     assert(that->m_Tx != 0);
     that->m_Tx->AddDamage(that->m_View->Frame(),dmg);
@@ -668,7 +643,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( x=rect.XMin(); x<=rect.XMax(); ++x )
     {
         Box tmp;
-        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     tx.AddDamage( view.Frame(), dmg );
@@ -679,7 +654,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( y=rect.YMin()+1; y<=rect.YMax()-1; ++y )
     {
         Box tmp;
-        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     tx.AddDamage( view.Frame(), dmg );
@@ -690,7 +665,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( x=rect.XMax(); x>=rect.XMin(); --x )
     {
         Box tmp;
-        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     tx.AddDamage( view.Frame(), dmg );
@@ -701,7 +676,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( y=rect.YMax()-1; y>=rect.YMin()+1; --y )
     {
         Box tmp;
-        PlonkBrushToProj( view, Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     tx.AddDamage( view.Frame(), dmg );
@@ -925,38 +900,10 @@ void CircleTool::Plot_cb( int x, int y, void* user )
 {
     CircleTool* that = (CircleTool*)user;
     Editor& ed = that->Owner();
-    Brush const& brush = ed.CurrentBrush();
-    Project& proj = that->m_View->Proj();
     EditView& view = *that->m_View;
 
-    Box dmg(
-        x - brush.Handle().x,
-        y - brush.Handle().y,
-        0,0);
-    Img& target = proj.GetAnim().GetFrame(view.Frame());
-    if( that->m_DownButton == DRAW )
-    {
-        if( brush.Style() == MASK )
-        {
-            BlitMatte( brush, brush.Bounds(),
-                target, dmg,
-                brush.TransparentColour(), ed.FGPen());
-        }
-        else
-        {
-            BlitTransparent( brush,
-                brush.Bounds(),
-                brush.GetPalette(),
-                target, dmg,
-                brush.TransparentColour());
-        }
-    }
-    else if( that->m_DownButton == ERASE )
-    {
-        BlitMatte( brush, brush.Bounds(),
-            target, dmg,
-            brush.TransparentColour(), ed.BGPen());
-    }
+    Box dmg;
+    PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
 
     assert(that->m_Tx != 0 );
     that->m_Tx->AddDamage(view.Frame(),dmg);
@@ -997,14 +944,7 @@ void CircleTool::PlotCursor_cb( int x, int y, void* user )
     Box pb( Point(x,y)-b.Handle(), b.W(), b.H() );
 
     Box dmg;
-    if( that->m_DownButton == DRAW )
-    {
-        PlonkBrushToViewFG( view, pos, dmg );
-    }
-    else if( that->m_DownButton == ERASE )
-    {
-        PlonkBrushToViewBG( view, pos, dmg );
-    }
+    PlonkBrushToView( view, pos, dmg, that->m_DownButton );
     that->m_CursorDamage.Merge( dmg );
 }
 

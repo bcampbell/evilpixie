@@ -15,6 +15,7 @@
 Editor::Editor( Project* proj ) :
     m_SaveBGAsTransparent(true),
     m_Tool(0),
+    m_Mode(DrawMode::DM_NORMAL),
     m_Brush(0),
     m_Project( proj ),
     m_GridActive(false),
@@ -22,7 +23,6 @@ Editor::Editor( Project* proj ) :
 {
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);
-
 
     m_BGPen = PenColour(proj->GetColour(0),0);
     m_FGPen = PenColour(proj->GetColour(1),1);

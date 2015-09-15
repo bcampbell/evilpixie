@@ -60,6 +60,10 @@ public:
 
 
 	// For tools...
+    // TODO: not enough to overlay brushes upon the view canvas.
+    // need to integrate into view composition logic (eg, showing an
+    // RGBA8 brush in REPLACE mode needs to be able to redraw the
+    // underlying image and blend with it).
 	void AddCursorDamage( Box const& viewdmg );
 	Img& Canvas() { return *m_Canvas; }
 

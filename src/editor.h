@@ -12,6 +12,23 @@ class Cmd;
 #include <set>
 
 
+
+
+struct DrawMode { 
+    enum Mode {
+        DM_NORMAL=0, // use brush colour and transparency rules
+        DM_COLOUR,  // use normal transparency rules, but replace colour with constant
+        DM_REPLACE,  // replace wholesale (ignore transparency).
+        DM_NUM_MODES
+    };
+    Mode mode;
+    // TODO: params for drawmodes here (eg lighten/darken ammount)
+
+    DrawMode() : mode(DM_NORMAL) {}
+    DrawMode(Mode m) : mode(m) {}
+};
+
+
 // the core backend (non-gui) part of the editor
 class Editor : public ProjectListener
 {
@@ -31,6 +48,9 @@ public:
     int CurrentToolType() const { return m_CurrentToolType; }
     Tool& CurrentTool() { return *m_Tool; }
 //    void SetTool( Tool* newtool, bool notifygui=true );
+
+    DrawMode const& Mode() const { return m_Mode; }
+    void SetMode( DrawMode const& mode) { m_Mode= mode; }
 
 	PenColour FGPen() const { return m_FGPen; }
 	PenColour BGPen() const { return m_BGPen; }
@@ -98,6 +118,8 @@ private:
 	// editing state stuff
     Tool* m_Tool;
     int m_CurrentToolType;
+
+    DrawMode m_Mode;
 
     int m_Brush; // StdBrush index, or -1 for custombrush
 

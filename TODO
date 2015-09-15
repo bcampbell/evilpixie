@@ -3,6 +3,8 @@ TODO
 
 BUG: tool.cpp:57 assert triggers if painting while changing frames.
 BUG: titlebar doesn't update upon to/from spritesheet
+BUG: assert when right-button-drawing an RGBX8 brush onto I8 image
+BUG: assert when blit() from I8 brush to RGBX8 img
 
 misc:
 

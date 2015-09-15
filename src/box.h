@@ -32,6 +32,8 @@ struct Box
     Box& operator-=( Point const& delta )
         { x-=delta.x; y-=delta.y; return *this; }
 
+    void Translate( Point const& delta )
+        { x+=delta.x; y+=delta.y; }
     void SetEmpty();
     void ClipAgainst( Box const& clipper );
     void Expand( int amount );
