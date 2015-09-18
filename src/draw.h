@@ -79,13 +79,16 @@ void BlitRGBA8( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox
 
 // Blit with a integer zoom factor, and a transparent colour
 // (palette required to blit from indexed to rgb image)
-void BlitZoomTransparent( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox,
-    Palette const& palette, int xzoom, int yzoom,
+void BlitZoomKeyed( Img const& srcimg, Box const& srcbox,
+    Palette const& srcpalette,
+    Img& destimg, Box& destbox,
+    int xzoom, int yzoom,
     PenColour const& transparentcolour);
 
 
 // Blit with a integer zoom factor, and a transparent colour
-void BlitZoomMatte( Img const& srcimg, Box const& srcbox, Img& destimg, Box& destbox,
+void BlitZoomMatteKeyed( Img const& srcimg, Box const& srcbox,
+    Img& destimg, Box& destbox,
     int xzoom, int yzoom, PenColour const& transparentcolour, PenColour const& mattecolour );
 
 

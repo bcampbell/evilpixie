@@ -106,15 +106,15 @@ static void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
     switch (dm.mode)
     {
         case DrawMode::DM_NORMAL:
-            BlitZoomTransparent( b, b.Bounds(),
-                view.Canvas(), viewdmg,
+            BlitZoomKeyed( b, b.Bounds(),
                 view.Proj().PaletteConst(),
+                view.Canvas(), viewdmg,
                 view.XZoom(),
                 view.YZoom(),
                 b.TransparentColour());
             break;
         case DrawMode::DM_COLOUR:
-            BlitZoomMatte( b, b.Bounds(),
+            BlitZoomMatteKeyed( b, b.Bounds(),
                 view.Canvas(), viewdmg,
                 view.XZoom(),
                 view.YZoom(),
@@ -135,7 +135,7 @@ static void PlonkBrushToViewBG( EditView& view, Point const& pos, Box& viewdmg )
 
     viewdmg = view.ProjToView( pb );
 
-    BlitZoomMatte( b, b.Bounds(),
+    BlitZoomMatteKeyed( b, b.Bounds(),
         view.Canvas(), viewdmg,
         view.XZoom(),
         view.YZoom(),

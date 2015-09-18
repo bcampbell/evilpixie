@@ -3,7 +3,7 @@ TODO
 
 BUG: tool.cpp:57 assert triggers if painting while changing frames.
 BUG: titlebar doesn't update upon to/from spritesheet
-BUG: rightbutton-painting onto an RGBA8 image ignores pen alpha
+better colour picking in rgba mode
 
 misc:
 

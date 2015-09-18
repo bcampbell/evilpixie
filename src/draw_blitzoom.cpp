@@ -6,7 +6,6 @@
 // TODO: should probably kill most of these. Only needed because there's no
 // real integration between tools and view rendering.
 
-//#include <algorithm>
 
 static void scan_zoom_keyed_I8_RGBX8(I8 const* src, Palette const& pal, RGBX8* dest, int w, I8 transparent, int xzoom)
 {
@@ -46,14 +45,16 @@ static void scan_zoom_keyed_RGBX8_RGBX8(RGBX8 const* src, RGBX8* dest, int w, RG
     }
 }
 
-static void scan_zoom_alpha_RGBA8_RGBX8(RGBA8 const* src, RGBX8* dest, int w, int xzoom)
+static void scan_zoom_keyed_RGBA8_RGBX8(RGBA8 const* src, RGBX8* dest, int w, int xzoom)
 {
     int n=0;
     int x;
     for( x=0; x<w; ++x )
     {
-        RGBX8 out = Blend(*src, *dest);
-        *dest++ = out;
+        RGBA8 c = *src;
+        if( c.a>0 )
+            *dest = RGBX8(c.r, c.g, c.b);
+        ++dest;
         if( ++n >= xzoom )  // on to next src pixel?
         {
             ++src;
@@ -62,10 +63,10 @@ static void scan_zoom_alpha_RGBA8_RGBX8(RGBA8 const* src, RGBX8* dest, int w, in
     }
 }
 
-void BlitZoomTransparent(
+void BlitZoomKeyed(
     Img const& srcimg, Box const& srcbox,
+    Palette const& srcpalette,
     Img& destimg, Box& destbox,
-    Palette const& palette,
     int xzoom,
     int yzoom,
     PenColour const& transparentcolour)
@@ -88,7 +89,7 @@ void BlitZoomTransparent(
         case FMT_I8:
             scan_zoom_keyed_I8_RGBX8(
                 srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom ),
-                palette,
+                srcpalette,
                 dest,
                 destclipped.W(),
                 transparentcolour.idx(),
@@ -103,7 +104,7 @@ void BlitZoomTransparent(
                     xzoom );
             break;
         default:
-            scan_zoom_alpha_RGBA8_RGBX8(
+            scan_zoom_keyed_RGBA8_RGBX8(
                 srcimg.PtrConst_RGBA8(srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom),
                     dest,
                     destclipped.W(),
@@ -115,28 +116,65 @@ void BlitZoomTransparent(
 
 
 
-static void scan_matte_zoom_alpha_RGBA8_RGBX8(RGBA8 const* src, RGBX8* dest, int w, RGBA8 matte, int xzoom)
+//-----------------------------------------------------
+//
+
+static void scan_zoom_matte_keyed_RGBA8_RGBX8(RGBA8 const* src, RGBX8* dest, int w, int xzoom, RGBX8 matte)
 {
-    int n=0;
-    int x;
-    for( x=0; x<w; ++x )
+    int x=0;
+    while(x<w)
     {
-        RGBA8 in = *src;
-        in.r = matte.r;
-        in.g = matte.g;
-        in.b = matte.b;
-        RGBX8 out = Blend(in, *dest);
-        *dest++ = out;
-        if( ++n >= xzoom )  // on to next src pixel?
-        {
-            ++src;
-            n=0;
+        RGBA8 c = *src++;
+        if (c.a>0) {
+            int n;
+            for( n=0; n<xzoom && (x+n)<w; ++n )
+                *dest++ = matte;
+        } else {
+            dest += xzoom;
         }
+        x += xzoom;
+    }
+}
+
+static void scan_zoom_matte_keyed_RGBX8_RGBX8(RGBX8 const* src, RGBX8* dest, int w, int xzoom, RGBX8 transparent, RGBX8 matte)
+{
+    int x=0;
+    while(x<w)
+    {
+        RGBX8 c = *src++;
+        if (c!=transparent) {
+            int n;
+            for( n=0; n<xzoom && (x+n)<w; ++n )
+                *dest++ = matte;
+        } else {
+            dest += xzoom;
+        }
+        x += xzoom;
     }
 }
 
 
-void BlitZoomMatte(
+static void scan_zoom_matte_keyed_I8_RGBX8(I8 const* src, RGBX8* dest, int w, int xzoom, I8 transparent, RGBX8 matte)
+{
+    int x=0;
+    while(x<w)
+    {
+        I8 c = *src++;
+        if (c!=transparent) {
+            int n;
+            for( n=0; n<xzoom && (x+n)<w; ++n )
+                *dest++ = matte;
+        } else {
+            dest += xzoom;
+        }
+        x += xzoom;
+    }
+}
+
+
+
+
+void BlitZoomMatteKeyed(
     Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
     int xzoom,
@@ -161,48 +199,33 @@ void BlitZoomMatte(
         switch(srcimg.Fmt())
         {
         case FMT_I8:
-            {
-                // TODO: move into scan fn
-                I8 const* src = srcimg.PtrConst_I8( srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom );
-                int n=0;
-                for( x=0; x<destclipped.W(); ++x )
-                {
-                    if( *src != transparentcolour.idx())
-                        *dest = mattecolour.rgb();
-                    ++dest;
-                    if( ++n >= xzoom )
-                    {
-                        ++src;
-                        n=0;
-                    }
-                }
-            }
+            scan_zoom_matte_keyed_I8_RGBX8(
+                srcimg.PtrConst_I8(srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom),
+                dest,
+                destclipped.W(),
+                xzoom,
+                transparentcolour.idx(),
+                mattecolour.rgb() );
             break;
         case FMT_RGBX8:
-            {
-                // TODO: move into scan fn
-                RGBX8 const* src = srcimg.PtrConst_RGBX8( srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom );
-                int n=0;
-                for( x=0; x<destclipped.W(); ++x )
-                {
-                    if( *src != transparentcolour.rgb())
-                        *dest = mattecolour.rgb();
-                    ++dest;
-                    if( ++n >= xzoom )
-                    {
-                        ++src;
-                        n=0;
-                    }
-                }
-            }
+            scan_zoom_matte_keyed_RGBX8_RGBX8(
+                srcimg.PtrConst_RGBX8(srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom),
+                dest,
+                destclipped.W(),
+                xzoom,
+                transparentcolour.rgb(),
+                mattecolour.rgb() );
             break;
-        default:
-            scan_matte_zoom_alpha_RGBA8_RGBX8(
+        case FMT_RGBA8:
+            scan_zoom_matte_keyed_RGBA8_RGBX8(
                 srcimg.PtrConst_RGBA8(srcclipped.XMin()+0, srcclipped.YMin()+y/yzoom),
                 dest,
                 destclipped.W(),
-                mattecolour.rgb(),
-                xzoom );
+                xzoom,
+                mattecolour.rgb() );
+            break;
+        default:
+            assert(false);
             break;
         }
     }
