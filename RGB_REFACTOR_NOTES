@@ -1,9 +1,0 @@
-core:
-(DONE) load rgb images
-save rgb images
-
-
-tidy up:
-move core drawing ops out of img.cpp (and tool.cpp)
-figure out where palettes are stored :-)
-

@@ -4,6 +4,9 @@ TODO
 BUG: tool.cpp:57 assert triggers if painting while changing frames.
 BUG: titlebar doesn't update upon to/from spritesheet
 better colour picking in rgba mode
+show image type in titlebar/statusbar
+add palette edits to the undo/redo stack
+
 
 misc:
 
@@ -11,23 +14,12 @@ misc:
 - (DONE) BUG: XFLip/YFlip assert if used on rgb image?
 - BUG: crap error messages on bad file load
 
-For initial release:
-
-- (DONE) provide reasonable default palette
-- (DONE) about box/help/keyboard shortcut cheatsheet etc...
-- (DONE) move code to public rcs
-- (close enough) copyright notes in source
-- website
-- win32 build
-
 Later:
 
 - circle tools
     - modifier key for 1:1 ratio? or separate ellipse/circle tools?
 - status bar - show zoom, mousepos, tool info (eg rectangle dimensions)
-- BUG: mousedroppings around right and bottom edges of view
 - grid config tool
-- add palette edits to the undo/redo stack
 - brush pickup, rect tool - should exclude right and bottom edge if grid on
   (optional)
 - BUG: TGA load flips image
