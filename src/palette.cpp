@@ -13,8 +13,9 @@ static void LoadGimpPalette(FILE* fp, Palette& pal);
 
 
 Palette::Palette(int numcolours) :
-    m_NumColours(numcolours)
+    NColours(numcolours)
 {
+    Colours = new Colour[numcolours];
     int i;
     Colour black(0,0,0);
     for( i=0;i<256;++i)
@@ -35,7 +36,7 @@ void Palette::LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 )
     {
 
         int t = ((n-n0)*S) / (n1-n0);
-        Colour& c = m_Colours[n];
+        Colour& c = Colours[n];
         c.r = c0.r + ((c1.r-c0.r)*t)/S;
         c.g = c0.g + ((c1.g-c0.g)*t)/S;
         c.b = c0.b + ((c1.b-c0.b)*t)/S;

@@ -6,7 +6,7 @@
 class Img;
 class Box;
 class Point;
-class Palette;
+struct Palette;
 
 
 

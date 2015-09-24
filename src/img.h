@@ -7,7 +7,7 @@
 
 #include <cassert>
 
-class Palette;
+struct Palette;
 
 
 

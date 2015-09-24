@@ -8,6 +8,7 @@
 
 
 class Project;
+class Cmd_PaletteModify;
 
 class Cmd
 {
@@ -22,6 +23,9 @@ public:
 
     virtual void Do() = 0;
     virtual void Undo() = 0;
+
+    // cheesy RTTI for types that need it
+    virtual Cmd_PaletteModify* ToPaletteModify() { return 0; }
 
     CmdState State() const
         { return m_State; }
@@ -116,6 +120,28 @@ public:
 private:
     int m_NumFrames;
     int m_NWide;
+};
+
+
+
+// palette modification
+class Cmd_PaletteModify : public Cmd
+{
+public:
+    Cmd_PaletteModify(Project& proj, int first, int cnt, Colour const* colours);
+    virtual ~Cmd_PaletteModify();
+    virtual void Do();
+    virtual void Undo();
+
+    // cheesy RTTI
+    virtual Cmd_PaletteModify* ToPaletteModify() { return this; }
+
+    bool Merge(int idx, Colour const& newc);
+private:
+    void swap();
+    int m_First;
+    int m_Cnt;
+    Colour* m_Colours;
 };
 
 

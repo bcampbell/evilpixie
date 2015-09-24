@@ -101,14 +101,8 @@ public:
     void Damage_FramesRemoved(int first, int last);
     void Damage_AnimReplaced();
 
-
-    // TODO: move these out of project into their own class (like DrawTransaction)
-    void PaletteChange_Begin();
-    void PaletteChange_Alter( int n, Colour const& c );
-    void PaletteChange_Replace( Palette const& p );
-    void PaletteChange_Commit();
-    void PaletteChange_Rollback();
-
+    // notify palette modified
+    void Damage_Palette(int first, int cnt);
 
     void SetModifiedFlag( bool newmodifiedflag );
 private:

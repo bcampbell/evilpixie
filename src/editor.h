@@ -93,6 +93,14 @@ public:
 	// redo last undo (or do nothing)
 	void Redo();
 
+    // returns the most recent cmd on the stack (or null if none)
+    // The idea is that for some operations (eg palette editing)
+    // it makes more sense to accumulate changes in a single cmd
+    // than to add lots of new ones.
+    Cmd* TopCmd()
+        { return m_UndoStack.empty() ? 0:m_UndoStack.back(); }
+
+
 	bool CanUndo() const;
 	bool CanRedo() const;
 

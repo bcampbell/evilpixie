@@ -112,7 +112,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         assert( MOUSESTYLE_NUM==2 );
     }
 
-    m_PaletteEditor = new PaletteEditor( *proj, this );
+    m_PaletteEditor = new PaletteEditor( *this, this );
     m_PaletteEditor->hide();
 
     resize( 700,500 );
@@ -579,9 +579,10 @@ void EditorWindow::do_usebrushpalette()
     if( GetBrush() != -1 )
         return; // std brush - do nothing
 
-    Proj().PaletteChange_Begin();
-    Proj().PaletteChange_Replace( CurrentBrush().GetPalette() );
-    Proj().PaletteChange_Commit();
+
+    Palette const& pal = CurrentBrush().GetPalette();
+    Cmd* cmd = new Cmd_PaletteModify(Proj(), 0, pal.NColours, pal.Colours);
+    AddCmd(cmd);
 }
 
 void EditorWindow::do_xflipbrush()

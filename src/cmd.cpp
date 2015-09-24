@@ -208,7 +208,7 @@ void Cmd_ToSpriteSheet::Undo()
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
     anim.Zap();
-    int n;
+    unsigned int n;
     for(n=0;n<frames.size();++n)
     {
         anim.Append(frames[n]);
@@ -245,7 +245,7 @@ void Cmd_FromSpriteSheet::Do()
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
     anim.Zap();
-    int n;
+    unsigned int n;
     for(n=0;n<frames.size();++n)
     {
         anim.Append(frames[n]);
@@ -265,5 +265,67 @@ void Cmd_FromSpriteSheet::Undo()
 
     Proj().Damage_AnimReplaced();
     SetState( NOT_DONE );
+}
+
+//-----------
+//
+Cmd_PaletteModify::Cmd_PaletteModify(Project& proj, int first, int cnt, Colour const* colours) :
+    Cmd(proj,NOT_DONE),
+    m_First(first),
+    m_Cnt(cnt)
+{
+    m_Colours = new Colour[cnt];
+    int i;
+    for (i=0; i<cnt; ++i )
+        m_Colours[i] = colours[i];
+}
+
+Cmd_PaletteModify::~Cmd_PaletteModify()
+{
+    delete [] m_Colours;
+}
+
+
+void Cmd_PaletteModify::swap()
+{
+    Palette& pal = Proj().GetAnim().GetPalette();
+    int i;
+    for (i=0; i<m_Cnt; ++i)
+    {
+        Colour tmp = pal.GetColour(m_First+i);
+        pal.SetColour(m_First+i, m_Colours[i]);
+        m_Colours[i] = tmp;
+    }
+
+    Proj().Damage_Palette(m_First, m_Cnt);
+}
+
+void Cmd_PaletteModify::Do()
+{
+    swap();
+    SetState( DONE );
+}
+
+void Cmd_PaletteModify::Undo()
+{
+    swap();
+    SetState( NOT_DONE );
+}
+
+// attempts to merge a single colour change into the existing cmd.
+// this lets us keep the project up-to-date as user twiddles the colour,
+// but also avoids clogging up the undo stack with insane numbers of operations.
+// returns true if the merge occured, false if a new cmd is required.
+bool Cmd_PaletteModify::Merge( int idx, Colour const& newc)
+{
+    if (m_Cnt!=1 || m_First!=idx)
+        return false;
+    if (State()!=DONE)
+        return false;
+
+    Palette& pal = Proj().GetAnim().GetPalette();
+    pal.SetColour(m_First, newc);
+    Proj().Damage_Palette(m_First, m_Cnt);
+    return true;
 }
 

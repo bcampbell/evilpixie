@@ -2,21 +2,24 @@
 #include "palettewidget.h"
 #include "rgbwidget.h"
 #include "../colours.h"
+#include "../cmd.h"
 #include "../palette.h"
 #include "../project.h"
+#include "../editor.h"
 
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QPushButton>
 
 
-PaletteEditor::PaletteEditor( Project& proj, QWidget* parent ) :
+PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
     QDialog( parent ),
-    m_Proj( proj),
+    m_Ed(ed),
+    m_Proj( ed.Proj()),
     m_Selected( 1 )
 {
     m_RGBWidget = new RGBWidget();
-    m_PaletteWidget = new PaletteWidget(proj.PaletteConst());
+    m_PaletteWidget = new PaletteWidget(m_Proj.PaletteConst());
     m_PaletteWidget->EnableRangePicking( true );
     resize( QSize(500,400) );
 
@@ -69,7 +72,7 @@ void PaletteEditor::SetSelected(int idx)
     m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
 }
 
-void PaletteEditor::OnDamaged(int frame, Box const& )
+void PaletteEditor::OnDamaged(int /*frame*/, Box const& )
 {
     // don't care about image changes.
 }
@@ -77,22 +80,52 @@ void PaletteEditor::OnDamaged(int frame, Box const& )
 void PaletteEditor::OnPaletteChanged( int n, Colour const& c )
 {
     m_PaletteWidget->SetColour(n,c);
+    if(m_Selected == n)
+    {
+        m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
+    }
 }
 
 
 void PaletteEditor::OnPaletteReplaced()
 {
     m_PaletteWidget->SetPalette(m_Proj.PaletteConst());
+    Colour c( m_Proj.GetColour( m_Selected ) );
+    m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
 }
 
 void PaletteEditor::colourChanged()
 {
     QColor qc = m_RGBWidget->colour();
 
-    m_Proj.PaletteChange_Begin();
     Colour c( qc.red(), qc.green(), qc.blue(), qc.alpha() );
-    m_Proj.PaletteChange_Alter(m_Selected, c );
-    m_Proj.PaletteChange_Commit();
+
+    Colour existing( m_Proj.GetColour( m_Selected ) );
+
+    if (c==existing) {
+        return;
+    }
+
+
+    // if the last cmd was a modification of the same colour, we'll just amend it!
+    // this lets us keep the project up-to-date as user twiddles the colour,
+    // but also avoids clogging up the undo stack with insane numbers of operations.
+    Cmd* cmd = m_Ed.TopCmd();
+    if (cmd)
+    {
+        Cmd_PaletteModify* mod = cmd->ToPaletteModify();
+        if (mod)
+        {
+            if (mod->Merge(m_Selected, c))
+            {
+                return;
+            }
+        }
+    }
+    
+    // if we get this far we need a fresh cmd.
+    cmd = new Cmd_PaletteModify(m_Proj, m_Selected, 1, &c);
+    m_Ed.AddCmd(cmd);
 }
 
 void PaletteEditor::paletteRangeAltered()
@@ -112,8 +145,7 @@ void PaletteEditor::spreadColours()
 
     newpalette.LerpRange( n0, newpalette.GetColour(n0), n1, newpalette.GetColour(n1) );
 
-    m_Proj.PaletteChange_Begin();
-    m_Proj.PaletteChange_Replace( newpalette );
-    m_Proj.PaletteChange_Commit();
+    Cmd* cmd = new Cmd_PaletteModify(m_Proj, n0, n1-n0, &newpalette.Colours[n0]);
+    m_Ed.AddCmd(cmd);
 }
 

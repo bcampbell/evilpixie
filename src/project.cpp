@@ -126,42 +126,21 @@ void Project::Damage_AnimReplaced()
 
 
 
-
-void Project::PaletteChange_Begin()
+void Project::Damage_Palette( int first, int cnt )
 {
-}
-
-
-// TODO: add palette changes to the undo stack
-void Project::PaletteChange_Alter( int n, Colour const& c )
-{
-    SetColour( n,c );
     std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
+    if (cnt == 1)
     {
-        (*it)->OnPaletteChanged( n, c );
+        Colour c = GetColour(first);
+        for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
+            (*it)->OnPaletteChanged(first,c);
+    } else {
+        for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
+            (*it)->OnPaletteReplaced();
     }
 }
 
-void Project::PaletteChange_Replace( Palette const& p )
-{
-    int i;
-    for( i=0; i<=255; ++i )
-        SetColour( i,p.GetColour(i) );
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-        (*it)->OnPaletteReplaced();
-}
 
-
-
-void Project::PaletteChange_Commit()
-{
-}
-
-void Project::PaletteChange_Rollback()
-{
-}
 
 
 PenColour Project::PickUpPen(Point const& pt, int frame) const

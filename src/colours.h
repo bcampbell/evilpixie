@@ -120,6 +120,8 @@ struct Colour
         { RGBA8 tmp; tmp.r=r; tmp.g=g; tmp.b=b; tmp.a=a; return tmp; }
 };
 
+inline bool operator==(const Colour& a, const Colour& b){ return a.r==b.r && a.g==b.g && a.b==b.b &&a.a==b.a; } 
+
 inline Colour Lerp(Colour const& a, Colour const& b, float t)
 {
     assert(t>=0.0f && t <= 1.0f);
