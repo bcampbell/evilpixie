@@ -11,6 +11,9 @@ public:
     Colour* Colours;
 
     Palette(int numcolours=256);
+    Palette(Palette const& src);
+    ~Palette();
+    Palette& operator=( const Palette& other );
 
     int NumColours() const {return NColours;}
     Colour const& GetColour( int n ) const { return Colours[n]; }
@@ -20,7 +23,7 @@ public:
 
     static Palette* Load(const char* filename);
 
-    void SetNumColours(int ncolours) {NColours=ncolours;}
+    void SetNumColours(int ncolours);
 
 };
 

@@ -18,10 +18,53 @@ Palette::Palette(int numcolours) :
     Colours = new Colour[numcolours];
     int i;
     Colour black(0,0,0);
-    for( i=0;i<256;++i)
+    for( i=0;i<numcolours;++i)
         SetColour(i,black);
 }
 
+Palette::Palette(Palette const& src) :
+    NColours(src.NColours)
+{
+    Colours = new Colour[src.NColours];
+    int i;
+    for (i=0; i<NColours; ++i)
+    {
+        Colours[i] = src.Colours[i];
+    }
+}
+
+Palette::~Palette()
+{
+    delete [] Colours;
+}
+
+
+Palette& Palette::operator=( const Palette& other ) {
+    delete [] Colours;
+    NColours = other.NColours;
+    Colours = new Colour[NColours];
+    int i;
+    for (i=0; i<NColours; ++i)
+        Colours[i] = other.Colours[i];
+    return *this;
+}
+
+// ugh.
+void Palette::SetNumColours(int ncolours)
+{
+    Colour* tmp = new Colour[ncolours];
+    int i;
+    for(i=0;i<ncolours;++i)
+    {
+        if (i<NColours)
+            tmp[i] = Colours[i];
+        else
+            tmp[i] = Colour(0,0,0,255);
+    }
+    delete [] Colours;
+    Colours = tmp;
+    NColours = ncolours;
+}
 
 // TODO: BUG: not quite right off-by-one error...
 //

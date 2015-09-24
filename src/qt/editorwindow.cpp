@@ -369,12 +369,8 @@ void EditorWindow::OnPaletteChanged( int n, Colour const& c )
 
 void EditorWindow::OnPaletteReplaced()
 {
-    int n;
-    for( n=0; n<=255; ++n )
-    {
-        Colour c = Proj().GetColour(n);
-        m_PaletteWidget->SetColour(n,c);
-    }
+    Palette const& pal = Proj().PaletteConst();
+    m_PaletteWidget->SetPalette(pal);
 }
 
 void EditorWindow::OnModifiedFlagChanged( bool )
