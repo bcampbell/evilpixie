@@ -66,25 +66,29 @@ void Anim::CalcBounds(Box& bound, int first, int last) const
 }
 
 
+class iltmp
+{
+public:
+    iltmp()     { m_id=ilGenImage(); }
+    ~iltmp()    { ilDeleteImage(m_id); }
+    void Bind() { ilBindImage(m_id); }
+private:
+    ILuint m_id;
+};
+
+
 void Anim::Load( const char* filename )
 {
     std::string ext = ToLower( ExtName(filename) );
-    if(ext == ".gif")
-    {
-        // TODO: try using DevIL Gif loader
-        LoadGif(filename);
-        return;
-    }
-
 #if 0
     int transparent_idx = -1;
 #endif
 
     ilDisable( IL_CONV_PAL );
 
-    ILuint im;
-    ilGenImages( 1, &im );
-    ilBindImage( im );
+    iltmp im;
+    im.Bind();
+
     // cheesy hack to bias il in favour of amiga-style iffs
     if( ext==".iff" )
     {
@@ -98,7 +102,6 @@ void Anim::Load( const char* filename )
     ILenum err = ilGetError();
     if( err != IL_NO_ERROR )
     {
-        ilDeleteImages(1,&im);
         if(err==IL_INVALID_VALUE)
         {
             throw Exception( "Load failed - mistaken or badly formed %s file?", ext.c_str() );
@@ -112,9 +115,9 @@ void Anim::Load( const char* filename )
     int frame;
     for(frame=0; frame<num_frames; ++frame)
     {
+        im.Bind();  // kludge to work around ilActiveImage() oddness...
         if(ilActiveImage(frame)==IL_FALSE)
         {
-            ilDeleteImages(1,&im);
             throw Exception("ilActiveImage() failed (err 0x%x)",ilGetError());
         }
 
@@ -143,7 +146,6 @@ void Anim::Load( const char* filename )
             int pal_bytesperpixel = (int)ilGetInteger( IL_PALETTE_BPP );
             if( pal_bytesperpixel != 4 )
             {
-                ilDeleteImages(1,&im);
                 throw Exception( "Unsupported palette type (%d bytes/pixel)", pal_bytesperpixel );
             }
 
@@ -218,132 +220,21 @@ void Anim::Load( const char* filename )
         }
         else
         {
-            ilDeleteImages(1,&im);
             throw Exception( "unsupported pixelformat" );
         }
-
     }
-    ilDeleteImages(1,&im);
 }
 
 
 
-void Anim::LoadGif( const char* filename )
+// load img into the currently-bound IL image context
+static void plonkFrame( Img const& img, Palette const& pal )
 {
-    GifFileType* f = DGifOpenFileName( filename );
-    if( !f )
-        throw Exception( "couldn't open '%s' (code %d)", filename, GifLastError() );
-
-    if( DGifSlurp( f ) != GIF_OK )
-    {
-        DGifCloseFile(f);
-        throw Exception( "couldn't load '%s' (code %d)", filename, GifLastError() );
-    }
-#if 0
-    printf("SWidth: %d\n", f->SWidth );
-    printf("SHeight: %d\n", f->SHeight );
-    printf("SColorResolution: %d\n", f->SColorResolution );
-    printf("SBackGroundColor: %d\n", f->SBackGroundColor );
-    printf("ImageCount: %d\n", f->ImageCount );
-
-    printf("ColorMap->ColorCount: %d\n", f->SColorMap->ColorCount );
-    printf("ColorMap->BitsPerPixel: %d\n", f->SColorMap->BitsPerPixel );
-#endif
-
-    int i=0;
-    ColorMapObject* cm = f->SColorMap;
-    m_Palette.SetNumColours(cm->ColorCount);
-    while(i<cm->ColorCount)
-    {
-        GifColorType const& c = cm->Colors[i];
-        m_Palette.SetColour(i,Colour( c.Red, c.Green, c.Blue ));
-        ++i;
-    }
-
-    
-
-
-    int n;
-    for( n=0; n<f->ImageCount; ++n)
-    {
-        SavedImage* si = &f->SavedImages[n];
-        // TODO: per-frame palettes
-/*
-        ColorMapObject* cm = si->ImageDesc.ColorMap;
-        if( !cm )
-            cm = f->SColorMap;
-
-        // install palette
-        Palette* pal = new Palette();
-        int i;
-        for(i=0;i<256;++i)
-            pal->SetColour(i,Colour(0,0,0));
-        for( i=0; i<cm->ColorCount; ++i )
-        {
-            GifColorType const& c = cm->Colors[i];
-            pal->SetColour(i,Colour( c.Red, c.Green, c.Blue ));
-        }
-*/
-        // transparent-colour?
-        for( i=0; i<si->ExtensionBlockCount; ++i) {
-            ExtensionBlock* eb = &si->ExtensionBlocks[i];
-            if( eb->Function==GRAPHICS_EXT_FUNC_CODE && eb->ByteCount==4 )
-            {
-                if( eb->Bytes[0] & 1)
-                {
-                    // set the colourkeyed palette entry to transparent
-                    int key = (int)eb->Bytes[3];
-                    Colour c = m_Palette.GetColour(key);
-                    c.a = 0;
-                    m_Palette.SetColour(key,c);
-                }
-            }
-        }
-        Img* tmp = new Img(FMT_I8, si->ImageDesc.Width, si->ImageDesc.Height, si->RasterBits);
-
-        Append(tmp);
-    }
-    DGifCloseFile(f);
-}
-
-
-void Anim::Save( const char* filename )
-{
-    Img const& img = GetFrameConst(0);
-
-    std::string ext = ToLower( ExtName(filename) );
-    if(ext == ".gif")
-    {
-        if( img.Fmt() != FMT_I8) {
-            throw Exception("Sorry... .gif only handles paletted images (maybe try .png instead?)");
-        }
-
-        // DevIL lib doesn't save Gifs
-        SaveGif(filename);
-        return;
-    }
-
-    if(NumFrames()>1)
-        throw Exception("Sorry... to save anims you need to use GIF format (for now)");
-
-    // OK then... just save first frame
-    ILenum fileType = ilTypeFromExt(filename);
-    if( fileType == IL_TYPE_UNKNOWN) {
-        throw Exception("Sorry... unknown/unsupported file type");
-    }
-
-    ILuint im;
-    ilGenImages( 1, &im );
-    ilBindImage( im );
-
-    //ILboolean ilTexImage(ILuint Width, ILuint Height, ILuint Depth, ILubyte NumChannels, ILenum Format, ILenum Type, void *Data);
-    //
     if (img.Fmt() == FMT_I8)
     {
 
         if( !ilTexImage( img.W(), img.H(), 1, 1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, NULL ) )
         {
-            ilDeleteImages(1,&im);
             throw Exception( "ilTexImage() failed)" );
         }
 
@@ -355,26 +246,23 @@ void Anim::Save( const char* filename )
             ilSetPixels( 0,y,0, img.W(),1,1, IL_COLOUR_INDEX, IL_UNSIGNED_BYTE, (void*)src );
         }
 
-
-
-        uint8_t tmp_palette[4*m_Palette.NumColours()];
+        uint8_t tmp_palette[4*pal.NumColours()];
         int i;
         uint8_t* p = tmp_palette;
-        for( i=0; i<=m_Palette.NumColours(); ++i )
+        for( i=0; i<=pal.NumColours(); ++i )
         {
-            Colour c = m_Palette.GetColour(i);
+            Colour c = pal.GetColour(i);
             *p++ = c.r;
             *p++ = c.g;
             *p++ = c.b;
             *p++ = c.a;
         }
-        ilRegisterPal( tmp_palette, 4*m_Palette.NumColours(), IL_PAL_RGBA32 );
+        ilRegisterPal( tmp_palette, 4*pal.NumColours(), IL_PAL_RGBA32 );
     }
     else if (img.Fmt() == FMT_RGBX8)
     {
         if( !ilTexImage( img.W(), img.H(), 1, 3, IL_RGB, IL_UNSIGNED_BYTE, NULL ) )
         {
-            ilDeleteImages(1,&im);
             throw Exception( "ilTexImage() failed)" );
         }
 
@@ -391,7 +279,6 @@ void Anim::Save( const char* filename )
     {
         if( !ilTexImage( img.W(), img.H(), 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, NULL ) )
         {
-            ilDeleteImages(1,&im);
             throw Exception( "ilTexImage() failed)" );
         }
 
@@ -407,12 +294,40 @@ void Anim::Save( const char* filename )
     else
     {
         assert(false);  // uhoh...
+        throw Exception( "internal - bad image format" );
+    }
+}
+
+
+
+void Anim::Save( const char* filename )
+{
+    ILenum fileType = ilTypeFromExt(filename);
+    if( fileType == IL_TYPE_UNKNOWN) {
+        throw Exception("Sorry... unknown/unsupported file type");
+    }
+
+    iltmp im;
+    im.Bind();
+
+    int frameNum;
+    if (!ilRegisterNumImages(NumFrames()))
+    {
+        throw Exception( "ilRegisterNumImages() failed (err 0x%x)", ilGetError() );
+    }
+
+    for (frameNum=0; frameNum<NumFrames(); ++frameNum)
+    {
+        if(!ilActiveImage(frameNum))
+        {
+            throw Exception( "ilActiveImage() failed (err 0x%x)", ilGetError() );
+        }
+        plonkFrame(GetFrameConst(frameNum), GetPaletteConst());
     }
 
     ilEnable(IL_FILE_OVERWRITE);
     if( !ilSaveImage( filename ) )
     {
-        ilDeleteImages(1,&im);
         ILenum err = ilGetError();
 
         if( err == IL_INVALID_EXTENSION )
@@ -424,120 +339,6 @@ void Anim::Save( const char* filename )
         {
             throw Exception( "ilSaveImage() failed (err 0x%x)", err );
         }
-    }
-    ilDeleteImages(1,&im);
-}
-
-
-void Anim::SaveGif( const char* filename )
-{
-    bool animated = NumFrames()>1 ? true:false;
-
-    EGifSetGifVersion("89a");
-    GifFileType* f=0;
-    ColorMapObject* cmap=0;
-
-    try
-    {
-        f = EGifOpenFileName(filename, 0);
-
-        if( !f )
-            throw Exception( "couldn't open '%s' (gif code %d)", filename, GifLastError() );
-
-        // TODO: per-frame palette support
-        ColorMapObject* cmap = MakeMapObject( m_Palette.NumColours(), NULL);
-        int i;
-        int colourkey=-1;
-        for( i=0; i<m_Palette.NumColours(); ++i)
-        {
-            GifColorType& c = cmap->Colors[i];
-            Colour rgb = m_Palette.GetColour(i);
-            c.Red = rgb.r;
-            c.Green = rgb.g;
-            c.Blue = rgb.b;
-
-            // use first totally-transparent colour (if any) as colourkey
-            if(rgb.a == 0 && colourkey==-1)
-            {
-                colourkey = i;
-            }
-        }
-        Box screen;
-        CalcBounds(screen,0,NumFrames());
-
-        if( EGifPutScreenDesc(f,
-            screen.w, screen.h,
-            cmap->BitsPerPixel,
-            0,  // GifBackGround,
-            cmap) != GIF_OK )
-        {
-            throw Exception( "gif error (code %d)", filename, GifLastError() );
-        }
-
-        if(colourkey!=-1) {
-            uint16_t delay = 100/FPS(); // in 1/100ths of a second
-
-            unsigned char gc_ext[4] = {
-                0x09, /* transparency=1, disposal=2 (Restore to background color) */
-                delay&0xff, delay>>8, /* delay time (little endian) */
-                colourkey
-            };
-            EGifPutExtension(f, GRAPHICS_EXT_FUNC_CODE, 4, gc_ext);
-        }
-
-        if(animated)
-        {
-            // insert extension block to indicate looping
-            unsigned char buf[3] = {1, 0,0}; // 1, 16 bit loopcount (0=infinite)
-            EGifPutExtensionFirst(f, APPLICATION_EXT_FUNC_CODE, 11, "NETSCAPE2.0");
-            EGifPutExtensionLast(f, APPLICATION_EXT_FUNC_CODE, 3, buf);
-        }
-
-        int n;
-        for(n=0; n<NumFrames(); ++n)
-        {
-            Img const& img = GetFrameConst(n);
-            if(img.Fmt() != FMT_I8)
-                throw Exception("Sorry... must be paletted image (for now)");
-/*
- * anim delay and transparent colour in extension?
-            int EGifPutExtension(
-                GifFileType *GifFile,
-                int GifExtCode,
-                int GifExtLen,
-                void *GifExtension)
-*/
-
-            if( EGifPutImageDesc(f,
-                0,0,    // GifLeft, GifTop,
-                img.W(), img.H(),
-                FALSE,
-                NULL) != GIF_OK )
-            {
-                throw Exception( "gif error (code %d)", filename, GifLastError() );
-            }
-
-            int y;
-            for(y=0; y<img.H(); ++y)
-            {
-                GifPixelType* pix = (GifPixelType*)img.PtrConst_I8(0,y);
-                if(EGifPutLine(f, pix, img.W()) != GIF_OK)
-                {
-                    throw Exception( "gif error (code %d)", filename, GifLastError() );
-                }
-            }
-
-        }
-        FreeMapObject(cmap);
-        EGifCloseFile(f);
-    }
-    catch(...)
-    {
-        if(cmap)
-            FreeMapObject(cmap);
-        if(f)
-            EGifCloseFile(f);
-        throw;
     }
 }
 

@@ -39,9 +39,6 @@ public:
 
     PixelFormat Fmt() const;
 private:
-    void LoadGif(const char* filename);
-    void SaveGif(const char* filename);
-
     std::vector< Img* > m_Frames;
     int m_FPS;
     Palette m_Palette;

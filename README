@@ -19,7 +19,6 @@ depends upon:
 qt4
 libxpm
 libdevil
-libgif
 (more?)
 
 eg on ubuntu (and probably debian):

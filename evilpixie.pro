@@ -4,14 +4,14 @@ QT += widgets
 
 win32 {
     INCLUDEPATH = /c/mingw/gnuwin32/include
-    LIBS = -L/c/mingw/gnuwin32/lib -lgif -lXpm -lDevIL
+    LIBS = -L/c/mingw/gnuwin32/lib -lXpm -lDevIL
 # to make sure we don't compile a console app:
     CONFIG += windows
     RC_FILE = win32/evilpixie.rc
 }
 
-unix:LIBS = -lgif -lXpm -lDevIL
-#unix:LIBS = -L/usr/local/lib -lgif -lXpm -lDevIL
+unix:LIBS = -lXpm -lDevIL
+#unix:LIBS = -L/usr/local/lib -lXpm -lDevIL
 
 
 SOURCES += src/anim.cpp \
