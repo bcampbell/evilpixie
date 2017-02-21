@@ -1,18 +1,10 @@
 #include "qtapp.h"
-#include <IL/il.h>
 #include "../anim.h"
 #include "../exception.h"
 
 int main(int argc, char *argv[])
 {
 
-    if (ilGetInteger(IL_VERSION_NUM) < IL_VERSION )
-    {
-        fprintf( stderr, "bad IL version\n" );
-        return 1;
-    }
-
-    ilInit();
 #if 0
     Anim a;
     try
