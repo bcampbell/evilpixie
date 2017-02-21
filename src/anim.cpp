@@ -1,8 +1,6 @@
 #include <cassert>
 
-extern "C" {
 #include <impxy.h>
-}
 
 #include "anim.h"
 #include "img.h"
@@ -267,6 +265,38 @@ static im_img* to_im_img( Img const& img, Palette const& pal )
 
 void Anim::Save( const char* filename )
 {
+    im_bundle* bundle;
+
+    bundle = im_bundle_new();
+    if (!bundle) {
+        throw Exception( "out of memory" );
+    }
+
+    try {
+        int i;
+        for (i=0; i<NumFrames(); ++i) {
+            SlotID id = {0,0,0,0};
+            id.frame = i;
+            im_img* img = to_im_img(GetFrame(i), GetPaletteConst());
+            im_bundle_set( bundle, id, img);
+        }
+        ImErr err;
+        if (!im_bundle_save( bundle, filename, &err) ) {
+            if (err == ERR_UNKNOWN_FILE_TYPE) {
+                throw Exception("Unknown file type (try .gif or .png maybe?)");
+            } else if (err == ERR_UNSUPPORTED) {
+                throw Exception("Unsupported");
+            } else {
+                throw Exception("Error %d", (int)err);
+            }
+        }
+    }
+    catch (Exception& e) {
+        im_bundle_free(bundle);
+        throw e;
+    }
+
+    im_bundle_free(bundle);
 }
 
 
