@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include <impxy.h>
+#include <impy.h>
 
 #include "anim.h"
 #include "img.h"
