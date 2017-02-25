@@ -73,7 +73,21 @@ void Anim::Load( const char* filename )
 
     im_bundle* bundle = im_bundle_load(filename, &err);
     if (!bundle) {
-        throw Exception( "Load failed (err code %d)", (int)err);
+            switch(err) {
+                case ERR_NOMEM:
+                   throw Exception("Ran out of memory");
+                case ERR_COULDNTOPEN:
+                case ERR_FILE:
+                    throw Exception("File error (imerr code %d)",err);
+                case ERR_UNKNOWN_FILE_TYPE:
+                    throw Exception("Unknown or unsupported file type");
+                case ERR_UNSUPPORTED:
+                    throw Exception("Unsupported");
+                case ERR_MALFORMED:
+                    throw Exception("File malformed");
+                default:
+                    throw Exception( "Load failed (imerr code %d)", (int)err);
+            }
     }
     int nframes = im_bundle_num_frames(bundle);
     int frame;
@@ -265,6 +279,22 @@ static im_img* to_im_img( Img const& img, Palette const& pal )
 
 void Anim::Save( const char* filename )
 {
+    // sanity check
+    std::string ext = ToLower(ExtName(filename));
+
+    if (NumFrames()>1) {
+        if (ext!=".gif") {
+            throw Exception("To save animation, you need to save as .gif or convert to a spritesheet");
+        }
+    }
+
+    if (Fmt()!= FMT_I8) {
+        if( ext==".gif") {
+            throw Exception("Sorry, .gif can only save 8-bit indexed images");
+        }
+    }
+    // end sanity check
+
     im_bundle* bundle;
 
     bundle = im_bundle_new();
@@ -282,12 +312,18 @@ void Anim::Save( const char* filename )
         }
         ImErr err;
         if (!im_bundle_save( bundle, filename, &err) ) {
-            if (err == ERR_UNKNOWN_FILE_TYPE) {
-                throw Exception("Unknown file type (try .gif or .png maybe?)");
-            } else if (err == ERR_UNSUPPORTED) {
-                throw Exception("Unsupported");
-            } else {
-                throw Exception("Error %d", (int)err);
+            switch(err) {
+                case ERR_NOMEM:
+                   throw Exception("Ran out of memory");
+                case ERR_UNKNOWN_FILE_TYPE:
+                   throw Exception("Unknown file type (try .png or .gif maybe?)");
+                case ERR_COULDNTOPEN:
+                case ERR_FILE:
+                    throw Exception("File error (imerr code %d)",err);
+                case ERR_UNSUPPORTED:
+                    throw Exception("Unsupported");
+                default:
+                    throw Exception("Error (imerr code %d)",err);
             }
         }
     }
