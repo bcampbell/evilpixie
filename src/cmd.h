@@ -6,6 +6,7 @@
 #include "img.h"
 #include "brush.h"
 
+#include <vector>
 
 class Project;
 class Cmd_PaletteModify;
@@ -142,6 +143,22 @@ private:
     int m_First;
     int m_Cnt;
     Colour* m_Colours;
+};
+
+
+class Cmd_Batch : public Cmd
+{
+public:
+    Cmd_Batch( Project& proj, CmdState initialstate=NOT_DONE );
+    virtual ~Cmd_Batch();
+    virtual void Do();
+    virtual void Undo();
+
+    // add another command to this batch - must be in same state as overall batch!
+    void Append(Cmd* c);
+
+private:
+    std::vector<Cmd*> m_Cmds;
 };
 
 

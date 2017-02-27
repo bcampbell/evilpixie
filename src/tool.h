@@ -5,9 +5,6 @@
 #include "box.h"
 #include "global.h" // for Button
 
-class EditView;
-class Project;
-
 
 enum ToolType
 {
@@ -24,8 +21,11 @@ enum ToolType
 };
 
 
+class EditView;
+class Project;
 class Editor;
 class DrawTransaction;
+class Cmd_Batch;
 
 
 class Tool
@@ -63,7 +63,8 @@ private:
 	Point m_Pos;
 	Button m_DownButton;
     EditView* m_View;
-    DrawTransaction* m_Tx;
+
+    DrawTransaction *m_Tx;
 };
 
 
@@ -84,7 +85,7 @@ private:
     Button m_DownButton;
     EditView* m_View;
     Box m_CursorDamage;
-    DrawTransaction* m_Tx;
+    DrawTransaction *m_Tx;
 };
 
 
@@ -178,7 +179,7 @@ private:
     Button m_DownButton;
     EditView* m_View;
     Box m_CursorDamage;
-    DrawTransaction* m_Tx;
+    DrawTransaction *m_Tx;
 };
 
 
@@ -200,7 +201,7 @@ private:
     Button m_DownButton;
     EditView* m_View;
     Box m_CursorDamage;
-    DrawTransaction* m_Tx;
+    DrawTransaction *m_Tx;
 };
 
 

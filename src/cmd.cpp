@@ -329,3 +329,45 @@ bool Cmd_PaletteModify::Merge( int idx, Colour const& newc)
     return true;
 }
 
+
+//-----------
+//
+//
+
+Cmd_Batch::Cmd_Batch( Project& proj, CmdState initialstate) :
+    Cmd(proj,initialstate)
+{
+}
+
+Cmd_Batch::~Cmd_Batch()
+{
+    while (!m_Cmds.empty()) {
+        delete m_Cmds.back();
+        m_Cmds.pop_back();
+    }
+}
+
+
+void Cmd_Batch::Append(Cmd* c)
+{
+    assert(c->State() == State());
+    m_Cmds.push_back(c);
+}
+
+
+void Cmd_Batch::Do()
+{
+    std::vector<Cmd*>::iterator it;
+    for (it=m_Cmds.begin(); it!=m_Cmds.end(); ++it) {
+        (*it)->Do(); 
+    }
+}
+
+void Cmd_Batch::Undo()
+{
+    std::vector<Cmd*>::reverse_iterator it;
+    for (it=m_Cmds.rbegin(); it!=m_Cmds.rend(); ++it) {
+        (*it)->Undo(); 
+    }
+}
+

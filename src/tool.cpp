@@ -16,20 +16,22 @@
 // ---------------------
 // helper class to collect multiple drawing ops into a single Cmd_Draw.
 // Upon creation, DrawTransaction takes a backup of the image being drawn to.
-// As the image is draw upon, AddDamage() should be called to keep track of the
-// area which has been modified.
-// When drawing is complete, Commit() will return a Cmd_Draw object in the DONE
+// As the image is draw upon, BeginDamage()/EndDamage() should be called to
+// keep track of the area which has been modified.
+// When drawing is complete, Commit() will return a Cmd object in the DONE
 // state (ie the drawing has already been performed).
-// The returned cmd is ready to place upon the undo stack. It's set up to
-// restore the original image if Undo() is called.
+// The returned cmd is ready to place upon the undo stack.
 class DrawTransaction
 {
 public:
-    DrawTransaction( Project& proj, int frame);
-    // AddDamage expands the damaged area to include the given box.
-    // It'll also call Project::Damage(), so all projectlisteners
-    // will be informed that drawing has occured.
-    void AddDamage(int frame, Box const& affected);
+    DrawTransaction( Project& proj );
+    ~DrawTransaction();
+
+    // call AddDamage as often as needed, within Begin/End pairs
+    void BeginDamage(int frame);
+    void AddDamage(Box const& affected);
+    void EndDamage();
+
     // Commit() returns a Cmd (in the DONE state) which encapsulates the
     // changes to the image in an undoable form.
     Cmd* Commit();
@@ -38,41 +40,100 @@ public:
     void Rollback();
 
 private:
+    void flush();
+
     Project& m_Proj;
     int m_Frame;
-    Img m_Backup;
+    Img* m_Backup;
     Box m_Affected;
+
+    Cmd_Batch* m_Batch;
 };
 
-DrawTransaction::DrawTransaction( Project& proj, int frame) :
+DrawTransaction::DrawTransaction( Project& proj) :
     m_Proj(proj),
-    m_Frame(frame),
-    m_Backup( proj.ImgConst(frame)),        // copy pristine frame
-    m_Affected( 0,0,0,0 )           // start with nothing affected
+    m_Frame(-1),
+    m_Backup(0),
+    m_Affected( 0,0,0,0 ),           // start with nothing affected
+    m_Batch( new Cmd_Batch(proj, Cmd::DONE))
 {
 }
 
-void DrawTransaction::AddDamage(int frame, Box const& b)
+DrawTransaction::~DrawTransaction() {
+    if (m_Batch) {
+        delete m_Batch;
+    }
+
+    if (m_Backup) {
+        delete m_Backup;
+    }
+}
+
+
+
+void DrawTransaction::BeginDamage(int frame)
 {
-    assert(frame==m_Frame); // don't yet support drawing across multiple frames in one go...
-    assert( m_Backup.Bounds().Contains(b) );
-    m_Proj.Damage(frame,b);
-    m_Affected.Merge(b);
+    assert(frame>=0 && frame<m_Proj.NumFrames());
+
+    // if we're changing frames, we need to wrap up the previous frame first
+    if (frame != m_Frame) {
+        flush();
+
+        m_Frame = frame;
+        m_Backup = new Img( m_Proj.ImgConst(frame) );
+    }
+}
+
+void DrawTransaction::AddDamage(Box const& affected)
+{
+    assert(m_Frame>=0 && m_Frame<m_Proj.NumFrames());
+
+    assert( m_Backup->Bounds().Contains(affected) );
+    m_Proj.Damage(m_Frame,affected);
+    m_Affected.Merge(affected);
+}
+
+void DrawTransaction::EndDamage()
+{
 }
 
 
 Cmd* DrawTransaction::Commit()
 {
-    Cmd* c = new Cmd_Draw(m_Proj,m_Frame, m_Affected, m_Backup);
-    return c;
+    flush();
+    Cmd* out = m_Batch;
+    m_Batch = 0;
+    return out;
 }
 
 
+void DrawTransaction::flush()
+{
+    if( !m_Affected.Empty()) {
+        assert(m_Backup);
+        assert(m_Frame>=0 && m_Frame<m_Proj.NumFrames());
+
+        Cmd* c = new Cmd_Draw(m_Proj,m_Frame, m_Affected, *m_Backup);
+        m_Batch->Append(c);
+        m_Affected.SetEmpty();
+    }
+    if(m_Backup) {
+        delete m_Backup;
+        m_Backup = 0;
+        m_Frame = -1;
+    }
+    assert(m_Backup==0);
+}
+
 void DrawTransaction::Rollback()
 {
+    flush();
+    m_Batch->Undo();
+/*
     Box dirty(m_Affected);
     Blit(m_Backup,m_Affected, m_Proj.GetAnim().GetFrame(m_Frame), dirty);
     m_Proj.Damage(m_Frame, dirty);
+*/
 }
 
 
@@ -258,13 +319,15 @@ void PencilTool::OnDown( EditView& view, Point const& p, Button b )
     m_DownButton = b;
     m_View = &view;
     assert(m_Tx==0);
-    m_Tx = new DrawTransaction(view.Proj(),view.Frame());
+    m_Tx = new DrawTransaction(view.Proj());
 
     // draw 1st pixel
+    m_Tx->BeginDamage(view.Frame());
     Plot_cb( p.x, p.y, (void*)this );
+    m_Tx->EndDamage();
 }
 
-void PencilTool::OnMove( EditView&, Point const& p)
+void PencilTool::OnMove( EditView& view, Point const& p)
 {
     if( m_DownButton == NONE )
     {
@@ -272,6 +335,8 @@ void PencilTool::OnMove( EditView&, Point const& p)
         return;
     }
 
+    assert(m_Tx);
+    m_Tx->BeginDamage(view.Frame());
     // feels 'wrong' to do continuous lines if grid is on...
     if( Owner().GridActive() )
         Plot_cb( p.x, p.y, (void*)this );
@@ -280,6 +345,7 @@ void PencilTool::OnMove( EditView&, Point const& p)
         // TODO: should not draw first point (m_Pos) - it's already been drawn.
         WalkLine( m_Pos.x, m_Pos.y, p.x, p.y, Plot_cb, this );
     }
+    m_Tx->EndDamage();
     m_Pos = p;
 }
 
@@ -318,7 +384,7 @@ void PencilTool::Plot_cb( int x, int y, void* user )
     PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
 
     assert(that->m_Tx != 0);
-    that->m_Tx->AddDamage( view.Frame(),dmg );
+    that->m_Tx->AddDamage( dmg );
 }
 
 
@@ -337,7 +403,7 @@ LineTool::LineTool( Editor& owner ) :
 
 LineTool::~LineTool()
 {
-    assert( m_Tx==0 );
+    assert(m_Tx==0);
 }
 
 
@@ -365,12 +431,14 @@ void LineTool::OnUp( EditView& view, Point const& p, Button b )
 {
     if( m_DownButton == b )
     {
-        DrawTransaction tx(view.Proj(),view.Frame());
-        m_Tx = &tx; // so Plot_cb can get at it
+        DrawTransaction tx(view.Proj());
         m_To = p;
+        m_Tx = &tx; // to give plot_cb access
+        tx.BeginDamage(view.Frame());
         WalkLine( m_From.x, m_From.y, m_To.x, m_To.y, Plot_cb, this );
-        Cmd* c = tx.Commit();
+        tx.EndDamage();
         m_Tx = 0;
+        Cmd* c = tx.Commit();
         Owner().AddCmd(c);
         m_DownButton = NONE;
         m_View = 0;
@@ -388,8 +456,7 @@ void LineTool::Plot_cb( int x, int y, void* user )
     Box dmg;
     PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
 
-    assert(that->m_Tx != 0);
-    that->m_Tx->AddDamage(that->m_View->Frame(),dmg);
+    that->m_Tx->AddDamage(dmg);
 }
 
 
@@ -498,9 +565,11 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
     {
         // don't really need a draw transaction here (could just directly craft a Cmd_Draw())
         // but hey :-)
-        DrawTransaction tx(view.Proj(), view.Frame());
+        DrawTransaction tx(view.Proj());
+        tx.BeginDamage(view.Frame());
         proj.GetAnim().GetFrame(view.Frame()).FillBox( Owner().BGPen(), pickup );
-        tx.AddDamage(view.Frame(), pickup );
+        tx.AddDamage(pickup );
+        tx.EndDamage();
         Cmd* c = tx.Commit();
         Owner().AddCmd(c);
     }
@@ -560,12 +629,13 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
         fillcolour = Owner().BGPen();
 
     {
-        DrawTransaction tx(proj, view.Frame());
+        DrawTransaction tx(proj);
         Box dmg;
+        tx.BeginDamage(view.Frame());
         FloodFill( proj.GetAnim().GetFrame(view.Frame()), p, fillcolour, dmg );
-        if( !dmg.Empty() )
-        {
-            tx.AddDamage(view.Frame(), dmg );
+        tx.AddDamage( dmg );
+        tx.EndDamage();
+        if( !dmg.Empty() ) {
             Cmd* c = tx.Commit();
             Owner().AddCmd(c);
         }
@@ -636,7 +706,9 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
 
     int x,y;
 
-    DrawTransaction tx(view.Proj(),view.Frame());
+    DrawTransaction tx(view.Proj());
+
+    tx.BeginDamage(view.Frame());
 
     // top (including left and rightmost pixels)
     dmg.SetEmpty();
@@ -647,7 +719,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
         PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
-    tx.AddDamage( view.Frame(), dmg );
+    tx.AddDamage( dmg );
 
     // right edge (exclude top and bottom rows)
     dmg.SetEmpty();
@@ -658,7 +730,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
         PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
-    tx.AddDamage( view.Frame(), dmg );
+    tx.AddDamage( dmg );
 
     // bottom edge (including right and leftmost pixels)
     dmg.SetEmpty();
@@ -669,7 +741,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
         PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
-    tx.AddDamage( view.Frame(), dmg );
+    tx.AddDamage( dmg );
 
     // left edge (exclude bottom and top rows)
     dmg.SetEmpty();
@@ -680,7 +752,9 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
         PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
-    tx.AddDamage( view.Frame(), dmg );
+    tx.AddDamage( dmg );
+
+    tx.EndDamage();
 
     Cmd* c = tx.Commit();
     Owner().AddCmd(c);
@@ -797,13 +871,15 @@ void FilledRectTool::OnUp( EditView& view, Point const& p, Button b )
     Img& img = proj.GetAnim().GetFrame(view.Frame());
     Box r( m_From, m_To );
 
-    DrawTransaction tx(view.Proj(), view.Frame());
+    DrawTransaction tx(view.Proj());
+    tx.BeginDamage(view.Frame());
     if( m_DownButton == DRAW )
         img.FillBox( Owner().FGPen(),r );
     else    //if( m_DownButton == ERASE )
         img.FillBox( Owner().BGPen(),r );
 
-    tx.AddDamage(view.Frame(),r);    
+    tx.AddDamage(r);    
+    tx.EndDamage();
     Cmd* c = tx.Commit();
     Owner().AddCmd(c);
     m_DownButton = NONE;
@@ -883,11 +959,14 @@ void CircleTool::OnUp( EditView& view, Point const& p, Button b )
 
     m_To = p;
 
-    DrawTransaction tx(view.Proj(),view.Frame());
+    DrawTransaction tx(view.Proj());
     m_Tx = &tx;
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
+
+    tx.BeginDamage(view.Frame());
     WalkEllipse( m_From.x, m_From.y, rx, ry, Plot_cb, this );
+    tx.EndDamage();
     Cmd* c= tx.Commit();
     m_Tx = 0;
     Owner().AddCmd(c);
@@ -905,9 +984,7 @@ void CircleTool::Plot_cb( int x, int y, void* user )
 
     Box dmg;
     PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
-
-    assert(that->m_Tx != 0 );
-    that->m_Tx->AddDamage(view.Frame(),dmg);
+    that->m_Tx->AddDamage(dmg);
 }
 
 
@@ -964,7 +1041,7 @@ FilledCircleTool::FilledCircleTool( Editor& owner ) :
 
 FilledCircleTool::~FilledCircleTool()
 {
-    assert(m_Tx==0);
+    assert(m_Tx=0);
 }
 
 
@@ -995,12 +1072,13 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
 
     m_To = p;
 
-    assert(m_Tx==0);
-    DrawTransaction tx(view.Proj(), view.Frame());
+    DrawTransaction tx(view.Proj());
     m_Tx = &tx;
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
+    tx.BeginDamage(view.Frame());
     WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
+    tx.EndDamage();
     Cmd* c = tx.Commit();
     m_Tx = 0;
     Owner().AddCmd(c);
@@ -1021,8 +1099,7 @@ void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
         proj.GetAnim().GetFrame(view.Frame()).FillBox(that->Owner().FGPen(),b);
     else if( that->m_DownButton == ERASE )
         proj.GetAnim().GetFrame(view.Frame()).FillBox(that->Owner().BGPen(),b);
-    assert(that->m_Tx!=0);
-    that->m_Tx->AddDamage(view.Frame(), b );
+    that->m_Tx->AddDamage(b);
 }
 
 
