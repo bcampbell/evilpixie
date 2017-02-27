@@ -3,8 +3,8 @@ CONFIG += qt release
 QT += widgets
 
 win32 {
-    INCLUDEPATH = /c/mingw/gnuwin32/include
-    LIBS = -L/c/mingw/gnuwin32/lib -lXpm -limpy -lpng -lgif
+    INCLUDEPATH = /usr/local/include
+    LIBS = -L/usr/local/lib -limpy -lpng -lgif
 # to make sure we don't compile a console app:
     CONFIG += windows
     RC_FILE = win32/evilpixie.rc

@@ -4,6 +4,7 @@
 #include "colours.h"
 #include "util.h"
 #include "exception.h"
+#include "global.h"
 
 #include <assert.h>
 #include <cstdio>
