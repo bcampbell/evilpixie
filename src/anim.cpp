@@ -221,7 +221,7 @@ static im_img* to_im_img( Img const& img, Palette const& pal )
         uint8_t tmp_palette[4*pal.NumColours()];
         int i;
         uint8_t* p = tmp_palette;
-        for( i=0; i<=pal.NumColours(); ++i )
+        for( i=0; i<pal.NumColours(); ++i )
         {
             Colour c = pal.GetColour(i);
             *p++ = c.r;
