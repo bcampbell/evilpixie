@@ -687,7 +687,7 @@ void EditorWindow::do_open()
 {
 //    if( !CheckZappingOK() )
 //        return;
-    QString loadfilters = "Image files (*.bpl *.bmp *.dcx *.gif *.ico *.iff *.ilbm *.lif *.mdl *.pcx *.png *.psd *.psp *.ras *.sun *.tga *.tif *.tiff *.tpl *.wal);;Any files (*)";
+    QString loadfilters = "Image files (*.anim *.bmp *.gif *.iff *.ilbm *.lbm *.pbm *.pcx *.png);;Any files (*)";
 
     std::string startdir = Proj().Filename();
     if( startdir.empty() )
@@ -764,7 +764,14 @@ void EditorWindow::do_saveas()
         startdir = DirName( startdir );
     }
 
-    QString savefilters = "Image files (*.bmp *.pcx *.gif *.png *.psd *.tga);;Any files (*)";
+    QString savefilters;
+  
+    if (Proj().NumFrames()>0) { 
+        savefilters = "Animated GIF (*.gif);;Any files (*)";
+    } else {
+        savefilters = "Image files (*.gif *.png);;Any files (*)";
+    }
+
     QString filename = QFileDialog::getSaveFileName(
                     this,
                     "Save image as",
