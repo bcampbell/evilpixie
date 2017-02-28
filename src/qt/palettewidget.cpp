@@ -139,7 +139,7 @@ void PaletteWidget::paintEvent(QPaintEvent *)
    	painter.drawRect( rect() );
 
     int n;
-    for( n=0; n<256; ++n )
+    for( n=0; n<m_Palette.NumColours(); ++n )
     {
         DrawCell( painter, n );
     }
