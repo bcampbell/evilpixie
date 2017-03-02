@@ -261,7 +261,7 @@ static RGBX8 checker2(int x,int y) {
 
 void EditView::DrawView( Box const& viewbox, Box* affectedview )
 {
-    // note: projbox can be outside the project boundary
+    // note: viewbox can be outside the project boundary
 
 //    Colour checkerboard[2] = { Colour(192,192,192), Colour(224,224,224) }; 
 
@@ -274,37 +274,57 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 
     // step x,y through view coords of the area to draw
     int y;
-    for(y=vb.YMin(); y<=vb.YMax(); ++y)
-    {
+//    int xmin = std::min(pbox.XMin(), vb.XMax()+1);
+    int xbegin = std::min(pbox.x, vb.x + vb.w);
+    int xend = std::min(pbox.x + pbox.w, vb.x + vb.w);
+    for(y=vb.YMin(); y<=vb.YMax(); ++y) {
         RGBX8* dest = m_Canvas->Ptr_RGBX8(vb.x,y);
         int x=vb.XMin();
 
         // scanline intersects canvas?
-        if(y>=pbox.YMin() && y<=pbox.YMax())
-        {
-            int xmin = std::min(pbox.XMin(), vb.XMax()+1);
-            int xmax = std::min(pbox.XMax(), vb.XMax());
-
-            // left of canvas
-            while(x<xmin)
-            {
+        if(y<pbox.YMin() || y>pbox.YMax()) {
+            // line is above or below the project
+            while(x<=vb.XMax()) {
                 *dest++ = checker2(x,y);
                 ++x;
             }
+            continue;
+        }
 
-            // on the canvas
+        // left of project canvas
+        while(x<xbegin) {
+            *dest++ = checker2(x,y);
+            ++x;
+        }
+
+        if(x<xend) {
+            // on the project canvas
             Point p( ViewToProj(Point(x,y)) );
-            switch( img.Fmt() )
-            {
+            switch( img.Fmt() ) {
+
             case FMT_I8:
                 {
+                    /*
+                    if( p.x<0) {
+                        printf("POOP:\n");
+                        printf("pbox: %d %d %d %d\n", pbox.x, pbox.y, pbox.w, pbox.h);
+                        printf("vb  : %d %d %d %d\n", vb.x, vb.y, vb.w, vb.h);
+                        printf("x,y : %d %d\n", x,y);
+                        printf("p.x,p.y : %d %d\n", p.x,p.y);
+                        printf("xbegin,xend : %d %d\n", xbegin,xend);
+                    }
+                    assert( p.x >=0);
+                    assert( p.x < img.W());
+                    assert( p.y < img.H());
+                    assert( p.y >=0);
+                    */
+                    //printf("%d\n",y);
                     I8 const* src = img.PtrConst_I8( p.x,p.y );
-                    while(x<=xmax)
-                    {
+                    while(x<xend) {
                         int cx = x + (m_Offset.x*m_XZoom);
                         int pixstop = x + (m_XZoom-(cx%m_XZoom));
-                        if(pixstop>xmax)
-                            pixstop=xmax+1;
+                        if(pixstop>xend)
+                            pixstop=xend;
                         RGBA8 c = Proj().PaletteConst().GetColour(*src++);
                         while(x<pixstop)
                         {
@@ -318,15 +338,13 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
             case FMT_RGBX8:
                 {
                     RGBX8 const* src = img.PtrConst_RGBX8( p.x,p.y );
-                    while(x<=xmax)
-                    {
+                    while(x<xend) {
                         int cx = x + (m_Offset.x*m_XZoom);
                         int pixstop = x + (m_XZoom-(cx%m_XZoom));
-                        if(pixstop>xmax)
-                            pixstop=xmax+1;
+                        if(pixstop>xend)
+                            pixstop=xend;
                         RGBX8 c = *src++;
-                        while(x<pixstop)
-                        {
+                        while(x<pixstop) {
                             *dest++ = c;
                             ++x;
                         }
@@ -336,15 +354,13 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
             case FMT_RGBA8:
                 {
                     RGBA8 const* src = img.PtrConst_RGBA8( p.x,p.y );
-                    while(x<=xmax)
-                    {
+                    while(x<xend) {
                         int cx = x + (m_Offset.x*m_XZoom);
                         int pixstop = x + (m_XZoom-(cx%m_XZoom));
-                        if(pixstop>xmax)
-                            pixstop=xmax+1;
+                        if(pixstop>xend)
+                            pixstop=xend;
                         RGBA8 c = *src++;
-                        while(x<pixstop)
-                        {
+                        while(x<pixstop) {
                             *dest++ = Blend(c,checker(x,y));
                             ++x;
                         }
@@ -356,9 +372,8 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
                 break;
             }
         }
-
-        // right of canvas (and above and below)
-        while(x<=vb.XMax())
+        // right of canvas
+        while(x < vb.x+vb.w)
         {
             *dest++ = checker2(x,y);
             ++x;
