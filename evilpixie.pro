@@ -10,7 +10,8 @@ win32 {
     RC_FILE = win32/evilpixie.rc
 }
 
-unix:LIBS = -lXpm -limpy -lpng -lgif
+unix:LIBS = -limpy -lpng -lgif
+
 #unix:LIBS = -L/usr/local/lib -lXpm -limpy
 
 
