@@ -2,7 +2,7 @@
 #define PALETTE_H
 
 #include "colours.h"
-
+#include <cassert>
 
 struct Palette
 {
@@ -16,7 +16,7 @@ public:
     Palette& operator=( const Palette& other );
 
     int NumColours() const {return NColours;}
-    Colour const& GetColour( int n ) const { return Colours[n]; }
+    Colour const& GetColour( int n ) const { assert(n<NColours); return Colours[n]; }
     void SetColour( int n, Colour const& c ) { Colours[n]=c; }
 
     void LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 );
