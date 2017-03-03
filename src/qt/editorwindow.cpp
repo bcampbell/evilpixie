@@ -465,29 +465,10 @@ void EditorWindow::useeyedroppertool()
 }
 
 void EditorWindow::nextColour()
-{
-    assert( false );
-    // TODO: implement!
-/*
-    int c = Proj().FGPen().i + 1;
-    if( c>255 )
-        return;
-    Proj().SetFGPen( c );
-*/
-}
+    { NextFGPen(); }
 
 void EditorWindow::prevColour()
-{
-    assert( false );
-    // TODO: implement!
-/*
-    assert(Proj().GetAnimConst().Fmt()==FMT_I8);
-    int c = Proj().FGPen().i -1;
-    if( c<0 )
-        return;
-    Proj().SetFGPen( c );
-*/
-}
+    { PrevFGPen(); }
 
 void EditorWindow::update_menu_states()
 {

@@ -57,6 +57,8 @@ public:
 	void SetFGPen( PenColour const& pen );
 	void SetBGPen( PenColour const& pen );
 
+    void NextFGPen();
+    void PrevFGPen();
 
     // -1 for custom brush, 0-3 for stdbrush
     void SetBrush( int n );

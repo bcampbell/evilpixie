@@ -169,6 +169,35 @@ void Editor::SetBGPen( PenColour const& pen )
 
 
 
+// advance the FG pen to the next palette index (if sane)
+void Editor::NextFGPen()
+{
+    if (!m_FGPen.IdxValid()) {
+        return;
+    }
+
+    Palette const& pal = Proj().PaletteConst();
+    int idx = m_FGPen.idx()+1;
+    if (idx<pal.NumColours()) {
+        SetFGPen( PenColour( pal.GetColour(idx), idx) );
+    }
+}
+
+// move the FG pen back a palette index (if sane)
+void Editor::PrevFGPen()
+{
+    if (!m_FGPen.IdxValid()) {
+        return;
+    }
+    Palette const& pal = Proj().PaletteConst();
+    int idx = m_FGPen.idx()-1;
+    if (idx>=0) {
+        SetFGPen( PenColour( pal.GetColour(idx), idx) );
+    }
+}
+
+
+
 // Adds a command to the undo stack, and calls its Do() fn
 void Editor::AddCmd( Cmd* cmd )
 {
