@@ -747,7 +747,7 @@ void EditorWindow::do_saveas()
 
     QString savefilters;
   
-    if (Proj().NumFrames()>0) { 
+    if (Proj().NumFrames()>1) { 
         savefilters = "Animated GIF (*.gif);;Any files (*)";
     } else {
         savefilters = "Image files (*.gif *.png);;Any files (*)";
