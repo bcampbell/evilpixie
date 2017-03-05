@@ -1,8 +1,8 @@
 #ifndef PROJECTLISTENER_H
 #define PROJECTLISTENER_H
 
-class Colour;
-class Box;
+struct Colour;
+struct Box;
 
 // base class for things that want to be informed of
 // changes to the Project.

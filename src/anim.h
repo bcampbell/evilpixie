@@ -6,7 +6,7 @@
 #include "colours.h"
 
 class Img;
-class Box;
+struct Box;
 
 class Anim
 {

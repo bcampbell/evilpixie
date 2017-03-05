@@ -4,7 +4,7 @@
 #include "colours.h"
 
 class Img;
-class Box;
+struct Box;
 class Point;
 struct Palette;
 
