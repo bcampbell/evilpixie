@@ -1042,7 +1042,7 @@ FilledCircleTool::FilledCircleTool( Editor& owner ) :
 
 FilledCircleTool::~FilledCircleTool()
 {
-    assert(m_Tx=0);
+    assert(m_Tx==0);
 }
 
 
