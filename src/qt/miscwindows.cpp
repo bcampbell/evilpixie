@@ -1,5 +1,6 @@
 #include "miscwindows.h"
-#include "../global.h"
+#include "../app.h"
+#include "../util.h"
 #include <QFile>
 #include <QString>
 #include <QtWidgets/QTextEdit>
@@ -13,7 +14,7 @@ HelpWindow::HelpWindow()
     QTextEdit* content = new QTextEdit();
     content->setReadOnly(true);
     {
-        QFile file( EVILPIXIE_DATA_DIR "/help.html");
+        QFile file( JoinPath(g_App->DataPath(), "help.html").c_str() );
         if(file.open(QIODevice::ReadOnly | QIODevice::Text))
         {
             QString help_txt;

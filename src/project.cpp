@@ -1,5 +1,6 @@
 #include "project.h"
 #include "projectlistener.h"
+#include "app.h"
 #include "draw.h"
 #include "colours.h"
 #include "util.h"
@@ -26,7 +27,7 @@ Project::Project() :
     int w = 128;
     int h = 128;
 
-    Palette* tmp = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
+    Palette* tmp = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
     m_Anim.SetPalette(*tmp);
     delete tmp;
     m_Anim.Append(new Img(FMT_I8,w,h));
@@ -38,8 +39,9 @@ Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frame
     m_Modified( false )
 {
     assert(num_frames>=1);
-    if(!palette)
-        palette = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
+    if(!palette) {
+        palette = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
+    }
     m_Anim.SetPalette(*palette);
     delete palette;
     int i;

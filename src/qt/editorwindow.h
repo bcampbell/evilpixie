@@ -50,9 +50,10 @@ signals:
     void right_clicked();
 
 protected:
-     void paintEvent(QPaintEvent *event);
-     void mousePressEvent(QMouseEvent *event);
+    void paintEvent(QPaintEvent *event);
+    void mousePressEvent(QMouseEvent *event);
 private:
+
     QColor m_FG;
     QColor m_BG;
 };

@@ -47,7 +47,6 @@
 
 #include <unistd.h>
 
-#define ICONDIR EVILPIXIE_DATA_DIR "/icons"
 
 
 
@@ -107,8 +106,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         int i;
         for( i=0;i<MOUSESTYLE_NUM; ++i )
             m_MouseCursors[i]=0;
-        m_MouseCursors[MOUSESTYLE_CROSSHAIR] = new QCursor( QPixmap( ICONDIR "/cursor_crosshair.png" ),15,15 );
-        m_MouseCursors[MOUSESTYLE_EYEDROPPER] = new QCursor( QPixmap( ICONDIR "/cursor_eyedropper.png" ),9,22 );
+        m_MouseCursors[MOUSESTYLE_CROSSHAIR] = new QCursor( QPixmap( JoinPath(g_App->DataPath(), "icons/cursor_crosshair.png").c_str() ),15,15 );
+        m_MouseCursors[MOUSESTYLE_EYEDROPPER] = new QCursor( QPixmap( JoinPath(g_App->DataPath(), "icons/cursor_eyedropper.png").c_str() ),9,22 );
         assert( MOUSESTYLE_NUM==2 );
     }
 
@@ -169,9 +168,6 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         m_PaletteWidget = new PaletteWidget(Proj().PaletteConst());
         connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
         connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
-//            QIcon icon;
-//        icon.addFile( ICONDIR "/penciltool.png", QSize(), QIcon::Normal, QIcon::Off );
-//        m_ColourTab->addTab(m_PaletteWidget, icon, "");
         m_ColourTab->addTab(m_PaletteWidget, "Palette");
         }
 
@@ -242,24 +238,25 @@ QLayout* EditorWindow::CreateToolButtons()
         QString tooltip;
         QKeySequence shortcut;
      } inf[] = {
-        { TOOL_PENCIL, ICONDIR "/penciltool.png", tr("Draw"), QKeySequence("d") },
-        { TOOL_LINE, ICONDIR "/linetool.png", tr("Line"), QKeySequence("l")},
-        { TOOL_BRUSH_PICKUP, ICONDIR "/brushpickuptool.png", tr("Pick up brush"), QKeySequence("b")},
-        { TOOL_FLOODFILL, ICONDIR "/filltool.png", tr("Flood Fill"), QKeySequence("f")},
-        { TOOL_RECT, ICONDIR "/recttool.png", tr("Rectangle"), QKeySequence("r")},
-        { TOOL_FILLEDRECT, ICONDIR "/filledrecttool.png", tr("Filled Rectangle"), QKeySequence("shift+r")},
-        { TOOL_CIRCLE, ICONDIR "/circletool.png", tr("Circle"), QKeySequence("c")},
-        { TOOL_FILLEDCIRCLE, ICONDIR "/filledcircletool.png", tr("Filled Circle"), QKeySequence("shift+c")},
-        { TOOL_EYEDROPPER, ICONDIR "/eyedroppertool.png", tr("Pick up colour"), QKeySequence(",")},
+        { TOOL_PENCIL, "penciltool.png", tr("Draw"), QKeySequence("d") },
+        { TOOL_LINE, "linetool.png", tr("Line"), QKeySequence("l")},
+        { TOOL_BRUSH_PICKUP, "brushpickuptool.png", tr("Pick up brush"), QKeySequence("b")},
+        { TOOL_FLOODFILL, "filltool.png", tr("Flood Fill"), QKeySequence("f")},
+        { TOOL_RECT, "recttool.png", tr("Rectangle"), QKeySequence("r")},
+        { TOOL_FILLEDRECT, "filledrecttool.png", tr("Filled Rectangle"), QKeySequence("shift+r")},
+        { TOOL_CIRCLE, "circletool.png", tr("Circle"), QKeySequence("c")},
+        { TOOL_FILLEDCIRCLE, "filledcircletool.png", tr("Filled Circle"), QKeySequence("shift+c")},
+        { TOOL_EYEDROPPER, "eyedroppertool.png", tr("Pick up colour"), QKeySequence(",")},
     };
     const int n = sizeof(inf) / sizeof(inf[0]);
+
+    std::string iconDir( JoinPath(g_App->DataPath(), "icons"));
 
     int i;
     for( i=0; i<n; ++i )
     {
         QIcon icon;
-        icon.addFile( inf[i].icon, QSize(), QIcon::Normal, QIcon::Off );
-//            icon.addFile( ICONDIR "/linetool.xpm", QSize(), QIcon::Normal, QIcon::On );
+        icon.addFile( JoinPath(iconDir, inf[i].icon).c_str(), QSize(), QIcon::Normal, QIcon::Off );
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
@@ -295,20 +292,21 @@ QLayout* EditorWindow::CreateBrushButtons()
         const char* icon;
         QKeySequence shortcut;
      } inf[] = {
-        { 0, ICONDIR "/brush1.xpm",QKeySequence(".") },
-        { 1, ICONDIR "/brush2.xpm",QKeySequence() },
-        { 2, ICONDIR "/brush3.xpm",QKeySequence() },
-        { 3, ICONDIR "/brush4.xpm",QKeySequence() },
-        { -1, ICONDIR "/brushcustom.png",QKeySequence("shift+B") },
+        { 0, "brush1.xpm",QKeySequence(".") },
+        { 1, "brush2.xpm",QKeySequence() },
+        { 2, "brush3.xpm",QKeySequence() },
+        { 3, "brush4.xpm",QKeySequence() },
+        { -1, "brushcustom.png",QKeySequence("shift+B") },
     };
     const int n = sizeof(inf) / sizeof(inf[0]);
+
+    std::string iconDir( JoinPath(g_App->DataPath(), "icons"));
 
     int i;
     for( i=0; i<n; ++i )
     {
         QIcon icon;
-        icon.addFile( inf[i].icon, QSize(), QIcon::Normal, QIcon::Off );
-//            icon.addFile( ICONDIR "/linetool.xpm", QSize(), QIcon::Normal, QIcon::On );
+        icon.addFile( JoinPath(iconDir, inf[i].icon).c_str(), QSize(), QIcon::Normal, QIcon::Off );
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
@@ -534,7 +532,7 @@ void EditorWindow::do_new()
     if( dlg.exec() == QDialog::Accepted )
     {
         QSize sz = dlg.GetSize();
-        Palette* pal = Palette::Load( EVILPIXIE_DATA_DIR "/default.gpl");
+        Palette* pal = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
         if( dlg.pixel_format == FMT_I8)
             pal->SetNumColours(dlg.num_colours);
         else
