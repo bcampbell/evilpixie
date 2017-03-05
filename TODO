@@ -1,7 +1,14 @@
-TODO
-====
+next release:
 
-BUG: tool.cpp:57 assert triggers if painting while changing frames.
+(FIXED) BUG: tool.cpp:57 assert triggers if painting while changing frames.
+OSX - load data from bundle
+OSX - bundling, icon
+bump up version number
+
+
+
+Later:
+
 BUG: titlebar doesn't update upon to/from spritesheet
 better colour picking in rgba mode
 show image type in titlebar/statusbar
@@ -11,22 +18,16 @@ add palette edits to the undo/redo stack
 misc:
 
 - brush rotate (by 90 degrees)
-- (DONE) BUG: XFLip/YFlip assert if used on rgb image?
-- BUG: crap error messages on bad file load
-
-Later:
-
+- (FIXED) BUG: XFLip/YFlip assert if used on rgb image?
+- (FIXED) BUG: crap error messages on bad file load
 - circle tools
     - modifier key for 1:1 ratio? or separate ellipse/circle tools?
 - status bar - show zoom, mousepos, tool info (eg rectangle dimensions)
 - grid config tool
 - brush pickup, rect tool - should exclude right and bottom edge if grid on
   (optional)
-- BUG: TGA load flips image
 - BUG: palette spread not 100% correct (off-by-one-error somewhere?)
 
-LATER
-=====
 
 - paletteeditor
     - hold ctrl to copy colours?
@@ -40,7 +41,6 @@ LATER
     - method to pick colours from image or current pen (on rgb images,
        pen isn't necessarily from the palette)
 - brush flip (X and Y)
-- support palettes with <256 colours
 - palette animation (colour cycling)
 - fileformat save options (eg png transparent colour)
 - animation
@@ -55,28 +55,4 @@ LATER
   - ds formats?
 - layers
 
-
-DevIL issues
-------------
-
-DOC: ilSetPixels description refers to ilCopyPixels by mistake.
-
-ilTexImage creates IL_ORIGIN_LOWER_LEFT images. No way to change this from
-public API.
-
-No gif saving.
-
-No way to get supported load/save formats at runtime.
-No way to figure out which formats support animation
-No way to figure out which formats support indexed images
-
-Colour key setting is per format (one for png, another for gif)
-
-ilRegisterPal name is misleading (not really part of register fns).
-Should be ilSetPal() or something.
-
-ilRegister* fns are supposed to be for use by file format extensions...
-
-IFF loading: unify frontend for ILBM and CIMG because they share .iff
-filename extension
 
