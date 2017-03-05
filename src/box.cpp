@@ -1,5 +1,6 @@
 #include "box.h"
 #include <algorithm>    // for min,max
+#include <cstdlib>      // for std::abs
 
 Box::Box( Point const& p1, Point const& p2 ) :
     x( std::min(p1.x, p2.x) ),

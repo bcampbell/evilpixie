@@ -9,6 +9,7 @@
 #include "brush.h"
 
 #include <algorithm>    // for min,max
+#include <cstdlib>      // for std::abs
 #include <vector>
 
 #include <cstdio>
