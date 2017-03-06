@@ -94,7 +94,7 @@ Palette* Palette::Load( const char* filename )
     Palette* palette = new Palette();
     FILE* fp = fopen( filename, "rb" );
     if( !fp )
-        throw Exception( "fopen failed" );
+        throw Exception( "couldn't open %s",filename );
     try
     {
         LoadGimpPalette(fp,*palette);

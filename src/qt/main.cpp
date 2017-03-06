@@ -5,22 +5,16 @@
 int main(int argc, char *argv[])
 {
 
-#if 0
-    Anim a;
-    try
-    {
-        a.Load("examples/favicon.gif");
-    }
-    catch( Exception e )
-    {
-        printf("ERROR: %s\n",e.what());
-    }
-    return 0;
-#endif
-    QTApp app;
+    try {
+        QTApp app;
 
 
-    int ret = app.Run( argc, argv );
-    return ret;
+        int ret = app.Run( argc, argv );
+        return ret;
+    }
+    catch (Exception& e) {
+        fprintf(stderr,"ERROR: %s\n", e.what());
+        return 1;
+    }
 }
 
