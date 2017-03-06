@@ -2,6 +2,8 @@
 #include "../anim.h"
 #include "../exception.h"
 
+#include <cstdio>
+
 int main(int argc, char *argv[])
 {
 
