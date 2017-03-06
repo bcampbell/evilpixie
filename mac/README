@@ -1,0 +1,10 @@
+Extra gubbins required for doing a mac build.
+
+rough build steps:
+
+ qmake-generated makefile creates basic bundle structure
+ run macdeployqt upon bundle to copy in the Qt frameworks
+ copy in the Info.plist from here
+ TODO: icons
+ TODO: app signing
+
