@@ -14,6 +14,10 @@ unix:LIBS = -limpy -lpng -lgif
 
 #unix:LIBS = -L/usr/local/lib -lXpm -limpy
 
+mac {
+  OBJECTIVE_SOURCES += src/macpaths.m
+  LIBS += -framework Foundation
+}
 
 SOURCES += src/anim.cpp \
     src/app.cpp \
@@ -74,13 +78,13 @@ HEADERS += src/anim.h \
     src/qt/guistuff.h \
     src/qt/spritesheetdialogs.h
 
+
 !win32 {
     isEmpty( PREFIX ) {
       PREFIX = /usr/local
     }
 
-    DATA_DIR = $${PREFIX}/share
-    EVILPIXIE_DATA_DIR = $${DATA_DIR}/$${TARGET}
+    EVILPIXIE_DATA_DIR = $${PREFIX}/share/$${TARGET}
     DEFINES += EVILPIXIE_DATA_DIR=\\\"$${EVILPIXIE_DATA_DIR}\\\"
 
     datafiles.files = data/help.html data/default.gpl data/examples data/icons

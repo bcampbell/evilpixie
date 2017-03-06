@@ -38,6 +38,8 @@ private:
     Brush* m_StdBrushes[NUM_STD_BRUSHES];
 
     std::string m_DataPath;
+
+    void SetupPaths();
 };
 
 
