@@ -4,6 +4,10 @@
 #include "brush.h"
 //#include "project.h"
 
+#if __APPLE__
+#include "exception.h"
+#endif
+
 #include <cassert>
 #include <stdint.h>
 #include <cstdio>
@@ -76,8 +80,10 @@ void App::SetCustomBrush( Brush* b )
 // mac (including ios, but shouldn't be an issue)
 
 // in src/macpaths.m
-extern bool bundle_path(char* buf, size_t bufsize);
-extern bool app_support_path( char * buf, size_t bufsize );
+extern "C" {
+    extern bool bundle_path(char* buf, size_t bufsize);
+    extern bool app_support_path( char * buf, size_t bufsize );
+}
 
 void App::SetupPaths()
 {

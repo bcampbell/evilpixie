@@ -2,17 +2,14 @@ TARGET = evilpixie
 CONFIG += qt release
 QT += widgets
 
+INCLUDEPATH = /usr/local/include
+LIBS = -L /usr/local/lib -limpy -lpng -lgif
+
 win32 {
-    INCLUDEPATH = /usr/local/include
-    LIBS = -L/usr/local/lib -limpy -lpng -lgif
 # to make sure we don't compile a console app:
     CONFIG += windows
     RC_FILE = win32/evilpixie.rc
 }
-
-unix:LIBS = -limpy -lpng -lgif
-
-#unix:LIBS = -L/usr/local/lib -lXpm -limpy
 
 mac {
   OBJECTIVE_SOURCES += src/macpaths.m
