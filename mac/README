@@ -1,10 +1,6 @@
 Extra gubbins required for doing a mac build.
 
-rough build steps:
+build.sh should do the trick...
 
- qmake-generated makefile creates basic bundle structure
- run macdeployqt upon bundle to copy in the Qt frameworks
- copy in the Info.plist from here
- TODO: icons
- TODO: app signing
+TODO: app signing
 

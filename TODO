@@ -1,11 +1,12 @@
 next release:
 
-(FIXED) BUG: tool.cpp:57 assert triggers if painting while changing frames.
-OSX - load data from bundle
-OSX - bundling, icon
+x BUG: tool.cpp:57 assert triggers if painting while changing frames.
+x OSX - load data from bundle
+x OSX - bundling, icon
 bump up version number
-
-
+figure out how to force qmake to do a release build from commandline
+changelog
+update website
 
 Later:
 
