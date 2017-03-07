@@ -10,7 +10,7 @@
 
 HelpWindow::HelpWindow()
 {
-    resize( 400,400);
+    resize( 600,500);
     QTextEdit* content = new QTextEdit();
     content->setReadOnly(true);
     {
@@ -38,11 +38,11 @@ HelpWindow::HelpWindow()
 AboutBox::AboutBox(QWidget* parent) :
     QDialog(parent)
 {
-    resize( 400,250);
+    resize( 500,300);
     QTextEdit* content = new QTextEdit();
     content->setReadOnly(true);
     QString txt = "<h1>Evilpixie</h1>"
-        "version 0.1<br/><br/>"
+        "version 0.2<br/><br/>"
         "By Ben Campbell (ben@scumways.com)<br/><br/>"
         "Licensed under GPLv3<br/>"
         "Homepage: <a href=\"http://evilpixie.scumways.com\">http://evilpixie.scumways.com</a><br/>"
