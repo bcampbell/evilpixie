@@ -8,6 +8,7 @@
 
 #include <QtWidgets/QtWidgets>
 #include <QtWidgets/QWidget>
+#include <QStandardPaths>
 #include <QIcon>
 #include <QColor>
 
@@ -139,6 +140,7 @@ private:
     QMenuBar* CreateMenuBar();
     void CreateActions();
 
+    QString ProjDir();
 
     QAbstractButton* FindButton( QButtonGroup* grp, const char* propname, QVariant const& val );
 

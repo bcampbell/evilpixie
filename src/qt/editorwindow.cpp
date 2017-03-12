@@ -24,6 +24,7 @@
 #include <QtWidgets/QWidget>
 
 #include <QPainter>
+#include <QDir>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QPushButton>
@@ -644,7 +645,7 @@ void EditorWindow::do_loadpalette()
     QString filename = QFileDialog::getOpenFileName(
                     this,
                     "Choose a file",
-                    "",
+                    ProjDir(),
                     "GIMP Palette files (*.gpl)");
     if( filename.isNull() )
         return;
@@ -662,28 +663,23 @@ void EditorWindow::do_loadpalette()
 }
 
 
+QString EditorWindow::ProjDir()
+{
+    std::string d = Proj().Filename();
+    return d.empty() ? QDir::homePath() : QString(DirName(d).c_str());
+}
+
+
 void EditorWindow::do_open()
 {
 //    if( !CheckZappingOK() )
 //        return;
     QString loadfilters = "Image files (*.anim *.bmp *.gif *.iff *.ilbm *.lbm *.pbm *.pcx *.png);;Any files (*)";
 
-    std::string startdir = Proj().Filename();
-    if( startdir.empty() )
-    {
-        char cwd[512];
-        getcwd( cwd, sizeof(cwd) );
-        startdir = cwd;
-    }
-    else
-    {
-        startdir = DirName( startdir );
-    }
-
     QString filename = QFileDialog::getOpenFileName(
                     this,
                     "Choose a file",
-                    startdir.c_str(),  loadfilters );
+                    ProjDir(),  loadfilters );
     if( filename.isNull() )
         return;
 
@@ -731,17 +727,6 @@ void EditorWindow::do_save()
 
 void EditorWindow::do_saveas()
 {
-    std::string startdir = Proj().Filename();
-    if( startdir.empty() )
-    {
-        char cwd[512];
-        getcwd( cwd, sizeof(cwd) );
-        startdir = cwd;
-    }
-    else
-    {
-        startdir = DirName( startdir );
-    }
 
     QString savefilters;
   
@@ -754,7 +739,7 @@ void EditorWindow::do_saveas()
     QString filename = QFileDialog::getSaveFileName(
                     this,
                     "Save image as",
-                    startdir.c_str(),
+                    ProjDir(),
                     savefilters);
 
     if( filename.isNull() )
