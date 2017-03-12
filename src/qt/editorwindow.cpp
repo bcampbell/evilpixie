@@ -211,6 +211,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
 
     RethinkWindowTitle();
 
+    setAcceptDrops(true);
     show();
 }
 
@@ -991,6 +992,41 @@ void EditorWindow::closeEvent(QCloseEvent *event)
 void EditorWindow::SetMouseStyle( MouseStyle s )
 {
     m_ViewWidget->setCursor( *m_MouseCursors[s] );
+}
+
+
+
+
+void EditorWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
+    }
+}
+
+void EditorWindow::dropEvent(QDropEvent *e)
+{
+    foreach (const QUrl &url, e->mimeData()->urls()) {
+        try {
+            QString fileName = url.toLocalFile();
+            if (!url.isLocalFile()) {
+                throw Exception("Not a local file");
+            }
+
+
+            Project* new_proj = new Project(fileName.toStdString());
+            EditorWindow* fenster = new EditorWindow(new_proj);
+            fenster->show();
+            fenster->activateWindow();
+            fenster->raise();
+
+            if( Proj().Expendable() )
+                this->close();
+
+        } catch( Exception const& e ) {
+            GUIShowError( e.what() );
+        }
+    }
 }
 
 

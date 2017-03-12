@@ -87,7 +87,10 @@ public:
     virtual void OnFramesAdded(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
     virtual void OnFramesRemoved(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
 
-    void closeEvent(QCloseEvent *event);
+    // Qt widget overrides
+    virtual void closeEvent(QCloseEvent *event);
+    virtual void dragEnterEvent(QDragEnterEvent *e);
+    virtual void dropEvent(QDropEvent *e);
 public slots:
     void toolclicked( QAbstractButton* b );
     void brushclicked( QAbstractButton* b );
