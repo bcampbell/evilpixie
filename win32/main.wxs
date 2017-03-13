@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" UpgradeCode="B5F30DE4-FBBC-4300-87C4-D77DCD266884" 
+      Name="Evilpixie" Version="0.0.1" Manufacturer="scumways.com" Language="1033">
+    <Package InstallerVersion="200" Compressed="yes" Comments="Windows Installer Package"/>
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder" Name="PFiles">
+        <Directory Id="INSTALLDIR" Name="Evilpixie">
+            <Directory Id="data" Name="data" />
+            <Directory Id="iconengines" Name="iconengines" />
+            <Directory Id="imageformats" Name="imageformats" />
+            <Directory Id="platforms" Name="platforms" />
+        </Directory>
+      </Directory>
+
+    </Directory>
+
+    <Feature Id="DefaultFeature" Level="1">
+      <ComponentGroupRef Id="grp_data" />
+    </Feature>
+  </Product>
+</Wix>
+
