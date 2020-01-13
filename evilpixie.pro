@@ -3,7 +3,7 @@ CONFIG += qt release
 QT += widgets
 
 INCLUDEPATH = /usr/local/include
-LIBS = -L /usr/local/lib -limpy -lpng -lgif
+LIBS = -L /usr/local/lib -limpy -lpng -lgif -ljpeg
 
 win32 {
 # to make sure we don't compile a console app:
