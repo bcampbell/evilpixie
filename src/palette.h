@@ -20,6 +20,7 @@ public:
     void SetColour( int n, Colour const& c ) { Colours[n]=c; }
 
     void LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 );
+    void SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 );
 
     static Palette* Load(const char* filename);
 

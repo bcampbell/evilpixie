@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "colours.h"
+#include "hsv.h"
 #include "util.h"
 #include "exception.h"
 #include <string>
@@ -85,6 +86,47 @@ void Palette::LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 )
         c.b = c0.b + ((c1.b-c0.b)*t)/S;
         c.a = c0.a + ((c1.a-c0.a)*t)/S;
     }
+}
+
+void Palette::SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 )
+{
+    if( n0==n1 )
+        return;
+    float h0,s0,v0,a0;
+    float h1,s1,v1,a1;
+
+    a0 = (float)(c0.a)/255.0f;
+    RGBToHSV((float)(c0.r)/255.0f,
+             (float)(c0.g)/255.0f,
+             (float)(c0.b)/255.0f,
+             h0, s0, v0);
+
+    a1 = (float)(c1.a)/255.0f;
+    RGBToHSV((float)(c1.r)/255.0f,
+             (float)(c1.g)/255.0f,
+             (float)(c1.b)/255.0f,
+             h1, s1, v1);
+ 
+    int n;
+    Colours[n0] = c0;
+    // Skip start/end slots - we set them precisely.
+    for( n=n0+1; n<n1; ++n ) {
+        float t = (float)(n-n0) / (float)(n1-n0);
+        float inv = 1.0f-t;
+        float h = h0*inv + h1*t;
+        float s = s0*inv+ s1*t;
+        float v = v0*inv + v1*t;
+        float a = a0*inv + a1*t;
+
+        float r, g, b;
+        HSVToRGB(h, s, v, r, g, b);
+        Colour& c = Colours[n];
+        c.r = (uint8_t)(r*255.0f);
+        c.g = (uint8_t)(g*255.0f);
+        c.b = (uint8_t)(b*255.0f);
+        c.a = (uint8_t)(a*255.0f);
+    }
+    Colours[n1] = c1;
 }
 
 

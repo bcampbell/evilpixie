@@ -200,7 +200,7 @@ void PaletteEditor::spreadColours()
     int n0 = m_PaletteWidget->RangeFirst();
     int n1 = m_PaletteWidget->RangeLast();
 
-    newpalette.LerpRange( n0, newpalette.GetColour(n0), n1, newpalette.GetColour(n1) );
+    newpalette.SpreadHSV( n0, newpalette.GetColour(n0), n1, newpalette.GetColour(n1) );
 
     Cmd* cmd = new Cmd_PaletteModify(m_Proj, n0, n1-n0, &newpalette.Colours[n0]);
     m_Ed.AddCmd(cmd);
