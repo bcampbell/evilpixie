@@ -26,6 +26,7 @@ SOURCES += src/anim.cpp \
     src/draw_blitzoom.cpp \
     src/editor.cpp \
     src/editview.cpp \
+    src/hsv.cpp \
     src/img.cpp \
     src/palette.cpp \
     src/project.cpp \
@@ -35,6 +36,7 @@ SOURCES += src/anim.cpp \
     src/util.cpp \
     src/qt/editorwindow.cpp \
     src/qt/editviewwidget.cpp \
+    src/qt/hsvwidget.cpp \
     src/qt/palettewidget.cpp \
     src/qt/paletteeditor.cpp \
     src/qt/miscwindows.cpp \
@@ -56,6 +58,7 @@ HEADERS += src/anim.h \
     src/editor.h \
     src/editview.h \
     src/global.h \
+    src/hsv.h \
     src/img.h \
     src/palette.h \
     src/point.h \
@@ -64,6 +67,7 @@ HEADERS += src/anim.h \
     src/util.h \
     src/exception.h \
     src/qt/editorwindow.h \
+    src/qt/hsvwidget.h \
     src/qt/palettewidget.h \
     src/qt/paletteeditor.h \
     src/qt/miscwindows.h \

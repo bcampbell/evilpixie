@@ -6,6 +6,7 @@
 
 class PaletteWidget;
 class RGBWidget;
+class HSVWidget;
 class Project;
 class Editor;
 class QPushButton;
@@ -30,11 +31,17 @@ private:
     Project& m_Proj;
     int m_Selected;
 
+    bool m_Applying;    // Latch to prevent feedback during edits.
+
     PaletteWidget* m_PaletteWidget;
     RGBWidget* m_RGBWidget;
+    HSVWidget* m_HSVWidget;
     QPushButton *m_SpreadButton;
+    void showColour(Colour const& c);
+    void applyEdit(Colour const &c);
 private slots:
-    void colourChanged();
+    void rgbChanged();
+    void hsvChanged();
     void paletteRangeAltered();
     void spreadColours();
 };

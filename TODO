@@ -28,7 +28,7 @@ misc:
 - brush pickup, rect tool - should exclude right and bottom edge if grid on
   (optional)
 - BUG: palette spread not 100% correct (off-by-one-error somewhere?)
-
+- BUG: "use brush palette" asserts if dest image has less colours
 
 - paletteeditor
     - hold ctrl to copy colours?

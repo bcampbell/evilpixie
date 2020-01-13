@@ -8,7 +8,7 @@ class QSlider;
 class QLabel;
 
 
-// RGB-twiddling widget, with slider bars for RGB components.
+// RGB-twiddling widget, with slider bars for RGB+alpha components.
 class RGBWidget : public QWidget
 {
     Q_OBJECT
@@ -21,7 +21,6 @@ public:
 
 signals:
     void colourChanged();
-
 private:
     QSlider* m_Sliders[4];
     QLabel* m_Labels[4];
@@ -30,6 +29,7 @@ private slots:
     void greenChanged(int);
     void blueChanged(int);
     void alphaChanged(int);
+
 };
 
 #endif // RGBWIDGET_H

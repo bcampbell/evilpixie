@@ -83,7 +83,6 @@ typedef uint8_t I8;
 
 
 // higher-level colour handling:
-// TODO: rename to Colour or something
 struct Colour
 {
     Colour(uint8_t red=0, uint8_t green=0, uint8_t blue=0, uint8_t alpha=255 ) :

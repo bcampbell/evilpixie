@@ -8,7 +8,7 @@
 RGBWidget::RGBWidget( QWidget* parent ) :
     QWidget(parent)
 {
-    const char* nm[4] = { "red","green","blue","alpha" };
+    const char* nm[4] = { "R","G","B","A" };
     QGridLayout *l = new QGridLayout();
     int i;
     for( i=0; i<4; ++i )
