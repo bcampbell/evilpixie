@@ -1,6 +1,7 @@
 #include "../global.h"
 #include "../project.h"
 #include "../brush.h"
+#include "../scale2x.h"
 #include "../util.h"
 #include "../exception.h"
 #include "../cmd.h"
@@ -478,6 +479,10 @@ void EditorWindow::update_menu_states()
     m_ActionGridOnOff->setChecked( GridActive() );
     m_ActionUseBrushPalette->setEnabled( GetBrush() == -1 );
 
+    // custom brush, and indexed?
+    m_ActionScale2xBrush->setEnabled(
+        GetBrush() == -1 && CurrentBrush().Fmt() == FMT_I8);
+
     int nframes= Proj().GetAnim().NumFrames();
     m_ActionZapFrame->setEnabled(nframes>1);
     m_ActionNextFrame->setEnabled(nframes>1);
@@ -580,6 +585,31 @@ void EditorWindow::do_yflipbrush()
     ShowToolCursor();
 }
 
+void EditorWindow::do_scale2xbrush()
+{
+    if (GetBrush() != -1)
+        return; // std brush - do nothing
+    if (CurrentBrush().Fmt() != FMT_I8) {
+        return;
+    }
+    HideToolCursor();
+
+    Brush& oldBrush = CurrentBrush();
+    Img* tmpImg = DoScale2x(oldBrush);
+
+    Brush* newBrush = new Brush(oldBrush.Style(),
+           *tmpImg,
+           tmpImg->Bounds(),
+           oldBrush.TransparentColour());
+    newBrush->SetHandle(oldBrush.Handle() * 2.0f);
+    newBrush->SetPalette(oldBrush.GetPalette());
+
+    // UGH!
+    g_App->SetCustomBrush( newBrush );
+    SetBrush( -1 );
+    delete tmpImg;
+    ShowToolCursor();
+}
 
 void EditorWindow::do_addframe()
 {
@@ -835,6 +865,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addSeparator();
         m->addAction( "X-Flip Brush", this, SLOT(do_xflipbrush()),QKeySequence("x") );
         m->addAction( "Y-Flip Brush", this, SLOT(do_yflipbrush()),QKeySequence("y") );
+        m_ActionScale2xBrush = m->addAction( "Scale2x Brush", this, SLOT(do_scale2xbrush()));
         m->addSeparator();
 
 

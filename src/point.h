@@ -16,10 +16,13 @@ public:
 		{ x+=other.x; y+=other.y; return *this; }
 	Point& operator-=( Point const& other )
 		{ x-=other.x; y-=other.y; return *this; }
+	Point& operator*=(float scale)
+		{ x *= scale; y *= scale; return *this; }
 
 	friend Point operator+( Point const& a, Point const& b );
 	friend Point operator-( Point const& a, Point const& b );
 	friend Point operator-( Point const& a );
+	friend Point operator*(Point const& a, float scale);
 };
 
 
@@ -31,6 +34,9 @@ inline Point operator-( Point const& a, Point const& b )
 
 inline Point operator-( Point const& a )
 	{ return Point(-a.x, -a.y); }
+
+inline Point operator*(Point const& a, float scale)
+	{ return Point(a.x * scale, a.y * scale); }
 
 #endif // POINT_H
 

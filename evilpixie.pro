@@ -30,6 +30,7 @@ SOURCES += src/anim.cpp \
     src/img.cpp \
     src/palette.cpp \
     src/project.cpp \
+    src/scale2x.cpp \
     src/sheet.cpp \
     src/tool.cpp \
     src/exception.cpp \
@@ -63,6 +64,8 @@ HEADERS += src/anim.h \
     src/palette.h \
     src/point.h \
     src/project.h \
+    src/scale2x.h \
+    src/sheet.h \
     src/tool.h \
     src/util.h \
     src/exception.h \
