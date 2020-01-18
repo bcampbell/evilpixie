@@ -1,5 +1,5 @@
 TARGET = evilpixie
-CONFIG += qt release
+CONFIG += qt debug
 QT += widgets
 
 INCLUDEPATH = /usr/local/include
