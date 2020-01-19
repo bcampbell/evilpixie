@@ -119,7 +119,9 @@ struct Colour
         { RGBA8 tmp; tmp.r=r; tmp.g=g; tmp.b=b; tmp.a=a; return tmp; }
 };
 
-inline bool operator==(const Colour& a, const Colour& b){ return a.r==b.r && a.g==b.g && a.b==b.b &&a.a==b.a; } 
+inline bool operator==(const Colour& a, const Colour& b) { return a.r==b.r && a.g==b.g && a.b==b.b &&a.a==b.a; } 
+inline bool operator!=(const Colour& a, const Colour& b) { return !(a == b);}
+
 
 inline Colour Lerp(Colour const& a, Colour const& b, float t)
 {
@@ -132,6 +134,7 @@ inline Colour Lerp(Colour const& a, Colour const& b, float t)
         (int)(a.a*inv + b.a*t));
 }
 
+bool ParseHexColour(const char* in, Colour& out);
 
 
 // a colour value to pass into drawing functions, which can cope with

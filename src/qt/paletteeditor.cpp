@@ -14,7 +14,8 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTabWidget>
-
+#include <QLineEdit>
+#include <QFontDatabase>
 
 PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
     QDialog( parent ),
@@ -23,24 +24,29 @@ PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
     m_Selected( 1 ),
     m_Applying(false)
 {
+    m_HexEntry = new QLineEdit();
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    m_HexEntry->setFont(fixedFont);
     m_RGBWidget = new RGBWidget();
     m_HSVWidget = new HSVWidget();
     m_PaletteWidget = new PaletteWidget(m_Proj.PaletteConst());
     m_PaletteWidget->EnableRangePicking( true );
+    m_SpreadButton = new QPushButton("Spread");
+
     resize( QSize(500,400) );
 
     QHBoxLayout* h = new QHBoxLayout();
         QVBoxLayout* v = new QVBoxLayout();
-        m_SpreadButton = new QPushButton("Spread");
-
         QTabWidget* tab = new QTabWidget(this);
         tab->setTabShape(QTabWidget::Triangular);
         tab->setTabPosition(QTabWidget::South);
         tab->setDocumentMode(true);
         tab->addTab(m_RGBWidget, "RGB");
         tab->addTab(m_HSVWidget, "HSV");
+
+        v->addWidget(m_HexEntry);
         v->addWidget(tab);
-        v->addWidget( m_SpreadButton );
+        v->addWidget(m_SpreadButton);
     h->addLayout( v );
     h->setStretchFactor(v,0);
     h->addWidget( m_PaletteWidget );
@@ -51,15 +57,17 @@ PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
         Colour c( m_Proj.GetColour( m_Selected ) );
         showColour(c);
     }
-    connect( m_RGBWidget, SIGNAL( colourChanged() ), this, SLOT( rgbChanged() ) );
-    connect( m_HSVWidget, SIGNAL( colourChanged() ), this, SLOT( hsvChanged() ) );
-    connect( m_PaletteWidget, SIGNAL( rangeAltered() ), this, SLOT( paletteRangeAltered() ) );
-    connect( m_PaletteWidget, SIGNAL( pickedLeftButton(int) ), this, SLOT( colourPicked(int) ) );
-    connect( m_SpreadButton, SIGNAL( clicked() ), this, SLOT( spreadColours() ) );
+    connect(m_RGBWidget, SIGNAL(colourChanged()), this, SLOT(rgbChanged()));
+    connect(m_HSVWidget, SIGNAL(colourChanged()), this, SLOT(hsvChanged()));
+    connect(m_HexEntry, &QLineEdit::editingFinished, this, &PaletteEditor::hexChanged);
+//    connect(m_HexEntry, SIGNAL(textEdited(const QString &text)), this, SLOT(hexChanged(const QString &text)));
+    connect(m_PaletteWidget, SIGNAL(rangeAltered()), this, SLOT(paletteRangeAltered()));
+    connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT(colourPicked(int)));
+    connect(m_SpreadButton, SIGNAL(clicked()), this, SLOT(spreadColours()));
 
-    m_SpreadButton->setEnabled( m_PaletteWidget->RangeValid() );
+    m_SpreadButton->setEnabled(m_PaletteWidget->RangeValid());
 
-    m_Proj.AddListener( this );
+    m_Proj.AddListener(this);
 }
 
 PaletteEditor::~PaletteEditor()
@@ -112,18 +120,14 @@ void PaletteEditor::OnPaletteReplaced()
     showColour(c);
 }
 
-// The rgb sliders have been twiddled.
-void PaletteEditor::rgbChanged()
+
+void PaletteEditor::showColourInRGB(Colour const& c)
 {
-    QColor qc = m_RGBWidget->colour();
-    Colour c( qc.red(), qc.green(), qc.blue(), qc.alpha() );
+    m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
+}
 
-    Colour existing( m_Proj.GetColour( m_Selected ) );
-    if (c==existing) {
-        return;
-    }
-
-    // Show the change in the other widgets.
+void PaletteEditor::showColourInHSV(Colour const& c)
+{
     float r = ((float)c.r)/255.0f;
     float g = ((float)c.g)/255.0f;
     float b = ((float)c.b)/255.0f;
@@ -131,6 +135,51 @@ void PaletteEditor::rgbChanged()
     float h, s, v;
     RGBToHSV(r, g, b, h, s, v);
     m_HSVWidget->setHSVA(h, s, v, a);
+}
+
+void PaletteEditor::showColourInHex(Colour const& c)
+{
+    char buf[10];
+//    if (c.a == 255) {
+//        snprintf(buf, sizeof(buf), "#%02x%02x%02x", c.r, c.g, c.b);
+    snprintf(buf, sizeof(buf), "#%02x%02x%02x%02x", c.r, c.g, c.b, c.a);
+    m_HexEntry->setText(buf);
+}
+
+
+void PaletteEditor::hexChanged()
+{
+    Colour c;
+    if (!ParseHexColour(m_HexEntry->text().toUtf8().constData(), c)) {
+        // could indicate invalid value?
+        return;
+    }
+    Colour existing( m_Proj.GetColour( m_Selected ) );
+    if (c==existing) {
+        return;
+    }
+
+    // Show the change in the other widgets.
+    showColourInRGB(c);
+    showColourInHSV(c);
+
+    // apply edit to project
+    applyEdit(c);
+}
+
+// The rgb sliders have been twiddled.
+void PaletteEditor::rgbChanged()
+{
+    QColor qc = m_RGBWidget->colour();
+    Colour c( qc.red(), qc.green(), qc.blue(), qc.alpha() );
+    Colour existing( m_Proj.GetColour( m_Selected ) );
+    if (c==existing) {
+        return;
+    }
+
+    // Show the change in the other widgets.
+    showColourInHSV(c);
+    showColourInHex(c);
 
     // Apply the edit to the project.
     applyEdit(c);
@@ -152,8 +201,10 @@ void PaletteEditor::hsvChanged()
     if (c==existing) {
         return;
     }
-    // reflect to other widgets
-    m_RGBWidget->setColour( QColor( c.r, c.g, c.b, c.a ) );
+
+    // Show the change in the other widgets.
+    showColourInRGB(c);
+    showColourInHex(c);
 
     // apply edit to project
     applyEdit(c);
@@ -207,18 +258,9 @@ void PaletteEditor::spreadColours()
 }
 
 void PaletteEditor::showColour(Colour const& c) {
-    // Show it as RGB.
-    m_RGBWidget->setColour(QColor(c.r, c.g, c.b, c.a ));
-
-    // Show it as HSV.
-    float r = ((float)c.r / 255.0f);
-    float g = ((float)c.g / 255.0f);
-    float b = ((float)c.b / 255.0f);
-    float a = ((float)c.a / 255.0f);
-
-    float h,s,v;
-    RGBToHSV(r, g, b, h, s, v);
-    m_HSVWidget->setHSVA(h, s, v, a);
+    showColourInRGB(c);
+    showColourInHSV(c);
+    showColourInHex(c);
 }
 
 

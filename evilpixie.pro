@@ -21,6 +21,7 @@ SOURCES += src/anim.cpp \
     src/box.cpp \
     src/brush.cpp \
     src/cmd.cpp \
+    src/colours.cpp \
     src/draw.cpp \
     src/draw_blit.cpp \
     src/draw_blitzoom.cpp \
