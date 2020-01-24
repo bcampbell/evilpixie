@@ -30,7 +30,8 @@ PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
     m_RGBWidget = new RGBWidget();
     m_HSVWidget = new HSVWidget();
     m_PaletteWidget = new PaletteWidget(m_Proj.PaletteConst());
-    m_PaletteWidget->EnableRangePicking( true );
+    m_PaletteWidget->EnableRangePicking(true);
+    m_PaletteWidget->EnableDnD(true);
     m_SpreadButton = new QPushButton("Spread");
 
     resize( QSize(500,400) );
@@ -63,6 +64,7 @@ PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
 //    connect(m_HexEntry, SIGNAL(textEdited(const QString &text)), this, SLOT(hexChanged(const QString &text)));
     connect(m_PaletteWidget, SIGNAL(rangeAltered()), this, SLOT(paletteRangeAltered()));
     connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT(colourPicked(int)));
+    connect(m_PaletteWidget, SIGNAL(colourDropped(int, Colour const&)), this, SLOT(colourDropped(int, Colour const&)));
     connect(m_SpreadButton, SIGNAL(clicked()), this, SLOT(spreadColours()));
 
     m_SpreadButton->setEnabled(m_PaletteWidget->RangeValid());
@@ -82,6 +84,15 @@ void PaletteEditor::colourPicked(int idx)
     Colour c( m_Proj.GetColour( idx ) );
     showColour(c);
 }
+
+// a colour has been dropped into a cell on the palette widget.
+void PaletteEditor::colourDropped(int idx, Colour const& c)
+{
+    // Apply without any Cmd merging.
+    Cmd* cmd = new Cmd_PaletteModify(m_Proj, idx, 1, &c);
+    m_Ed.AddCmd(cmd);
+}
+
 
 void PaletteEditor::SetSelected(int idx)
 {

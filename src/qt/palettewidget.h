@@ -24,6 +24,8 @@ public:
     void EnableRangePicking( bool yesno )
         { m_RangePickingEnabled=yesno; }
 
+    void EnableDnD(bool yesno);
+
     bool RangeValid() const { return m_RangeFirst!=-1 && m_RangeLast!=-1 && m_RangeFirst!=m_RangeLast; }
     int RangeFirst() const { return m_RangeFirst; }
     int RangeLast() const { return m_RangeLast; }
@@ -38,7 +40,9 @@ public:
 signals:
     void pickedLeftButton( int c );
     void pickedRightButton( int c );
-    void rangeAltered();
+    void rangeAltered();    
+    // upon sucessful drop
+    void colourDropped(int idx, Colour const& c);
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -51,6 +55,10 @@ protected:
 
     QSize sizeHint () const;
     QSize minimumSizeHint () const;
+
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
+    void dropEvent(QDropEvent *event);
 
 private:
     PaletteWidget();    // disallowed
@@ -71,9 +79,10 @@ private:
     int Cols() const;
     int Rows() const;
 
+    bool m_DnDEnabled;
     bool m_RangePickingEnabled;
 
-    int m_DragAnchor;
+    QPoint m_Anchor;
     bool m_DraggingOutRange;
 
     int m_RangeFirst;

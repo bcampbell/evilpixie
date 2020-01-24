@@ -26,6 +26,7 @@ public:
 
 public slots:
     void colourPicked(int idx);
+    void colourDropped(int idx, Colour const& c);
     void SetSelected(int idx);
 private:
     Editor& m_Ed;

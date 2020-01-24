@@ -2,19 +2,21 @@
 #include "guistuff.h"
 
 #include "../project.h"
+#include "../colours.h"
 
 #include <algorithm>
 #include <cassert>
 
 #include <QPainter>
 #include <QMouseEvent>
-
+#include <QMimeData>
+#include <QDrag>
 
 PaletteWidget::PaletteWidget(Palette const& src) :
     m_Palette(src),
     m_Hover(-1),
+    m_DnDEnabled(false),
     m_RangePickingEnabled(false),
-    m_DragAnchor(-1),
     m_DraggingOutRange(false),
     m_RangeFirst(-1),
     m_RangeLast(-1),
@@ -22,10 +24,47 @@ PaletteWidget::PaletteWidget(Palette const& src) :
     m_RightSelected(-1)
 {
     setMouseTracking(true);
-
     setMinimumSize( Cols()*4, Rows()*4 );
 }
 
+void PaletteWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->possibleActions() & Qt::CopyAction) {
+        event->acceptProposedAction();
+    }
+}
+
+void PaletteWidget::dropEvent(QDropEvent *event)
+{
+    if( event->mimeData()->hasColor() ) {
+        QColor c = qvariant_cast<QColor>(event->mimeData()->colorData());
+        emit colourDropped(m_Hover, Colour(c.red(), c.green(), c.blue(), c.alpha()));
+    }
+}
+
+void PaletteWidget::dragMoveEvent(QDragMoveEvent *event)
+{
+    if(event->proposedAction() != Qt::CopyAction) {
+        return;
+    }
+    if( !event->mimeData()->hasColor() ) {
+        return;
+    }
+
+    int cell = PickCell( event->pos().x(), event->pos().y() );
+    if( cell != -1 ) {
+        event->acceptProposedAction();
+    }
+    if( cell != m_Hover ) {
+        m_Hover = cell;
+        update();
+    }
+}
+
+void PaletteWidget::EnableDnD(bool yesno) {
+    setAcceptDrops(yesno);
+    m_DnDEnabled = yesno;
+}
 
 
 void PaletteWidget::SetLeftSelected( int n )
@@ -50,57 +89,89 @@ QSize PaletteWidget::sizeHint () const
 QSize PaletteWidget::minimumSizeHint () const
     { return QSize( Cols()*8, Rows()*8 ); }
 
+
 void PaletteWidget::mousePressEvent(QMouseEvent *event)
 {
-    int cell = PickCell( event->pos().x(), event->pos().y() );
-    if( cell == -1 )
-        return;
-
-    if( RangeValid() )
-    {
-        m_RangeFirst = m_RangeLast = -1;
-        emit rangeAltered();
-    }
-
-    if( event->button() == Qt::LeftButton )
-    {
-        if( m_RangePickingEnabled ) // && (event->modifiers() & Qt::ShiftModifier) )
-        {
-            m_DraggingOutRange = true;
-            m_DragAnchor = m_Hover = cell;
-        }
-        else
-        {
-            m_LeftSelected = cell;
-            emit pickedLeftButton( cell );
+    if (event->button() == Qt::LeftButton) {
+        if (event->modifiers() & Qt::ShiftModifier) {
+            // shift-click: select range
+            int cell = PickCell(event->pos().x(),event->pos().y());
+            if( cell != -1 && m_LeftSelected != -1 ) {
+                m_RangeFirst = std::min(m_LeftSelected, cell);
+                m_RangeLast = std::max(m_LeftSelected, cell);
+                emit rangeAltered();
+                update();
+            }
+        } else {
+            m_Anchor = event->pos();
+            if (m_RangeFirst >= 0 || m_RangeLast >= 0) {
+                m_RangeFirst = -1;
+                m_RangeLast = -1;
+                emit rangeAltered();
+                update();
+            }
         }
     }
-    if( event->button() == Qt::RightButton )
-    {
-        m_RightSelected = cell;
-        emit pickedRightButton( cell );
-    }
-    update();
 }
 
 void PaletteWidget::mouseMoveEvent(QMouseEvent *event)
 {
+    float distsq = (event->pos() - m_Anchor).manhattanLength();
+
     int cell = PickCell( event->pos().x(), event->pos().y() );
-    if( cell == m_Hover )
+    if (m_DraggingOutRange) {
+        if (cell >= 0) {
+            int first = PickCell( m_Anchor.x(), m_Anchor.y() );
+            m_RangeFirst = std::min(first, cell);
+            m_RangeLast = std::max(first, cell);
+            emit rangeAltered();
+            update();
+        }
         return;
+    }
 
-    m_Hover = cell;
+    if (distsq > 1.0f &&
+        m_RangePickingEnabled && cell >= 0 &&
+        event->buttons() & Qt::LeftButton &&
+        event->modifiers() & Qt::ShiftModifier) {
+        // Start range selection.
+        m_DraggingOutRange = true;
+        m_RangeFirst = cell;
+        m_RangeLast = cell;
+        emit rangeAltered();
+        update();
+        return;
+    }
+   
+    if (distsq > 1.0f &&
+        cell >=0 && m_DnDEnabled && event->buttons() & Qt::LeftButton)  {
+        // Start DnD drag operation.
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
 
-    update();
+        Colour c(m_Palette.GetColour(cell));
+        QColor qc(c.r, c.g, c.b, c.a);
+        mimeData->setColorData(qc);
+        drag->setMimeData(mimeData);
+        QPixmap swatch(16,16);
+        swatch.fill(qc);
+        drag->setPixmap(swatch);
+
+        Qt::DropAction dropAction = drag->exec(Qt::CopyAction);
+        return;
+    }
+
+    if (m_Hover != cell) {
+        m_Hover = cell;
+        update();
+    }
 }
 
-void PaletteWidget::mouseReleaseEvent(QMouseEvent *)
+void PaletteWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     if( m_DraggingOutRange )
     {
         m_DraggingOutRange = false;
-        m_RangeFirst = std::min(m_DragAnchor,m_Hover );
-        m_RangeLast = std::max(m_DragAnchor,m_Hover );
         if( m_RangeFirst == m_RangeLast )
         {
             m_LeftSelected = m_RangeFirst;
@@ -111,10 +182,19 @@ void PaletteWidget::mouseReleaseEvent(QMouseEvent *)
             emit rangeAltered();
         }
         update();
+    } else if (m_Hover >= 0) {
+        if (event->button() == Qt::LeftButton) {
+            m_LeftSelected = m_Hover;
+            emit pickedLeftButton( m_LeftSelected );
+        } else if (event->button() == Qt::RightButton) {
+            m_RightSelected = m_Hover;
+            emit pickedRightButton( m_RightSelected );
+        }
+        update();
     }
 }
 
-void PaletteWidget::leaveEvent( QEvent *event )
+void PaletteWidget::leaveEvent( QEvent * /*event*/ )
 {
     m_Hover = -1;
     update();
@@ -221,15 +301,10 @@ int PaletteWidget::PickCell( int x, int y )
     const int ch = size().height()*S/Rows();
     int col = (x*S/cw);
     int row = (y*S/ch);
-    if( col < 0 )
-        col=0;
-    if(col>=Cols() )
-        col=Cols()-1;
-    if( row < 0 )
-        row=0;
-    if(row>=Rows() )
-        row=Rows()-1;
-
+    if(col < 0 || col >=Cols() ||
+       row < 0 || row >= Rows()) {
+      return -1;
+    }
     int cell = col*Rows() + row;
     return cell;
 }
@@ -237,17 +312,12 @@ int PaletteWidget::PickCell( int x, int y )
 
 void PaletteWidget::DrawOverlays( QPainter& painter )
 {
-
-
-    if( m_DraggingOutRange )
-    {
-        int first = std::min(m_DragAnchor,m_Hover );
-        int last = std::max(m_DragAnchor,m_Hover );
-        DrawRangeOverlay( painter, first, last, false );
-    }
-    else if( RangeValid() )
-    {
-        DrawRangeOverlay( painter, m_RangeFirst, m_RangeLast, true );
+    if (RangeValid()) {
+        if (m_DraggingOutRange) {
+            DrawRangeOverlay(painter, m_RangeFirst, m_RangeLast, false);
+        } else {
+            DrawRangeOverlay(painter, m_RangeFirst, m_RangeLast, true);
+        }
     }
 
     if( m_Hover != -1 )
