@@ -38,6 +38,7 @@ SOURCES += src/anim.cpp \
     src/util.cpp \
     src/qt/editorwindow.cpp \
     src/qt/editviewwidget.cpp \
+    src/qt/griddialog.cpp \
     src/qt/hsvwidget.cpp \
     src/qt/palettewidget.cpp \
     src/qt/paletteeditor.cpp \
@@ -71,6 +72,7 @@ HEADERS += src/anim.h \
     src/util.h \
     src/exception.h \
     src/qt/editorwindow.h \
+    src/qt/griddialog.h \
     src/qt/hsvwidget.h \
     src/qt/palettewidget.h \
     src/qt/paletteeditor.h \

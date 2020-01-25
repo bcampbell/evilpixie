@@ -9,6 +9,7 @@
 #include "guistuff.h"
 #include "editorwindow.h"
 #include "editviewwidget.h"
+#include "griddialog.h"
 #include "palettewidget.h"
 #include "rgbpickerwidget.h"
 #include "paletteeditor.h"
@@ -510,6 +511,15 @@ void EditorWindow::do_gridonoff( bool checked )
     // TODO: should be some sort of Editor callback notification
 }
 
+void EditorWindow::do_gridconfig()
+{
+    GridDialog dlg(this, Grid());
+    if( dlg.exec() == QDialog::Accepted )
+    {
+        SetGrid(dlg.Grid());
+    }
+}
+
 void EditorWindow::do_drawmodeChanged( QAction* act )
 {
     DrawMode::Mode newMode = (DrawMode::Mode)act->data().toInt();
@@ -871,6 +881,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
 
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
         a->setCheckable(true);
+        m_ActionGridConfig = m->addAction( "Grid Config...", this, SLOT( do_gridconfig()));
 
         a = m->addAction( "Resize...", this, SLOT(do_resize()));
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));

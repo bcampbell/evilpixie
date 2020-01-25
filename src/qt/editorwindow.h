@@ -26,7 +26,7 @@ class QTabWidget;
 
 
 struct EditorActions {
-    QAction* Undo, Redo, GridOnOff, UseBrushPalette,
+    QAction* Undo, Redo, GridOnOff, GridSettings, UseBrushPalette,
         ZapFrame, PrevFrame, NextFrame,
         DrawmodeNormal, DrawmodeColour, DrawmodeReplace;
 };
@@ -109,6 +109,7 @@ public slots:
     void do_undo();
     void do_redo();
     void do_gridonoff( bool checked );
+    void do_gridconfig();
     void do_resize();
     void do_new();
     void do_open();
@@ -156,6 +157,7 @@ private:
     QAction* m_ActionUndo;
     QAction* m_ActionRedo;
     QAction* m_ActionGridOnOff;
+    QAction* m_ActionGridConfig;
     QAction* m_ActionUseBrushPalette;
     QAction* m_ActionScale2xBrush;
     QAction* m_ActionZapFrame;
