@@ -121,7 +121,18 @@ struct Colour
 
 inline bool operator==(const Colour& a, const Colour& b) { return a.r==b.r && a.g==b.g && a.b==b.b &&a.a==b.a; } 
 inline bool operator!=(const Colour& a, const Colour& b) { return !(a == b);}
-
+inline bool operator<(Colour const& lhs, Colour const& rhs) {
+    if (lhs.r != rhs.r) {
+        return lhs.r < rhs.r;
+    }
+    if (lhs.g != rhs.g) {
+        return lhs.g < rhs.g;
+    }
+    if (lhs.b != rhs.b) {
+        return lhs.b < rhs.b;
+    }
+    return lhs.a < rhs.a;
+}
 
 inline Colour Lerp(Colour const& a, Colour const& b, float t)
 {
