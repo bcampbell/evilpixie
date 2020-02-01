@@ -29,8 +29,10 @@ SOURCES += src/anim.cpp \
     src/editview.cpp \
     src/hsv.cpp \
     src/img.cpp \
+    src/img_convert.cpp \
     src/palette.cpp \
     src/project.cpp \
+    src/quantise.cpp \
     src/scale2x.cpp \
     src/sheet.cpp \
     src/tool.cpp \
@@ -63,9 +65,11 @@ HEADERS += src/anim.h \
     src/global.h \
     src/hsv.h \
     src/img.h \
+    src/img_convert.h \
     src/palette.h \
     src/point.h \
     src/project.h \
+    src/quantise.h \
     src/scale2x.h \
     src/sheet.h \
     src/tool.h \

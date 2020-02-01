@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <queue>
 #include <map>
+#include "quantise.h"
 #include "colours.h"
 #include "img.h"
 #include "palette.h"
@@ -8,19 +9,21 @@
 #include <cstdio>
 
 
-// Holds a single colour and it's frequency.
+// Holds a single colour and a count.
 struct Ent {
     uint8_t r,g,b,a;
     int n;
 };
 
+// Comparators for sorting Ents by r,g,b or alpha.
 static bool cmp_r(Ent const& c1, Ent const& c2) { return c1.r < c2.r; }
 static bool cmp_g(Ent const& c1, Ent const& c2) { return c1.g < c2.g; }
 static bool cmp_b(Ent const& c1, Ent const& c2) { return c1.b < c2.b; }
 static bool cmp_a(Ent const& c1, Ent const& c2) { return c1.a < c2.a; }
 
 
-// A slice of Ents.
+// A bucket of Ents. Supports std::span-style interface for iteration
+// and slicing. Doesn't own it's data - just a view of a larger array.
 struct Bucket {
     Bucket(Ent* data, size_t n) :  data(data), cnt(n) {
         // calculate derived values
@@ -54,7 +57,9 @@ struct Bucket {
         return Bucket(data + offset, count);
     }
 
-    // values derived from content
+    // Values derived from content.
+    // Would be nice to ditch these, then could eventually switch to
+    // std::span when support is available.
     int numPixels;
     Colour extentMin;
     Colour extentMax;
@@ -91,7 +96,10 @@ static bool operator<(Bucket const& lhs, Bucket const& rhs) {
 
 static void medianCut(Bucket all, std::vector<Colour>& out, int numColours);
 
-void CalcPalette(Img const& srcImg, std::vector<Colour>& out, int nColours)
+
+
+//
+void CalculatePalette(Img const& srcImg, std::vector<Colour>& out, int nColours)
 {
     out.clear();
     out.reserve(nColours);
@@ -122,12 +130,13 @@ void CalcPalette(Img const& srcImg, std::vector<Colour>& out, int nColours)
                 }
                 break;
             default:
+                // TODO: handle indexed images ;-)
                 assert(false);  // not supported...
                 break;
         }
     }
 
-    if (hist.size() <= nColours) {
+    if (hist.size() <= (size_t)nColours) {
         // no colour reduction needed!
         for (auto const& dat : hist) {
             out.push_back(dat.first);
@@ -135,39 +144,27 @@ void CalcPalette(Img const& srcImg, std::vector<Colour>& out, int nColours)
         return;
     }
 
-
-
     std::vector<Ent> ents;
     for (auto const& dat : hist) {
         Colour const& c = dat.first;
         Ent ent = {c.r, c.g, c.b, c.a, dat.second };
         ents.push_back(ent);
     }
-    // done with histogram
+    // Done with histogram
     hist.clear();
 
+    // Pick a set of colours
     Bucket all(&ents.front(), ents.size());
     medianCut(all, out, nColours);
 }
 
 
 
-/*
-Img* Quantize( Img const& srcImg, int numColours) {
-
-    for (int y=0; y<srcImg.H(); ++y) {
-        
-        for (int x=0; x<srcImg.W(); ++x) {
-        }
-    }
-}
-*/
-
 static void medianCut(Bucket all, std::vector<Colour>& out, int numColours) {
-    assert(all.size() >= numColours);
+    assert(all.size() >= (size_t)numColours);
     std::priority_queue<Bucket> buckets;
     buckets.push(all);
-    while (buckets.size() < numColours) {
+    while (buckets.size() < (size_t)numColours) {
         Bucket b = buckets.top();
 
         // find major axis
@@ -189,12 +186,13 @@ static void medianCut(Bucket all, std::vector<Colour>& out, int numColours) {
 
         // Split bucket.
         size_t half = b.size() / 2;
-        printf("Split. %d => %d:%d\n", b.size(), half, b.size()-half);
+        //printf("Split. %d => %d:%d\n", b.size(), half, b.size()-half);
         buckets.pop();
         buckets.push(b.subspan(0,half));
         buckets.push(b.subspan(half,b.size()-half));
 
         // dump
+#if 0
         std::priority_queue<Bucket> tmp = buckets;
         while (!tmp.empty()) {
             Bucket b = tmp.top();
@@ -202,6 +200,7 @@ static void medianCut(Bucket all, std::vector<Colour>& out, int numColours) {
             b.dbug();
         }
         printf("----\n");
+#endif
     }
 
     while(!buckets.empty()) {
@@ -211,7 +210,7 @@ static void medianCut(Bucket all, std::vector<Colour>& out, int numColours) {
     }
 }
 
-
+#if 0
 int main() {
     Ent fook[7] = {
         {1,0,0,255, 1},
@@ -231,4 +230,5 @@ int main() {
     }
     return 0;
 }
+#endif
 

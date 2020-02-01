@@ -1,0 +1,114 @@
+#include "colours.h"
+#include "img.h"
+#include "palette.h"
+#include <cassert>
+
+static I8 find_closest(Palette const& pal, const Colour targ) {
+    int best = 0;
+    int bestdistsq = 255*255;
+    for (int i=0; i<pal.NColours; ++i) {
+        int distsq = DistSq(targ, pal.Colours[i]);
+        if (distsq < bestdistsq) {
+            best = i;
+            bestdistsq = distsq;
+        }
+    }
+    return (I8)best;
+}
+
+
+Img* ConvertRGBA8toI8(Img const& srcImg, Palette const& destPalette) {
+    assert(srcImg.Fmt() == FMT_RGBA8);
+    Img* destImg = new Img(FMT_I8, srcImg.W(), srcImg.H());
+
+    for (int y=0; y<srcImg.H(); ++y) {
+        const RGBA8 *src = srcImg.PtrConst_RGBA8(0,y);
+        I8 *dest = destImg->Ptr_I8(0,y);
+        for (int x=0; x<srcImg.W(); ++x) {
+            *dest++ = find_closest(destPalette, Colour(*src));
+            ++src;
+        }
+    }
+    return destImg;
+}
+
+Img* ConvertRGBX8toI8(Img const& srcImg, Palette const& destPalette) {
+    assert(srcImg.Fmt() == FMT_RGBX8);
+    Img* destImg = new Img(FMT_I8, srcImg.W(), srcImg.H());
+
+    for (int y=0; y<srcImg.H(); ++y) {
+        const RGBX8 *src = srcImg.PtrConst_RGBX8(0,y);
+        I8 *dest = destImg->Ptr_I8(0,y);
+        for (int x=0; x<srcImg.W(); ++x) {
+            *dest++ = find_closest(destPalette, Colour(*src));
+            ++src;
+        }
+    }
+    return destImg;
+}
+
+Img* ConvertI8toRGBX8(Img const& srcImg, Palette const& srcPalette) {
+    assert(srcImg.Fmt() == FMT_I8);
+    Img* destImg = new Img(FMT_RGBX8, srcImg.W(), srcImg.H());
+
+    for (int y=0; y<srcImg.H(); ++y) {
+        const I8 *src = srcImg.PtrConst_I8(0,y);
+        RGBX8 *dest = destImg->Ptr_RGBX8(0,y);
+        for (int x=0; x<srcImg.W(); ++x) {
+            const Colour c = srcPalette.GetColour(*src);
+            ++src;
+            *dest++ = RGBX8(c.r, c.g, c.b);
+        }
+    }
+    return destImg;
+}
+
+Img* ConvertI8toRGBA8(Img const& srcImg, Palette const& srcPalette) {
+    assert(srcImg.Fmt() == FMT_I8);
+    Img* destImg = new Img(FMT_RGBA8, srcImg.W(), srcImg.H());
+
+    for (int y=0; y<srcImg.H(); ++y) {
+        const I8 *src = srcImg.PtrConst_I8(0,y);
+        RGBA8 *dest = destImg->Ptr_RGBA8(0,y);
+        for (int x=0; x<srcImg.W(); ++x) {
+            const Colour c = srcPalette.GetColour(*src);
+            ++src;
+            *dest++ = RGBA8(c.r, c.g, c.b, c.a);
+        }
+    }
+    return destImg;
+}
+
+
+Img* ConvertRGBA8toRGBX8(Img const& srcImg) {
+    assert(srcImg.Fmt() == FMT_RGBA8);
+    Img* destImg = new Img(FMT_RGBX8, srcImg.W(), srcImg.H());
+
+    for (int y=0; y<srcImg.H(); ++y) {
+        const RGBA8 *src = srcImg.PtrConst_RGBA8(0,y);
+        RGBX8 *dest = destImg->Ptr_RGBX8(0,y);
+        for (int x=0; x<srcImg.W(); ++x) {
+            *dest++ = Colour(*src++);
+        }
+    }
+    return destImg;
+}
+
+Img* ConvertRGBX8toRGBA8(Img const& srcImg) {
+    assert(srcImg.Fmt() == FMT_RGBX8);
+    Img* destImg = new Img(FMT_RGBA8, srcImg.W(), srcImg.H());
+
+    for (int y=0; y<srcImg.H(); ++y) {
+        const RGBX8 *src = srcImg.PtrConst_RGBX8(0,y);
+        RGBA8 *dest = destImg->Ptr_RGBA8(0,y);
+        for (int x=0; x<srcImg.W(); ++x) {
+            *dest++ = *src++;
+        }
+    }
+    return destImg;
+}
+
+
+
+
+

@@ -12,18 +12,18 @@ enum PixelFormat {
     FMT_RGBA8,
 };
 
+class RGBA8;
 
 // Colour, 8 bits/channel
 struct RGBX8
 {
     RGBX8() {}
-    RGBX8(uint8_t red, uint8_t green, uint8_t blue) : b(blue),g(green),r(red),pad(255) {}
+    RGBX8(uint8_t red, uint8_t green, uint8_t blue) : b(blue), g(green), r(red), pad(255) {}
     // KLUDGE: this order for QT version (QImage ARGB fmt assumes native byte order...)
 	uint8_t b;
 	uint8_t g;
 	uint8_t r;
-	uint8_t pad;
-
+	uint8_t pad;    // should always be 255
 };
 
 inline bool operator==(const RGBX8& a, const RGBX8& b){ return a.r==b.r && a.g==b.g && a.b==b.b; } 
@@ -133,6 +133,14 @@ inline bool operator<(Colour const& lhs, Colour const& rhs) {
     }
     return lhs.a < rhs.a;
 }
+
+inline int DistSq(Colour const& a, Colour const& b) {
+    return (b.r - a.r) * (b.r - a.r) +
+        (b.g - a.g) * (b.g - a.g) +
+        (b.b - a.b) * (b.b - a.b) +
+        (b.a - a.a) * (b.a - a.a);
+}
+
 
 inline Colour Lerp(Colour const& a, Colour const& b, float t)
 {
