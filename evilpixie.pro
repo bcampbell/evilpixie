@@ -21,6 +21,7 @@ SOURCES += src/anim.cpp \
     src/box.cpp \
     src/brush.cpp \
     src/cmd.cpp \
+    src/cmd_changefmt.cpp \
     src/colours.cpp \
     src/draw.cpp \
     src/draw_blit.cpp \
@@ -45,6 +46,7 @@ SOURCES += src/anim.cpp \
     src/qt/palettewidget.cpp \
     src/qt/paletteeditor.cpp \
     src/qt/miscwindows.cpp \
+    src/qt/changefmtdialog.cpp \
     src/qt/newprojectdialog.cpp \
     src/qt/rgbwidget.cpp \
     src/qt/rgbpickerwidget.cpp \
@@ -58,6 +60,7 @@ HEADERS += src/anim.h \
     src/box.h \
     src/brush.h \
     src/cmd.h \
+    src/cmd_changefmt.h \
     src/colours.h \
     src/draw.h \
     src/editor.h \
@@ -81,6 +84,7 @@ HEADERS += src/anim.h \
     src/qt/palettewidget.h \
     src/qt/paletteeditor.h \
     src/qt/miscwindows.h \
+    src/qt/changefmtdialog.h \
     src/qt/newprojectdialog.h \
     src/qt/rgbwidget.h \
     src/qt/rgbpickerwidget.h \

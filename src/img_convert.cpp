@@ -3,19 +3,6 @@
 #include "palette.h"
 #include <cassert>
 
-static I8 find_closest(Palette const& pal, const Colour targ) {
-    int best = 0;
-    int bestdistsq = 255*255;
-    for (int i=0; i<pal.NColours; ++i) {
-        int distsq = DistSq(targ, pal.Colours[i]);
-        if (distsq < bestdistsq) {
-            best = i;
-            bestdistsq = distsq;
-        }
-    }
-    return (I8)best;
-}
-
 
 Img* ConvertRGBA8toI8(Img const& srcImg, Palette const& destPalette) {
     assert(srcImg.Fmt() == FMT_RGBA8);
@@ -25,7 +12,8 @@ Img* ConvertRGBA8toI8(Img const& srcImg, Palette const& destPalette) {
         const RGBA8 *src = srcImg.PtrConst_RGBA8(0,y);
         I8 *dest = destImg->Ptr_I8(0,y);
         for (int x=0; x<srcImg.W(); ++x) {
-            *dest++ = find_closest(destPalette, Colour(*src));
+
+            *dest++ = (I8)destPalette.Closest(Colour(*src));
             ++src;
         }
     }
@@ -40,7 +28,7 @@ Img* ConvertRGBX8toI8(Img const& srcImg, Palette const& destPalette) {
         const RGBX8 *src = srcImg.PtrConst_RGBX8(0,y);
         I8 *dest = destImg->Ptr_I8(0,y);
         for (int x=0; x<srcImg.W(); ++x) {
-            *dest++ = find_closest(destPalette, Colour(*src));
+            *dest++ = (I8)destPalette.Closest(Colour(*src));
             ++src;
         }
     }

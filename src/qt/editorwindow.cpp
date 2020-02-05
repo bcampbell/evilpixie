@@ -5,6 +5,7 @@
 #include "../util.h"
 #include "../exception.h"
 #include "../cmd.h"
+#include "../cmd_changefmt.h"
 #include "../sheet.h"
 #include "guistuff.h"
 #include "editorwindow.h"
@@ -13,6 +14,7 @@
 #include "palettewidget.h"
 #include "rgbpickerwidget.h"
 #include "paletteeditor.h"
+#include "changefmtdialog.h"
 #include "newprojectdialog.h"
 #include "resizeprojectdialog.h"
 #include "spritesheetdialogs.h"
@@ -159,21 +161,19 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         m_ColourTab->setDocumentMode(true);
         layout->addWidget( m_ColourTab, 5,1 );
 
-        if(Proj().Fmt() == FMT_RGBX8 || Proj().Fmt() == FMT_RGBA8 )
+        {
+            m_PaletteWidget = new PaletteWidget(Proj().PaletteConst());
+            connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
+            connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
+            m_ColourTab->addTab(m_PaletteWidget, "Palette");
+        }
+
         {
             m_RGBPicker = new RGBPickerWidget();
             connect(m_RGBPicker, SIGNAL(pickedLeftButton(Colour)), this, SLOT( fgColourPickedRGB(Colour)));
             connect(m_RGBPicker, SIGNAL(pickedRightButton(Colour)), this, SLOT( bgColourPickedRGB(Colour)));
             m_ColourTab->addTab(m_RGBPicker, "RGB");
         }
-
-        {
-        m_PaletteWidget = new PaletteWidget(Proj().PaletteConst());
-        connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
-        connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
-        m_ColourTab->addTab(m_PaletteWidget, "Palette");
-        }
-
     }
 
     /* status bar */
@@ -446,14 +446,24 @@ void EditorWindow::bgColourPicked( int idx )
 
 void EditorWindow::fgColourPickedRGB( Colour c )
 {
-    // TODO: look up a palette index
-    SetFGPen( PenColour(c) );
+    Palette const& pal = Proj().PaletteConst();
+    int idx = pal.Closest(c);
+    // snap to palette colour on indexed images
+    if(Proj().Fmt()==FMT_I8 && idx >=0) {
+        c = pal.Colours[idx];
+    }
+    SetFGPen(PenColour(c, idx));
 }
 
 void EditorWindow::bgColourPickedRGB( Colour c )
 {
-    // TODO: look up a palette index
-    SetBGPen(PenColour(c));
+    Palette const& pal = Proj().PaletteConst();
+    int idx = pal.Closest(c);
+    // snap to palette colour on indexed images
+    if(Proj().Fmt()==FMT_I8 && idx >=0) {
+        c = pal.Colours[idx];
+    }
+    SetBGPen(PenColour(c, idx));
 }
 
 void EditorWindow::togglepaletteeditor()
@@ -542,6 +552,20 @@ void EditorWindow::do_resize()
         AddCmd(c);
     }
 }
+
+void EditorWindow::do_changefmt()
+{
+    ChangeFmtDialog dlg(this);
+    if( dlg.exec() == QDialog::Accepted )
+    {
+        // TODO: Support changing number of colours in I8 images!
+        if(dlg.pixel_format != Proj().Fmt()) {
+            Cmd* c = new Cmd_ChangeFmt(Proj(), dlg.pixel_format, dlg.num_colours);
+            AddCmd(c);
+        }
+    }
+}
+
 
 void EditorWindow::do_new()
 {
@@ -884,6 +908,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionGridConfig = m->addAction( "Grid Config...", this, SLOT( do_gridconfig()));
 
         a = m->addAction( "Resize...", this, SLOT(do_resize()));
+        a = m->addAction( "Change format...", this, SLOT(do_changefmt()));
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 

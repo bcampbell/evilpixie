@@ -88,6 +88,22 @@ void Palette::LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 )
     }
 }
 
+// Brute-force search for closest matching colour in palette.
+// Returns -1 if palette is empty.
+int Palette::Closest(const Colour targ) const {
+    int best = -1;
+    int bestdistsq = 255*255;
+    for (int i = 0; i < NColours; ++i) {
+        int distsq = DistSq(targ, Colours[i]);
+        if (distsq < bestdistsq) {
+            best = i;
+            bestdistsq = distsq;
+        }
+    }
+    return best;
+}
+
+
 void Palette::SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 )
 {
     if( n0==n1 )

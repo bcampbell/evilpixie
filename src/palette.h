@@ -19,6 +19,7 @@ public:
     Colour const& GetColour( int n ) const { assert(n<NColours); return Colours[n]; }
     void SetColour( int n, Colour const& c ) { Colours[n]=c; }
 
+    int Closest(const Colour targ) const;
     void LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 );
     void SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 );
 

@@ -111,6 +111,7 @@ public slots:
     void do_gridonoff( bool checked );
     void do_gridconfig();
     void do_resize();
+    void do_changefmt();
     void do_new();
     void do_open();
     void do_save();
