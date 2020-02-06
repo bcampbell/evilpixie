@@ -741,7 +741,7 @@ void EditorWindow::do_open()
 {
 //    if( !CheckZappingOK() )
 //        return;
-    QString loadfilters = "Image files (*.anim *.bmp *.gif *.iff *.ilbm *.lbm *.pbm *.pcx *.png);;Any files (*)";
+    QString loadfilters = "Image files (*.anim *.bmp *.gif *.iff *.ilbm *.lbm *.pbm *.pcx *.png *.jpg *.jpeg);;Any files (*)";
 
     QString filename = QFileDialog::getOpenFileName(
                     this,
