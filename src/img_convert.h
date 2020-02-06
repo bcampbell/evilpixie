@@ -20,6 +20,8 @@ Img* ConvertRGBX8toRGBA8(Img const& srcImg);
 // this one trashes the alpha channel
 Img* ConvertRGBA8toRGBX8(Img const& srcImg);
 
+// remaps indexed image to another palette
+Img* ConvertI8toI8(Img const& srcImg, Palette const& srcPalette, Palette const& destPalette);
 
 #endif // IMG_CONVERT_H
 

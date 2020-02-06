@@ -98,5 +98,20 @@ Img* ConvertRGBX8toRGBA8(Img const& srcImg) {
 
 
 
+Img* ConvertI8toI8(Img const& srcImg, Palette const& srcPalette, Palette const& destPalette) {
+    assert(srcImg.Fmt() == FMT_I8);
+    Img* destImg = new Img(FMT_I8, srcImg.W(), srcImg.H());
+
+    for (int y=0; y<srcImg.H(); ++y) {
+        const I8 *src = srcImg.PtrConst_I8(0,y);
+        I8 *dest = destImg->Ptr_I8(0,y);
+        for (int x=0; x<srcImg.W(); ++x) {
+            Colour c = srcPalette.GetColour((int)*src++);
+            *dest++ = (I8)destPalette.Closest(c);
+        }
+    }
+    return destImg;
+}
+
 
 

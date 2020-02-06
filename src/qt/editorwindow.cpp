@@ -555,11 +555,13 @@ void EditorWindow::do_resize()
 
 void EditorWindow::do_changefmt()
 {
-    ChangeFmtDialog dlg(this);
-    if( dlg.exec() == QDialog::Accepted )
-    {
-        // TODO: Support changing number of colours in I8 images!
-        if(dlg.pixel_format != Proj().Fmt()) {
+    int currColours = Proj().GetAnim().GetPaletteConst().NumColours();
+
+    ChangeFmtDialog dlg(this, Proj().Fmt(), currColours);
+    if( dlg.exec() == QDialog::Accepted ) {
+        // ignore no-ops (eg rgba->rgba)
+        if (dlg.pixel_format != Proj().Fmt() ||
+            (Proj().Fmt() == FMT_I8 && dlg.num_colours != currColours)) {
             Cmd* c = new Cmd_ChangeFmt(Proj(), dlg.pixel_format, dlg.num_colours);
             AddCmd(c);
         }

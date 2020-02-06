@@ -17,7 +17,7 @@ class ChangeFmtDialog : public QDialog
     Q_OBJECT
 
 public:
-    ChangeFmtDialog(QWidget *parent = 0);
+    ChangeFmtDialog(QWidget *parent = nullptr, PixelFormat currFmt = FMT_RGBA8, int currNumColours = 0);
 
     PixelFormat pixel_format;
     int num_colours;

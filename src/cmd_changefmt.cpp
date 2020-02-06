@@ -13,9 +13,9 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, PixelFormat newFmt, int nColours) :
     if (nColours > 0 && srcAnim.NumFrames() > 0) {
         // TODO: for global palette, need to take all frames into consideration!!!
         std::vector<Colour> quantised;
-        CalculatePalette(srcAnim.GetFrameConst(0), quantised, nColours);
+        CalculatePalette(srcAnim.GetFrameConst(0), quantised, nColours, &srcPalette);
         Palette newPalette(nColours);
-        for (int i=0; i<quantised.size(); ++i) {
+        for (int i=0; i<(int)quantised.size(); ++i) {
             newPalette.SetColour(i, quantised[i]);
         }
         m_FrameSwap.SetPalette(newPalette);
@@ -33,6 +33,8 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, PixelFormat newFmt, int nColours) :
                     destImg = ConvertI8toRGBX8(srcImg, srcPalette);
                 } else if (newFmt == FMT_RGBA8) {
                     destImg = ConvertI8toRGBA8(srcImg, srcPalette);
+                } else if (newFmt == FMT_I8) {
+                    destImg = ConvertI8toI8(srcImg, srcPalette, m_FrameSwap.GetPaletteConst());
                 }
                 break;
             case FMT_RGBX8:
@@ -48,7 +50,6 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, PixelFormat newFmt, int nColours) :
                 } else if(newFmt == FMT_I8) {
                     destImg = ConvertRGBA8toI8(srcImg, m_FrameSwap.GetPaletteConst());
                 }
-                // TODO: FMT_I8
                 break;
         }
         assert(destImg);

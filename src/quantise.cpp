@@ -98,8 +98,9 @@ static void medianCut(Bucket all, std::vector<Colour>& out, int numColours);
 
 
 
-//
-void CalculatePalette(Img const& srcImg, std::vector<Colour>& out, int nColours)
+// TODO: should be able to feed in multiple images here...
+// TODO: ditch srcPalette once images contain their own palette...
+void CalculatePalette(Img const& srcImg, std::vector<Colour>& out, int nColours, Palette const* srcPalette /*= nullptr*/)
 {
     out.clear();
     out.reserve(nColours);
@@ -129,7 +130,16 @@ void CalculatePalette(Img const& srcImg, std::vector<Colour>& out, int nColours)
                     }
                 }
                 break;
-            default:
+            case FMT_I8:
+                {
+                    assert(srcPalette);
+                    I8 const* src = srcImg.PtrConst_I8(0,y);
+                    for (int x = 0; x < srcImg.W(); ++x) {
+                        Colour c = srcPalette->GetColour((int)*src++);
+                        hist[c]++;
+                    }
+                }
+                break;
                 // TODO: handle indexed images ;-)
                 assert(false);  // not supported...
                 break;
