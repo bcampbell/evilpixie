@@ -13,6 +13,12 @@ The GUI uses the core layer, but the core knows nothing about the GUI.
 
 The core store of data.
 ProjectListeners can be registered with the project.
+The project can be directly modified, but the thing doing the modifying
+needs to call appropriate notification functions to let any listeners know
+what has been changed (to keep the display up to date, for example).
+Usually, all project modifications are performed within a Cmd class
+(see below). These are held by the Editor on the undo stack to implement
+undo/redo.
 
 ### ProjectListener
 
@@ -48,6 +54,8 @@ A Cmd should be used for any Undoable operation the user might
 want to perform upon a project - drawing, resizing, adding/removing
 frames, editing palettes...
 
+Cmd-based classes are usually the only ones which actually modify the
+Project data.
 
 ### Tool
 
