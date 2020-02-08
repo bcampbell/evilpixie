@@ -49,6 +49,8 @@ public:
     Tool& CurrentTool() { return *m_Tool; }
 //    void SetTool( Tool* newtool, bool notifygui=true );
 
+    int ActiveLayer() const { return 0; }
+
     DrawMode const& Mode() const { return m_Mode; }
     void SetMode( DrawMode const& mode) { m_Mode= mode; }
 
@@ -72,8 +74,7 @@ public:
     virtual void OnUndoRedoChanged() {}
 
     // the project that this editor owns
-    Project& Proj() { return *m_Project; }
-
+    Project& Proj() const { return *m_Project; }
 
     // automatically called by EditView ctor/dtor
     void AddView( EditView* v )

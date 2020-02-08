@@ -433,13 +433,13 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 void EditorWindow::fgColourPicked( int idx )
 {
-    Colour c = Proj().GetColour(idx);
+    Colour c = Proj().PaletteConst().GetColour(idx);
     SetFGPen( PenColour(c,idx) );
 }
 
 void EditorWindow::bgColourPicked( int idx )
 {
-    Colour c = Proj().GetColour(idx);
+    Colour c = Proj().PaletteConst().GetColour(idx);
     SetBGPen( PenColour(c,idx) );
 }
 
@@ -494,7 +494,7 @@ void EditorWindow::update_menu_states()
     m_ActionScale2xBrush->setEnabled(
         GetBrush() == -1 && CurrentBrush().Fmt() == FMT_I8);
 
-    int nframes= Proj().GetAnim().NumFrames();
+    int nframes= Proj().GetLayer(ActiveLayer()).NumFrames();
     m_ActionZapFrame->setEnabled(nframes>1);
     m_ActionNextFrame->setEnabled(nframes>1);
     m_ActionPrevFrame->setEnabled(nframes>1);
@@ -540,7 +540,7 @@ void EditorWindow::do_drawmodeChanged( QAction* act )
 
 void EditorWindow::do_resize()
 {
-    Box b = Proj().GetAnim().GetFrame(m_ViewWidget->Frame()).Bounds();
+    Box b = m_ViewWidget->FocusedImgConst().Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
     if( dlg.exec() == QDialog::Accepted )
     {
@@ -548,21 +548,21 @@ void EditorWindow::do_resize()
         Cmd* c = new Cmd_Resize(Proj(),
             Box(0,0,area.width(),area.height()),
             0,
-            Proj().GetAnim().NumFrames(), BGPen() );
+            Proj().GetLayer(ActiveLayer()).NumFrames(), BGPen() );
         AddCmd(c);
     }
 }
 
 void EditorWindow::do_changefmt()
 {
-    int currColours = Proj().GetAnim().GetPaletteConst().NumColours();
+    int currColours = Proj().PaletteConst().NumColours();
 
     ChangeFmtDialog dlg(this, Proj().Fmt(), currColours);
     if( dlg.exec() == QDialog::Accepted ) {
         // ignore no-ops (eg rgba->rgba)
         if (dlg.pixel_format != Proj().Fmt() ||
             (Proj().Fmt() == FMT_I8 && dlg.num_colours != currColours)) {
-            Cmd* c = new Cmd_ChangeFmt(Proj(), dlg.pixel_format, dlg.num_colours);
+            Cmd* c = new Cmd_ChangeFmt(Proj(), ActiveLayer(), dlg.pixel_format, dlg.num_colours);
             AddCmd(c);
         }
     }
@@ -649,34 +649,34 @@ void EditorWindow::do_scale2xbrush()
 
 void EditorWindow::do_addframe()
 {
-    int frame = m_ViewWidget->Frame();
+    int frame = m_ViewWidget->FrameNum();
     Cmd* c = new Cmd_InsertFrames(Proj(), frame, 1);
     AddCmd(c);
 }
 
 void EditorWindow::do_zapframe()
 {
-    assert(Proj().GetAnim().NumFrames() > 1);
-    int frame = m_ViewWidget->Frame();
+    assert(Proj().GetLayer(ActiveLayer()).NumFrames() > 1);
+    int frame = m_ViewWidget->FrameNum();
     Cmd* c= new Cmd_DeleteFrames(Proj(), frame, frame+1);
     AddCmd(c);
 }
 
 void EditorWindow::do_prevframe()
 {
-    int n = m_ViewWidget->Frame()-1;
+    int n = m_ViewWidget->FrameNum()-1;
     if(n<0)
         n=Proj().NumFrames()-1;
-    m_ViewWidget->SetFrame(n);
+    m_ViewWidget->SetFrameNum(n);
     RethinkWindowTitle();
 }
 
 void EditorWindow::do_nextframe()
 {
-    int n = m_ViewWidget->Frame()+1;
+    int n = m_ViewWidget->FrameNum()+1;
     if(n>=Proj().NumFrames())
         n=0;//Proj().NumFrames()-1;
-    m_ViewWidget->SetFrame(n);
+    m_ViewWidget->SetFrameNum(n);
     RethinkWindowTitle();
 }
 
@@ -693,11 +693,15 @@ void EditorWindow::do_tospritesheet()
 
 void EditorWindow::do_fromspritesheet()
 {
+    // TODO - multilayer!
+    assert(Proj().NumLayers()==1);
+    Layer& layer0 = Proj().GetLayer(0);
+
     FromSpritesheetDialog dlg(this, &Proj());
     if( dlg.exec() == QDialog::Accepted )
     {
         std::vector<Box> frames;
-        SplitSpritesheet(Proj().ImgConst(0).Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
+        SplitSpritesheet(layer0.GetFrameConst(0).Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
 
         // TODO: pass in frames
         Cmd* c= new Cmd_FromSpriteSheet(Proj(), dlg.getNWide(), frames.size());
@@ -995,11 +999,13 @@ void EditorWindow::RethinkWindowTitle()
     if( f.empty() )
         f = "Untitled";
 
-    int w = Proj().ImgConst(0).W();
-    int h = Proj().ImgConst(0).H();
+    //TODO! multilayer support
+    Layer& layer0 = Proj().GetLayer(0);
+    int w = layer0.GetFrameConst(0).W();
+    int h = layer0.GetFrameConst(0).H();
 
     char dim[32];
-    sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->Frame()+1,Proj().NumFrames() );
+    sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->FrameNum()+1,Proj().NumFrames() );
 
 
     std::string title = "[*]";

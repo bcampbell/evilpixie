@@ -1,5 +1,4 @@
 #include "qtapp.h"
-#include "../anim.h"
 #include "../exception.h"
 
 #include <cstdio>

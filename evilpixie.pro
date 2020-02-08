@@ -16,8 +16,7 @@ mac {
   LIBS += -framework Foundation
 }
 
-SOURCES += src/anim.cpp \
-    src/app.cpp \
+SOURCES += src/app.cpp \
     src/box.cpp \
     src/brush.cpp \
     src/cmd.cpp \
@@ -31,6 +30,7 @@ SOURCES += src/anim.cpp \
     src/hsv.cpp \
     src/img.cpp \
     src/img_convert.cpp \
+    src/layer.cpp \
     src/palette.cpp \
     src/project.cpp \
     src/quantise.cpp \
@@ -56,7 +56,7 @@ SOURCES += src/anim.cpp \
     src/qt/spritesheetdialogs.cpp \
     src/qt/main.cpp
 
-HEADERS += src/anim.h \
+HEADERS += src/app.h \
     src/box.h \
     src/brush.h \
     src/cmd.h \
@@ -69,6 +69,7 @@ HEADERS += src/anim.h \
     src/hsv.h \
     src/img.h \
     src/img_convert.h \
+    src/layer.h \
     src/palette.h \
     src/point.h \
     src/project.h \

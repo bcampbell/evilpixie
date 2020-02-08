@@ -1,7 +1,8 @@
 #ifndef CMD_H
 #define CMD_H
 
-#include "anim.h"
+#include "layer.h"
+#include "project.h"
 #include "point.h"
 #include "img.h"
 #include "brush.h"
@@ -46,11 +47,11 @@ private:
 class Cmd_Draw : public Cmd
 {
 public:
-    Cmd_Draw( Project& proj, int frame, Box const& affected, Img const& undoimg );
+    Cmd_Draw( Project& proj, ImgID const& target, Box const& affected, Img const& undoimg );
     virtual void Do();
     virtual void Undo();
 private:
-    int m_Frame;
+    ImgID m_Target;
     Img m_Img;
     Box m_Affected;
 };
@@ -69,7 +70,7 @@ private:
     void Swap();
     int m_First;
     int m_Last;
-    Anim m_FrameSwap;
+    Layer m_FrameSwap;
 };
 
 
@@ -95,7 +96,7 @@ public:
 private:
     int m_First;
     int m_Last;
-    Anim m_FrameSwap;
+    Layer m_FrameSwap;
 };
 
 

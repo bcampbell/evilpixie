@@ -2,23 +2,23 @@
 
 #include <impy.h>
 
-#include "anim.h"
+#include "layer.h"
 #include "img.h"
 #include "exception.h"
 #include "util.h"
 
 
-Anim::Anim() :
+Layer::Layer() :
     m_FPS(10)
 {
 }
 
-Anim::~Anim()
+Layer::~Layer()
 {
     Zap();
 }
 
-void Anim::Zap()
+void Layer::Zap()
 {
     while( !m_Frames.empty() )
     {
@@ -31,7 +31,7 @@ void Anim::Zap()
 static Img* from_im_img( im_img* srcimg, Palette& pal);
 
 /*
-void Anim::Dump() const
+void Layer::Dump() const
 {
     printf("Dump---\n");
     unsigned int i;
@@ -49,16 +49,16 @@ void Anim::Dump() const
 }
 */
 
-PixelFormat Anim::Fmt() const
+PixelFormat Layer::Fmt() const
     { return m_Frames.front()->Fmt(); }
 
-void Anim::TransferFrames(int srcfirst, int srclast, Anim& dest, int destfirst)
+void Layer::TransferFrames(int srcfirst, int srclast, Layer& dest, int destfirst)
 {
     dest.m_Frames.insert( dest.m_Frames.begin()+destfirst, m_Frames.begin()+srcfirst, m_Frames.begin()+srclast );
     m_Frames.erase(m_Frames.begin()+srcfirst, m_Frames.begin()+srclast);
 }
 
-void Anim::CalcBounds(Box& bound, int first, int last) const
+void Layer::CalcBounds(Box& bound, int first, int last) const
 {
     int n;
     bound = GetFrameConst(first).Bounds();
@@ -67,7 +67,7 @@ void Anim::CalcBounds(Box& bound, int first, int last) const
 }
 
 
-void Anim::Load( const char* filename )
+void Layer::Load( const char* filename )
 {
     ImErr err;
 
@@ -277,7 +277,7 @@ static im_img* to_im_img( Img const& img, Palette const& pal )
 
 
 
-void Anim::Save( const char* filename )
+void Layer::Save( const char* filename )
 {
     // sanity check
     std::string ext = ToLower(ExtName(filename));

@@ -1,10 +1,10 @@
 #include "sheet.h"
 #include "draw.h"
 #include "img.h"
-#include "anim.h"
+#include "layer.h"
 #include <cstdio>
 
-Box LayoutSpritesheet(Anim const& src, int nWide, std::vector<Box>& frames)
+Box LayoutSpritesheet(Layer const& src, int nWide, std::vector<Box>& frames)
 {
     assert(src.NumFrames()>0);
     assert(frames.empty());
@@ -59,7 +59,7 @@ void SplitSpritesheet(Box const& srcBox, int nWide, int nHigh, std::vector<Box>&
 
 
 // TODO: should return a set of bounding boxes for the offets
-Img* GenerateSpriteSheet(Anim const& src, int maxAcross)
+Img* GenerateSpriteSheet(Layer const& src, int maxAcross)
 {
     int nWide = src.NumFrames();
     int nHigh = 1;

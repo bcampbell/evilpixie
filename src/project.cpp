@@ -15,7 +15,8 @@ Project::Project( std::string const& filename ) :
     m_Expendable(false),
     m_Modified( false )
 {
-    m_Anim.Load( filename.c_str() );
+    m_Layer.Load( filename.c_str() );
+    m_Layers.push_back(&m_Layer);
     m_Filename = filename;
 }
 
@@ -28,9 +29,10 @@ Project::Project() :
     int h = 128;
 
     Palette* tmp = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
-    m_Anim.SetPalette(*tmp);
+    m_Layers.push_back(&m_Layer);
+    m_Layer.SetPalette(*tmp);
     delete tmp;
-    m_Anim.Append(new Img(FMT_I8,w,h));
+    m_Layer.Append(new Img(FMT_I8,w,h));
 }
 
 
@@ -42,11 +44,11 @@ Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frame
     if(!palette) {
         palette = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
     }
-    m_Anim.SetPalette(*palette);
+    m_Layer.SetPalette(*palette);
     delete palette;
     int i;
     for(i=0;i<num_frames;++i)
-        m_Anim.Append(new Img(fmt,w,h));
+        m_Layer.Append(new Img(fmt,w,h));
 }
 
 
@@ -72,7 +74,7 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
 
 void Project::ReplacePalette(Palette* newpalette)
 {
-    m_Anim.SetPalette(*newpalette);
+    m_Layer.SetPalette(*newpalette);
     delete newpalette;  // UGH!
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
@@ -82,23 +84,23 @@ void Project::ReplacePalette(Palette* newpalette)
 
 void Project::Save( std::string const& filename )
 {
-    m_Anim.Save(filename.c_str());
+    m_Layer.Save(filename.c_str());
     SetModifiedFlag(false);
     m_Filename = filename;
 }
 
 
 
-void Project::Damage( int frame, Box const& b )
+void Project::NotifyDamage(ImgID const& id, Box const& b )
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
-        (*it)->OnDamaged( frame,b );
+        (*it)->OnDamaged(id, b);
     }
 }
 
-void Project::Damage_FramesAdded(int first, int last)
+void Project::NotifyFramesAdded(int first, int last)
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
@@ -107,7 +109,7 @@ void Project::Damage_FramesAdded(int first, int last)
     }
 }
 
-void Project::Damage_FramesRemoved(int first, int last)
+void Project::NotifyFramesRemoved(int first, int last)
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
@@ -116,12 +118,12 @@ void Project::Damage_FramesRemoved(int first, int last)
     }
 }
 
-void Project::Damage_AnimReplaced()
+void Project::NotifyLayerReplaced()
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
-        (*it)->OnAnimReplaced();
+        (*it)->OnLayerReplaced();
     }
 }
 
@@ -129,12 +131,13 @@ void Project::Damage_AnimReplaced()
 
 
 
-void Project::Damage_Palette( int first, int cnt )
+void Project::NotifyPaletteChange( int first, int cnt )
 {
     std::set<ProjectListener*>::iterator it;
     if (cnt == 1)
     {
-        Colour c = GetColour(first);
+        // TODO: which palette?
+        Colour c = PaletteConst().GetColour(first);
         for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
             (*it)->OnPaletteChanged(first,c);
     } else {
@@ -146,15 +149,15 @@ void Project::Damage_Palette( int first, int cnt )
 
 
 
-PenColour Project::PickUpPen(Point const& pt, int frame) const
+PenColour Project::PickUpPen(ImgID const& id, Point const& pt) const
 {
-    Img const& srcimg = GetAnimConst().GetFrameConst(frame);
+    Img const& srcimg = GetImgConst(id);
     switch(srcimg.Fmt())
     {
     case FMT_I8:
         {
             I8 const* src = srcimg.PtrConst_I8(pt.x,pt.y);
-            return PenColour(GetColour(*src),*src);
+            return PenColour(PaletteConst().GetColour(*src),*src);
         }
         break;
     case FMT_RGBX8:

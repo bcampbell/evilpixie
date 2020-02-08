@@ -9,7 +9,7 @@ EditView::EditView( Editor& editor, int w, int h ) :
     m_PrevPos(-1,-1),
     m_Canvas( new Img(FMT_RGBX8,w,h ) ),
     m_ViewBox(0,0,w,h),
-    m_Frame(0),
+    m_Focus({0,0}),
     m_Zoom(4),
     m_Offset(0,0),
     m_Panning(false),
@@ -49,7 +49,7 @@ void EditView::Resize( int w, int h )
     ConfineView();
 
     // if view is wider/taller than image, center it
-    Box const& p = Proj().ImgConst(Frame()).Bounds();
+    Box const& p = FocusedImgConst().Bounds();
     Box v = ViewToProj( m_ViewBox );
     if( v.w>p.w)
         m_Offset.x = -(v.w - p.w) / 2;
@@ -76,12 +76,12 @@ void EditView::SetZoom( int zoom )
     Redraw(m_ViewBox);
 }
 
-void EditView::SetFrame( int frame )
+void EditView::SetFrameNum( int frame )
 {
     assert( frame>=0);
-    assert( frame<Proj().GetAnim().NumFrames());
+    assert( frame<Proj().GetLayer(m_Focus.layer).NumFrames());
 
-    m_Frame = frame;
+    m_Focus.frame = frame;
     ConfineView();
     DrawView(m_ViewBox);
     Redraw(m_ViewBox);
@@ -112,7 +112,7 @@ void EditView::AlignView( Point const& viewp, Point const& projp )
 // confine the view to keep as much of the image onscreen as possible.
 void EditView::ConfineView()
 {
-    Box const& p = Proj().ImgConst(Frame()).Bounds();
+    Box const& p = FocusedImgConst().Bounds();
     Box v = ViewToProj( m_ViewBox );
 #if 0
     if( p.W() < v.W() )
@@ -168,7 +168,7 @@ void EditView::ConfineView()
 
 void EditView::CenterView()
 {
-    Box const& p = Proj().ImgConst(Frame()).Bounds();
+    Box const& p = FocusedImgConst().Bounds();
     Box v = ViewToProj( m_ViewBox );
     m_Offset.x = -(v.w - p.w) / 2;
     m_Offset.y = -(v.h - p.h) / 2;
@@ -268,7 +268,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
     Box vb(viewbox);
     vb.ClipAgainst(m_ViewBox);
 
-    Img const& img = Proj().GetAnim().GetFrame(Frame());
+    Img const& img = FocusedImgConst();
     // get project bounds in view coords (unclipped)
     Box pbox(ProjToView(img.Bounds()));
 
@@ -387,10 +387,12 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 
 
 // called when project has been modified
-void EditView::OnDamaged( int frame, Box const& projdmg )
+void EditView::OnDamaged(ImgID const& id, Box const& projdmg)
 {
-    if (frame != m_Frame)
+    // TODO: handle layers with static image over all frames...
+    if (id.frame != m_Focus.frame || id.layer != m_Focus.layer) {
         return;
+    }
 
     Box viewdirtied;
 
@@ -411,7 +413,7 @@ void EditView::OnPaletteChanged( int, Colour const& )
 void EditView::OnPaletteReplaced()
 {
     // redraw the whole project
-    Box area(ProjToView(Proj().GetAnim().GetFrame(Frame()).Bounds()));
+    Box area(ProjToView(FocusedImgConst().Bounds()));
     Box affected;
     DrawView(area,&affected);
     Redraw(affected);
@@ -419,27 +421,27 @@ void EditView::OnPaletteReplaced()
 
 void EditView::OnFramesAdded(int first, int last)
 {
-    if(Frame()>first)
-        SetFrame(Frame()+(last-first));
+    if(FrameNum()>first)
+        SetFrameNum(FrameNum()+(last-first));
 }
 
 void EditView::OnFramesRemoved(int first, int last)
 {
-    if(Frame()>=first)
+    if(FrameNum()>=first)
     {
-        int newframe = Frame()-(last-first);
+        int newframe = FrameNum()-(last-first);
         if(newframe<0)
             newframe=0;
-        if(newframe>Proj().GetAnim().NumFrames()-1)
-            newframe = Proj().GetAnim().NumFrames()-1;
-        SetFrame(newframe);
+        if(newframe>Proj().GetLayer(m_Focus.layer).NumFrames()-1)
+            newframe = Proj().GetLayer(m_Focus.layer).NumFrames()-1;
+        SetFrameNum(newframe);
     }
 }
 
-void EditView::OnAnimReplaced()
+void EditView::OnLayerReplaced()
 {
-    assert(Proj().GetAnim().NumFrames() > 0);
-    SetFrame(0);
+    assert(Proj().GetLayer(m_Focus.layer).NumFrames() > 0);
+    SetFrameNum(0);
 }
 
 void EditView::AddCursorDamage( Box const& viewdmg )

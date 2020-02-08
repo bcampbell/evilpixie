@@ -153,7 +153,9 @@ void ToSpritesheetDialog::OnFramesRemoved(int /*first*/, int /*last*/)
 void ToSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
-    Box extent = LayoutSpritesheet(m_Proj->GetAnimConst(), NumAcross(), frames);
+    Layer const& layer0 = m_Proj->GetLayerConst(0);
+
+    Box extent = LayoutSpritesheet(layer0, NumAcross(), frames);
     /*
     printf("extent: %d,%d %dx%d\n",
             extent.x,
@@ -182,15 +184,19 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project* proj)
 {
     m_Proj->AddListener(this);
 
+    // TODO: multilayer support
+    assert(m_Proj->NumLayers()==1);
+    ImgID fook = {0,0};
+
     int initialWidth = 4;
     m_NWide = new QSpinBox();
-    m_NWide->setRange(1,proj->ImgConst(0).W());
+    m_NWide->setRange(1,proj->GetImgConst(fook).W());
     m_NWide->setValue(initialWidth);
     QLabel* widelabel = new QLabel(tr("Across:"));
     widelabel->setBuddy(m_NWide);
 
     m_NHigh = new QSpinBox();
-    m_NHigh->setRange(1,proj->ImgConst(0).H());
+    m_NHigh->setRange(1,proj->GetImgConst(fook).H());
     m_NHigh->setValue(initialWidth);
     QLabel* highlabel = new QLabel(tr("High:"));
     highlabel->setBuddy(m_NHigh);
@@ -252,8 +258,12 @@ void FromSpritesheetDialog::OnFramesRemoved(int /*first*/, int /*last*/)
 void FromSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
+    
+    // TODO: multilayer support
+    assert(m_Proj->NumLayers()==1);
+    ImgID fook = {0,0};
 
-    Box srcBox = m_Proj->ImgConst(0).Bounds();
+    Box srcBox = m_Proj->GetImgConst(fook).Bounds();
 
 
     SplitSpritesheet(srcBox,getNWide(), getNHigh(), frames);

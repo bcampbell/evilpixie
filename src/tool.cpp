@@ -29,7 +29,7 @@ public:
     ~DrawTransaction();
 
     // call AddDamage as often as needed, within Begin/End pairs
-    void BeginDamage(int frame);
+    void BeginDamage(ImgID const& targID);
     void AddDamage(Box const& affected);
     void EndDamage();
 
@@ -44,7 +44,7 @@ private:
     void flush();
 
     Project& m_Proj;
-    int m_Frame;
+    ImgID m_TargID;
     Img* m_Backup;
     Box m_Affected;
 
@@ -53,11 +53,12 @@ private:
 
 DrawTransaction::DrawTransaction( Project& proj) :
     m_Proj(proj),
-    m_Frame(-1),
     m_Backup(0),
     m_Affected( 0,0,0,0 ),           // start with nothing affected
     m_Batch( new Cmd_Batch(proj, Cmd::DONE))
-{
+{   
+    m_TargID.layer = -1;
+    m_TargID.frame = -1;
 }
 
 DrawTransaction::~DrawTransaction() {
@@ -72,25 +73,26 @@ DrawTransaction::~DrawTransaction() {
 
 
 
-void DrawTransaction::BeginDamage(int frame)
+void DrawTransaction::BeginDamage(ImgID const& targID)
 {
+    int frame = targID.frame;
     assert(frame>=0 && frame<m_Proj.NumFrames());
 
     // if we're changing frames, we need to wrap up the previous frame first
-    if (frame != m_Frame) {
+    if (targID != m_TargID) {
         flush();
 
-        m_Frame = frame;
-        m_Backup = new Img( m_Proj.ImgConst(frame) );
+        m_TargID = targID;
+        m_Backup = new Img(m_Proj.GetImgConst(targID));
     }
 }
 
 void DrawTransaction::AddDamage(Box const& affected)
 {
-    assert(m_Frame>=0 && m_Frame<m_Proj.NumFrames());
+    assert(m_TargID.frame>=0 && m_TargID.frame<m_Proj.NumFrames());
 
     assert( m_Backup->Bounds().Contains(affected) );
-    m_Proj.Damage(m_Frame,affected);
+    m_Proj.NotifyDamage(m_TargID, affected);
     m_Affected.Merge(affected);
 }
 
@@ -112,16 +114,17 @@ void DrawTransaction::flush()
 {
     if( !m_Affected.Empty()) {
         assert(m_Backup);
-        assert(m_Frame>=0 && m_Frame<m_Proj.NumFrames());
+        assert(m_TargID.frame>=0 && m_TargID.frame<m_Proj.NumFrames());
 
-        Cmd* c = new Cmd_Draw(m_Proj,m_Frame, m_Affected, *m_Backup);
+        Cmd* c = new Cmd_Draw(m_Proj, m_TargID, m_Affected, *m_Backup);
         m_Batch->Append(c);
         m_Affected.SetEmpty();
     }
     if(m_Backup) {
         delete m_Backup;
         m_Backup = 0;
-        m_Frame = -1;
+        m_TargID.frame = -1;
+        m_TargID.layer = -1;
     }
     assert(m_Backup==0);
 }
@@ -130,11 +133,6 @@ void DrawTransaction::Rollback()
 {
     flush();
     m_Batch->Undo();
-/*
-    Box dirty(m_Affected);
-    Blit(m_Backup,m_Affected, m_Proj.GetAnim().GetFrame(m_Frame), dirty);
-    m_Proj.Damage(m_Frame, dirty);
-*/
 }
 
 
@@ -155,9 +153,9 @@ static void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
 
     if (dm.mode == DrawMode::DM_NORMAL)
     {
-        // force mode to COLOUR when blitting rgb brush onto I8 project
-        PixelFormat projfmt = view.Proj().ImgConst(0).Fmt();
-        if (projfmt==FMT_I8 && b.Fmt() != FMT_I8)
+        // force mode to COLOUR when blitting rgb brush onto I8 layer
+        PixelFormat layerfmt = view.FocusedImgConst().Fmt();
+        if (layerfmt==FMT_I8 && b.Fmt() != FMT_I8)
                 dm.mode = DrawMode::DM_COLOUR;
 
         // force mask brushes to use pen colour
@@ -218,15 +216,15 @@ static void PlonkBrushToView( EditView& view, Point const& pos, Box& viewdmg, Bu
 
 
 // helper to draw the current brush on the project, using the current editor settings
-static void PlonkBrushToProj( Editor& ed, int frame, Point const& pos, Box& projdmg, Button button )
+static void PlonkBrushToProj(EditView& view, Point const& pos, Box& projdmg, Button button)
 {
-    Project& proj = ed.Proj();
+    Editor& ed = view.Ed();
     Brush const& brush = ed.CurrentBrush();
     Box dmg = brush.Bounds();
     dmg.Translate(pos);
     dmg.Translate(-brush.Handle());
 
-    Img& target = proj.GetAnim().GetFrame(frame); 
+    Img& target = view.FocusedImg();
     DrawMode dm = ed.Mode();
 
     PenColour pen = (button==DRAW) ? ed.FGPen() : ed.BGPen();
@@ -323,7 +321,7 @@ void PencilTool::OnDown( EditView& view, Point const& p, Button b )
     m_Tx = new DrawTransaction(view.Proj());
 
     // draw 1st pixel
-    m_Tx->BeginDamage(view.Frame());
+    m_Tx->BeginDamage(view.Focus());
     Plot_cb( p.x, p.y, (void*)this );
     m_Tx->EndDamage();
 }
@@ -337,7 +335,7 @@ void PencilTool::OnMove( EditView& view, Point const& p)
     }
 
     assert(m_Tx);
-    m_Tx->BeginDamage(view.Frame());
+    m_Tx->BeginDamage(view.Focus());
     // feels 'wrong' to do continuous lines if grid is on...
     if( Owner().GridActive() )
         Plot_cb( p.x, p.y, (void*)this );
@@ -378,11 +376,10 @@ void PencilTool::Plot_cb( int x, int y, void* user )
 {
 
     PencilTool* that = (PencilTool*)user;
-    Editor& ed = that->Owner();
     EditView& view = *that->m_View;
 
     Box dmg;
-    PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
+    PlonkBrushToProj(view, Point(x,y), dmg, that->m_DownButton );
 
     assert(that->m_Tx != 0);
     that->m_Tx->AddDamage( dmg );
@@ -435,7 +432,7 @@ void LineTool::OnUp( EditView& view, Point const& p, Button b )
         DrawTransaction tx(view.Proj());
         m_To = p;
         m_Tx = &tx; // to give plot_cb access
-        tx.BeginDamage(view.Frame());
+        tx.BeginDamage(view.Focus());
         WalkLine( m_From.x, m_From.y, m_To.x, m_To.y, Plot_cb, this );
         tx.EndDamage();
         m_Tx = 0;
@@ -451,11 +448,10 @@ void LineTool::OnUp( EditView& view, Point const& p, Button b )
 void LineTool::Plot_cb( int x, int y, void* user )
 {
     LineTool* that = (LineTool*)user;
-    Editor& ed = that->Owner();
     EditView& view = *that->m_View;
 
     Box dmg;
-    PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
+    PlonkBrushToProj(view, Point(x,y), dmg, that->m_DownButton);
 
     that->m_Tx->AddDamage(dmg);
 }
@@ -545,12 +541,12 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
         pickup.h -=1;
     }
 
-    pickup.ClipAgainst( proj.GetAnim().GetFrame(view.Frame()).Bounds() );
+    pickup.ClipAgainst(view.FocusedImg().Bounds());
 
     if( pickup.Empty() )
         return;
 
-    Brush* brush = new Brush( FULLCOLOUR, proj.GetAnim().GetFrame(view.Frame()), pickup, Owner().BGPen() );
+    Brush* brush = new Brush( FULLCOLOUR, view.FocusedImgConst(), pickup, Owner().BGPen() );
 
     // copy in palette
     brush->SetPalette( proj.PaletteConst() );
@@ -567,8 +563,8 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
         // don't really need a draw transaction here (could just directly craft a Cmd_Draw())
         // but hey :-)
         DrawTransaction tx(view.Proj());
-        tx.BeginDamage(view.Frame());
-        proj.GetAnim().GetFrame(view.Frame()).FillBox( Owner().BGPen(), pickup );
+        tx.BeginDamage(view.Focus());
+        view.FocusedImg().FillBox( Owner().BGPen(), pickup );
         tx.AddDamage(pickup );
         tx.EndDamage();
         Cmd* c = tx.Commit();
@@ -592,7 +588,7 @@ void BrushPickupTool::DrawCursor( EditView& view )
     }
 
     Box pickup( m_Anchor, m_DragPoint );
-    pickup.ClipAgainst( view.Proj().GetAnim().GetFrame(view.Frame()).Bounds() );
+    pickup.ClipAgainst(view.FocusedImgConst().Bounds());
 
     Box vb = view.ProjToView( pickup );
     view.Canvas().OutlineBox( white,vb );
@@ -622,7 +618,7 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
 
     if( b != DRAW && b != ERASE )
         return;
-    if( !proj.GetAnim().GetFrame(view.Frame()).Bounds().Contains(p ) )
+    if( !view.FocusedImgConst().Bounds().Contains(p ) )
         return;
 
     PenColour fillcolour = Owner().FGPen();
@@ -632,8 +628,8 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
     {
         DrawTransaction tx(proj);
         Box dmg;
-        tx.BeginDamage(view.Frame());
-        FloodFill( proj.GetAnim().GetFrame(view.Frame()), p, fillcolour, dmg );
+        tx.BeginDamage(view.Focus());
+        FloodFill(view.FocusedImg(), p, fillcolour, dmg);
         tx.AddDamage( dmg );
         tx.EndDamage();
         if( !dmg.Empty() ) {
@@ -709,7 +705,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
 
     DrawTransaction tx(view.Proj());
 
-    tx.BeginDamage(view.Frame());
+    tx.BeginDamage(view.Focus());
 
     // top (including left and rightmost pixels)
     dmg.SetEmpty();
@@ -717,7 +713,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( x=rect.XMin(); x<=rect.XMax(); ++x )
     {
         Box tmp;
-        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj(view, Point(x,y), tmp, m_DownButton);
         dmg.Merge( tmp );
     }
     tx.AddDamage( dmg );
@@ -728,7 +724,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( y=rect.YMin()+1; y<=rect.YMax()-1; ++y )
     {
         Box tmp;
-        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj(view, Point(x,y), tmp, m_DownButton);
         dmg.Merge( tmp );
     }
     tx.AddDamage( dmg );
@@ -739,7 +735,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( x=rect.XMax(); x>=rect.XMin(); --x )
     {
         Box tmp;
-        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj(view, Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     tx.AddDamage( dmg );
@@ -750,7 +746,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
     for( y=rect.YMax()-1; y>=rect.YMin()+1; --y )
     {
         Box tmp;
-        PlonkBrushToProj( view.Ed(), view.Frame(), Point(x,y), tmp, m_DownButton );
+        PlonkBrushToProj(view, Point(x,y), tmp, m_DownButton );
         dmg.Merge( tmp );
     }
     tx.AddDamage( dmg );
@@ -869,11 +865,11 @@ void FilledRectTool::OnUp( EditView& view, Point const& p, Button b )
     Project& proj = view.Proj();
 
     m_To = p;
-    Img& img = proj.GetAnim().GetFrame(view.Frame());
+    Img& img = view.FocusedImg();
     Box r( m_From, m_To );
 
     DrawTransaction tx(view.Proj());
-    tx.BeginDamage(view.Frame());
+    tx.BeginDamage(view.Focus());
     if( m_DownButton == DRAW )
         img.FillBox( Owner().FGPen(),r );
     else    //if( m_DownButton == ERASE )
@@ -965,7 +961,7 @@ void CircleTool::OnUp( EditView& view, Point const& p, Button b )
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
 
-    tx.BeginDamage(view.Frame());
+    tx.BeginDamage(view.Focus());
     WalkEllipse( m_From.x, m_From.y, rx, ry, Plot_cb, this );
     tx.EndDamage();
     Cmd* c= tx.Commit();
@@ -984,7 +980,7 @@ void CircleTool::Plot_cb( int x, int y, void* user )
     EditView& view = *that->m_View;
 
     Box dmg;
-    PlonkBrushToProj(ed,view.Frame(),Point(x,y), dmg, that->m_DownButton );
+    PlonkBrushToProj(view, Point(x,y), dmg, that->m_DownButton );
     that->m_Tx->AddDamage(dmg);
 }
 
@@ -1077,7 +1073,7 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
     m_Tx = &tx;
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
-    tx.BeginDamage(view.Frame());
+    tx.BeginDamage(view.Focus());
     WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
     tx.EndDamage();
     Cmd* c = tx.Commit();
@@ -1097,9 +1093,9 @@ void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
 
     Box b( x0,y,x1-x0,1 );
     if( that->m_DownButton == DRAW )
-        proj.GetAnim().GetFrame(view.Frame()).FillBox(that->Owner().FGPen(),b);
+        view.FocusedImg().FillBox(that->Owner().FGPen(),b);
     else if( that->m_DownButton == ERASE )
-        proj.GetAnim().GetFrame(view.Frame()).FillBox(that->Owner().BGPen(),b);
+        view.FocusedImg().FillBox(that->Owner().BGPen(),b);
     that->m_Tx->AddDamage(b);
 }
 
@@ -1167,10 +1163,10 @@ void EyeDropperTool::OnDown( EditView& view, Point const& p, Button b )
     if( b != DRAW && b != ERASE )
         return;
     Project& proj = view.Proj();
-    if( !proj.GetAnim().GetFrame(view.Frame()).Bounds().Contains(p ) )
+    if( !view.FocusedImgConst().Bounds().Contains(p ) )
         return;
 
-    PenColour c = proj.PickUpPen(p, view.Frame());
+    PenColour c = proj.PickUpPen(view.Focus(), p);
 
     if( b == DRAW )
         Owner().SetFGPen(c);

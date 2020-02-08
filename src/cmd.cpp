@@ -1,35 +1,36 @@
 #include "cmd.h"
-#include "anim.h"
+#include "layer.h"
 #include "draw.h"
 #include "sheet.h"
 #include "project.h"
 #include <assert.h>
 #include <cstdio>
 
-Cmd_Draw::Cmd_Draw( Project& proj, int frame, Box const& affected, Img const& undoimg ) :
-    Cmd( proj, DONE ),
-    m_Frame(frame),
-    m_Img( undoimg, affected ),
+Cmd_Draw::Cmd_Draw(Project& proj, ImgID const& target, Box const& affected, Img const& undoimg) :
+    Cmd(proj, DONE),
+    m_Target(target),
+    m_Img(undoimg, affected),
     m_Affected( affected )
 {
-
 }
 
 void Cmd_Draw::Do()
 {
     assert( State() == NOT_DONE );
     Box dirty( m_Affected );
-    BlitSwap( m_Img, m_Img.Bounds(), Proj().GetAnim().GetFrame(m_Frame), dirty );
-    Proj().Damage( m_Frame, dirty );
-    SetState( DONE );
+    Img& targImg = Proj().GetImg(m_Target);
+    BlitSwap(m_Img, m_Img.Bounds(), targImg, dirty);
+    Proj().NotifyDamage(m_Target, dirty);
+    SetState(DONE);
 }
 
 void Cmd_Draw::Undo()
 {
     assert( State() == DONE );
     Box dirty( m_Affected );
-    BlitSwap( m_Img, m_Img.Bounds(), Proj().GetAnim().GetFrame(m_Frame), dirty );
-    Proj().Damage( m_Frame, dirty );
+    Img& targImg = Proj().GetImg(m_Target);
+    BlitSwap( m_Img, m_Img.Bounds(), targImg, dirty );
+    Proj().NotifyDamage(m_Target, dirty);
     SetState( NOT_DONE );
 }
 
@@ -39,11 +40,15 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
     m_First(framefirst),
     m_Last(framelast)
 {
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+
     // populate frameswap with the resized frames
     int n;
     for(n=m_First; n<m_Last; ++n)
     {
-        Img const& src_img = Proj().GetAnim().GetFrameConst(n);
+        ImgID id = {0,n};
+        Img const& src_img = Proj().GetImgConst(id);
         Img* dest_img = new Img(src_img.Fmt(), new_area.w, new_area.h);
         Box foo(dest_img->Bounds());
         dest_img->FillBox(fillpen,foo);
@@ -64,20 +69,25 @@ Cmd_Resize::~Cmd_Resize()
 
 void Cmd_Resize::Swap()
 {
-    Anim tmp;
-    Proj().GetAnim().TransferFrames(m_First, m_Last, tmp, 0);
-    m_FrameSwap.TransferFrames(0,m_FrameSwap.NumFrames(), Proj().GetAnim(), m_First);
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& targLayer = Proj().GetLayer(0);
+
+    Layer tmp;
+    targLayer.TransferFrames(m_First, m_Last, tmp, 0);
+    m_FrameSwap.TransferFrames(0,m_FrameSwap.NumFrames(), targLayer, m_First);
     assert(m_FrameSwap.NumFrames()==0);
     tmp.TransferFrames(0,tmp.NumFrames(),m_FrameSwap,0);
 
     Box b1,b2;
-    Proj().GetAnim().CalcBounds(b1, m_First, m_Last);
+    targLayer.CalcBounds(b1, m_First, m_Last);
     m_FrameSwap.CalcBounds(b2, 0, m_FrameSwap.NumFrames());
     b1.Merge(b2);
     int n;
     for( n=m_First; n<m_Last; ++n)
     {
-        Proj().Damage(n, b1);
+        ImgID id = {0,n};   // TODO: multilayer...
+        Proj().NotifyDamage(id, b1);
     }
 }
 
@@ -110,26 +120,34 @@ Cmd_InsertFrames::~Cmd_InsertFrames()
 
 void Cmd_InsertFrames::Do()
 {
-    Img const& srcimg(Proj().GetAnim().GetFrameConst(m_Pos));
-    Anim tmp;
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& targLayer = Proj().GetLayer(0);
+
+    Img const& srcimg(targLayer.GetFrameConst(m_Pos));
+    Layer tmp;
     int i;
     for(i=0;i<m_Num;++i)
         tmp.Append(new Img(srcimg));
 
-    tmp.TransferFrames(0,tmp.NumFrames(), Proj().GetAnim(),m_Pos+1);
+    tmp.TransferFrames(0,tmp.NumFrames(), targLayer, m_Pos+1);
 
-    Proj().Damage_FramesAdded(m_Pos+1,m_Pos+1+m_Num);
+    Proj().NotifyFramesAdded(m_Pos+1,m_Pos+1+m_Num);
     SetState( DONE );
 }
 
 
 void Cmd_InsertFrames::Undo()
 {
-    Anim tmp;
-    Proj().GetAnim().TransferFrames(m_Pos+1,m_Pos+1+m_Num,tmp,0);
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& targLayer = Proj().GetLayer(0);
+
+    Layer tmp;
+    targLayer.TransferFrames(m_Pos+1,m_Pos+1+m_Num,tmp,0);
     // tmp will delete the frames as it goes out of scope
-    Proj().Damage_FramesRemoved(m_Pos+1,m_Pos+1+m_Num);
-    SetState( NOT_DONE );
+    Proj().NotifyFramesRemoved(m_Pos+1, m_Pos + 1 + m_Num);
+    SetState(NOT_DONE);
 }
 
 
@@ -151,17 +169,23 @@ Cmd_DeleteFrames::~Cmd_DeleteFrames()
 
 void Cmd_DeleteFrames::Do()
 {
-    Proj().GetAnim().TransferFrames(m_First, m_Last, m_FrameSwap,0);
-    Proj().Damage_FramesRemoved(m_First,m_Last);
-    SetState( DONE );
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& targLayer = Proj().GetLayer(0);
+    targLayer.TransferFrames(m_First, m_Last, m_FrameSwap,0);
+    Proj().NotifyFramesRemoved(m_First,m_Last);
+    SetState(DONE);
 }
 
 
 void Cmd_DeleteFrames::Undo()
 {
-    m_FrameSwap.TransferFrames( 0,m_FrameSwap.NumFrames(), Proj().GetAnim(), m_First);
-    Proj().Damage_FramesAdded(m_First,m_Last);
-    SetState( NOT_DONE );
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& targLayer = Proj().GetLayer(0);
+    m_FrameSwap.TransferFrames( 0,m_FrameSwap.NumFrames(), targLayer, m_First);
+    Proj().NotifyFramesAdded(m_First,m_Last);
+    SetState(NOT_DONE);
 }
 
 
@@ -187,34 +211,39 @@ Cmd_ToSpriteSheet::~Cmd_ToSpriteSheet()
 
 void Cmd_ToSpriteSheet::Do()
 {
-    Anim& anim = Proj().GetAnim();
-    Img* sheet = GenerateSpriteSheet(anim,m_NWide);
-    m_NumFrames = anim.NumFrames();
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& layer = Proj().GetLayer(0);
 
-    anim.Zap();
-    anim.Append(sheet);
+    Img* sheet = GenerateSpriteSheet(layer, m_NWide);
+    m_NumFrames = layer.NumFrames();
 
-    Proj().Damage_AnimReplaced();
-    SetState( DONE );
+    layer.Zap();
+    layer.Append(sheet);
+
+    Proj().NotifyLayerReplaced();
+    SetState(DONE);
 }
 
 
 void Cmd_ToSpriteSheet::Undo()
 {
-    Anim& anim = Proj().GetAnim();
-    assert(anim.NumFrames()==1);
-    Img const& src = anim.GetFrameConst(0);
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& targLayer = Proj().GetLayer(0);
+
+    assert(targLayer.NumFrames()==1);
+    Img const& src = targLayer.GetFrameConst(0);
 
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
-    anim.Zap();
+    targLayer.Zap();
     unsigned int n;
-    for(n=0;n<frames.size();++n)
-    {
-        anim.Append(frames[n]);
+    for(n=0;n<frames.size();++n) {
+        targLayer.Append(frames[n]);
     }
-    Proj().Damage_AnimReplaced();
-    SetState( NOT_DONE );
+    Proj().NotifyLayerReplaced();
+    SetState(NOT_DONE);
 }
 
 //-----------
@@ -238,32 +267,38 @@ Cmd_FromSpriteSheet::~Cmd_FromSpriteSheet()
 
 void Cmd_FromSpriteSheet::Do()
 {
-    Anim& anim = Proj().GetAnim();
-    assert(anim.NumFrames()==1);
-    Img const& src = anim.GetFrameConst(0);
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& layer = Proj().GetLayer(0);
+    assert(layer.NumFrames()==1);
+
+    Img const& src = layer.GetFrameConst(0);
 
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
-    anim.Zap();
+    layer.Zap();
     unsigned int n;
     for(n=0;n<frames.size();++n)
     {
-        anim.Append(frames[n]);
+        layer.Append(frames[n]);
     }
-    Proj().Damage_AnimReplaced();
+    Proj().NotifyLayerReplaced();
     SetState( DONE );
 }
 
 void Cmd_FromSpriteSheet::Undo()
 {
-    Anim& anim = Proj().GetAnim();
-    Img* sheet = GenerateSpriteSheet(anim,m_NWide);
-    m_NumFrames = anim.NumFrames();
+    // TODO: figure out what to do with multiple layers
+    assert(Proj().NumLayers() == 1);
+    Layer& layer = Proj().GetLayer(0);
 
-    anim.Zap();
-    anim.Append(sheet);
+    Img* sheet = GenerateSpriteSheet(layer,m_NWide);
+    m_NumFrames = layer.NumFrames();
 
-    Proj().Damage_AnimReplaced();
+    layer.Zap();
+    layer.Append(sheet);
+
+    Proj().NotifyLayerReplaced();
     SetState( NOT_DONE );
 }
 
@@ -288,7 +323,8 @@ Cmd_PaletteModify::~Cmd_PaletteModify()
 
 void Cmd_PaletteModify::swap()
 {
-    Palette& pal = Proj().GetAnim().GetPalette();
+    assert(Proj().NumLayers()==1);  // TODO: figure out multilayer behavour!
+    Palette& pal = Proj().GetLayer(0).GetPalette();
     int i;
     for (i=0; i<m_Cnt; ++i)
     {
@@ -297,7 +333,7 @@ void Cmd_PaletteModify::swap()
         m_Colours[i] = tmp;
     }
 
-    Proj().Damage_Palette(m_First, m_Cnt);
+    Proj().NotifyPaletteChange(m_First, m_Cnt);
 }
 
 void Cmd_PaletteModify::Do()
@@ -323,9 +359,10 @@ bool Cmd_PaletteModify::Merge( int idx, Colour const& newc)
     if (State()!=DONE)
         return false;
 
-    Palette& pal = Proj().GetAnim().GetPalette();
+    assert(Proj().NumLayers()==1);  // TODO: figure out multilayer behavour!
+    Palette& pal = Proj().GetLayer(0).GetPalette();
     pal.SetColour(m_First, newc);
-    Proj().Damage_Palette(m_First, m_Cnt);
+    Proj().NotifyPaletteChange(m_First, m_Cnt);
     return true;
 }
 

@@ -3,17 +3,18 @@
 #include "project.h"
 #include "quantise.h"
 
-Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, PixelFormat newFmt, int nColours) :
-    Cmd(proj,NOT_DONE)
+Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, int layerNum, PixelFormat newFmt, int nColours) :
+    Cmd(proj,NOT_DONE),
+    m_LayerNum(layerNum)
 {
-    Anim const& srcAnim = Proj().GetAnimConst();
+    Layer const& srcLayer = Proj().GetLayerConst(m_LayerNum);
     Palette const& srcPalette = Proj().PaletteConst();
 
     // Calculate a palette if we need one.
-    if (nColours > 0 && srcAnim.NumFrames() > 0) {
+    if (nColours > 0 && srcLayer.NumFrames() > 0) {
         // TODO: for global palette, need to take all frames into consideration!!!
         std::vector<Colour> quantised;
-        CalculatePalette(srcAnim.GetFrameConst(0), quantised, nColours, &srcPalette);
+        CalculatePalette(srcLayer.GetFrameConst(0), quantised, nColours, &srcPalette);
         Palette newPalette(nColours);
         for (int i=0; i<(int)quantised.size(); ++i) {
             newPalette.SetColour(i, quantised[i]);
@@ -23,9 +24,9 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, PixelFormat newFmt, int nColours) :
 
     // populate frameswap with converted frames
     int n;
-    for (n = 0; n < srcAnim.NumFrames(); ++n)
+    for (n = 0; n < srcLayer.NumFrames(); ++n)
     {
-        Img const& srcImg = srcAnim.GetFrameConst(n);
+        Img const& srcImg = srcLayer.GetFrameConst(n);
         Img* destImg = nullptr;
         switch (srcImg.Fmt()) {
             case FMT_I8:
@@ -66,28 +67,22 @@ Cmd_ChangeFmt::~Cmd_ChangeFmt()
 
 void Cmd_ChangeFmt::Swap()
 {
-    Anim& anim = Proj().GetAnim();
-    Anim tmp;
+    Layer& layer = Proj().GetLayer(m_LayerNum);
+    Layer tmp;
 
     // swap the palettes
-    tmp.SetPalette(anim.GetPaletteConst());
-    anim.SetPalette(m_FrameSwap.GetPaletteConst());
+    tmp.SetPalette(layer.GetPaletteConst());
+    layer.SetPalette(m_FrameSwap.GetPaletteConst());
     m_FrameSwap.SetPalette(tmp.GetPaletteConst());
 
     // swap the frames
-    anim.TransferFrames(0, anim.NumFrames(), tmp, 0);
-    m_FrameSwap.TransferFrames(0, m_FrameSwap.NumFrames(), anim, 0);
+    layer.TransferFrames(0, layer.NumFrames(), tmp, 0);
+    m_FrameSwap.TransferFrames(0, m_FrameSwap.NumFrames(), layer, 0);
     assert(m_FrameSwap.NumFrames() == 0);
     tmp.TransferFrames(0, tmp.NumFrames(), m_FrameSwap, 0);
 
     // notify damage.
-    Proj().Damage_Palette(0, anim.GetPaletteConst().NColours);
-    int n;
-    for (n = 0; n < anim.NumFrames(); ++n) {
-        Proj().Damage(n, anim.GetFrameConst(n).Bounds());
-    }
-
-
+    Proj().NotifyLayerReplaced();
 }
 
 void Cmd_ChangeFmt::Do()

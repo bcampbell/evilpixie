@@ -7,15 +7,16 @@
 class Cmd_ChangeFmt : public Cmd
 {
 public:
-    Cmd_ChangeFmt(Project& proj, PixelFormat newFmt, int nColours);
+    Cmd_ChangeFmt(Project& proj, int layerNum, PixelFormat newFmt, int nColours);
     virtual ~Cmd_ChangeFmt();
     virtual void Do();
     virtual void Undo();
 private:
     void Swap();
+    int m_LayerNum;
     int m_First;
     int m_Last;
-    Anim m_FrameSwap;
+    Layer m_FrameSwap;
 };
 
 #endif // CMD_CHANGEFMT_H

@@ -24,8 +24,9 @@ Editor::Editor( Project* proj ) :
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);
 
-    m_BGPen = PenColour(proj->GetColour(0),0);
-    m_FGPen = PenColour(proj->GetColour(1),1);
+    Palette const& pal = Proj().PaletteConst();
+    m_BGPen = PenColour(pal.GetColour(0), 0);
+    m_FGPen = PenColour(pal.GetColour(1), 1);
 }
 
 

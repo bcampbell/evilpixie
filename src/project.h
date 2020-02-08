@@ -7,7 +7,7 @@
 #include <vector>
 #include <string>
 
-#include "anim.h"
+#include "layer.h"
 #include "point.h"
 #include "colours.h"
 #include "palette.h"
@@ -16,6 +16,21 @@
 
 class Tool;
 class ProjectListener;
+
+// helper to identify a single image in the project.
+struct ImgID
+{
+    int layer,frame;
+};
+
+inline bool operator==(ImgID const& a, ImgID const&b) {
+    return a.layer == b.layer && a.frame == b.frame;
+}
+
+inline bool operator!=(ImgID const& a, ImgID const&b) {
+    return a.layer != b.layer || a.frame != b.frame;
+}
+
 
 struct ProjSettings
 {
@@ -65,44 +80,51 @@ public:
     void Save( std::string const& filename);
 
     // pixel access
-    Anim& GetAnim() { return m_Anim; }
-    Anim const& GetAnimConst() const { return m_Anim; }
+    Layer& GetLayer(int i) { return *m_Layers[i]; }
+    Layer const& GetLayerConst(int i) const { return *m_Layers[i]; }
+    int NumLayers() const { return (int)m_Layers.size(); }
+
     // shortcuts
-    //Img& Img(int frame) { return m_Anim.GetFrame(frame); }
-    Img const& ImgConst(int frame) const { return m_Anim.GetFrameConst(frame); }
+    Img& GetImg(ImgID const& id) {
+        assert(id.layer>=0 && id.layer<m_Layers.size());
+        Layer* l = m_Layers[id.layer];
+        return l->GetFrame(id.frame);
+    }
+    Img const& GetImgConst(ImgID const& id) const {
+        assert(id.layer >= 0 && id.layer < m_Layers.size());
+        Layer const* l = m_Layers[id.layer];
+        Img const& img = l->GetFrameConst(id.frame);
+        assert(img.Bounds().x==0);
+        return img;
+    }
 
 
-    PixelFormat Fmt() const { return m_Anim.GetFrameConst(0).Fmt(); }
-    int NumFrames() const { return m_Anim.NumFrames(); }
+    PixelFormat Fmt() const { return m_Layer.GetFrameConst(0).Fmt(); }
+    int NumFrames() const { return m_Layer.NumFrames(); }
 
-    PenColour PickUpPen(Point const& pt, int frame) const;
+    PenColour PickUpPen(ImgID const& id, Point const& pt) const;
 
-    // kill!
-    // palette manipulation
-	Colour const& GetColour(int n ) const { return GetAnimConst().GetPaletteConst().GetColour(n); }
-	void SetColour( int n, Colour const& c ) { GetAnim().GetPalette().SetColour(n,c); }
-//    Colour const* GetPaletteConst() const { return GetAnimConst().GetPaletteConst().rawconst(); }
-
-    Palette const& PaletteConst() const { return m_Anim.GetPaletteConst(); }
+    // TODO: KILL THESE
+    Palette const& PaletteConst() const { return m_Layer.GetPaletteConst(); }
+    Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
 
     // return current filename of project (empty string if no name)
     std::string const& Filename() const { return m_Filename; }
 
-    //--------------------------------------
-    // Interface for Cmd to use
-    //
-    // tell project it's been modified
-    // (within draw operation, use Draw_Damage() instead!)
-	void Damage( int frame, Box const& b );
-
+    // --------------------------------------
+    // Notifcation fns. To be called when project is fiddled with.
+    // --------------------------------------
+	void NotifyDamage(ImgID const& target, Box const& b);
 
     // notify operations on frames in range [first,last)
-    void Damage_FramesAdded(int first, int last);
-    void Damage_FramesRemoved(int first, int last);
-    void Damage_AnimReplaced();
+    void NotifyFramesAdded(int first, int last);
+    void NotifyFramesRemoved(int first, int last);
+
+    // Layer completely changed.
+    void NotifyLayerReplaced();
 
     // notify palette modified
-    void Damage_Palette(int first, int cnt);
+    void NotifyPaletteChange(int first, int cnt);
 
     void SetModifiedFlag( bool newmodifiedflag );
 private:
@@ -114,9 +136,8 @@ private:
 
     bool m_Expendable;
 
-
-    // anim stores all the image data (even if it's a single frame anim :-)
-    Anim m_Anim;
+    std::vector<Layer*> m_Layers;
+    Layer m_Layer;  // KILL KILL KILL!
 
 
     // has project been modified?
