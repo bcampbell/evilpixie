@@ -16,11 +16,11 @@ public:
 
     int NumFrames() const { return m_Frames.size(); }
     Img& GetFrame(int n) {
-        assert(n >= 0 && n < m_Frames.size());
+        assert(n >= 0 && n < (int)m_Frames.size());
         return *m_Frames[n];
     }
     Img const& GetFrameConst(int n) const {
-        assert(n >= 0 && n < m_Frames.size());
+        assert(n >= 0 && n < (int)m_Frames.size());
         return *m_Frames[n];
     }
     Palette& GetPalette() { return m_Palette; }

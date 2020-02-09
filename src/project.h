@@ -17,10 +17,16 @@
 class Tool;
 class ProjectListener;
 
-// helper to identify a single image in the project.
+// id to get at images within the project.
 struct ImgID
 {
-    int layer,frame;
+    ImgID(int layerIdx = -1, int frameIdx = -1) :
+        layer(layerIdx),
+        frame(frameIdx)
+    {}
+
+    int layer;  // -1 = global: all layers and frames
+    int frame;  // -1 = all frames in layer
 };
 
 inline bool operator==(ImgID const& a, ImgID const&b) {
@@ -86,12 +92,12 @@ public:
 
     // shortcuts
     Img& GetImg(ImgID const& id) {
-        assert(id.layer>=0 && id.layer<m_Layers.size());
+        assert(id.layer >= 0 && id.layer < (int)m_Layers.size());
         Layer* l = m_Layers[id.layer];
         return l->GetFrame(id.frame);
     }
     Img const& GetImgConst(ImgID const& id) const {
-        assert(id.layer >= 0 && id.layer < m_Layers.size());
+        assert(id.layer >= 0 && id.layer < (int)m_Layers.size());
         Layer const* l = m_Layers[id.layer];
         Img const& img = l->GetFrameConst(id.frame);
         assert(img.Bounds().x==0);
@@ -125,6 +131,7 @@ public:
 
     // notify palette modified
     void NotifyPaletteChange(int first, int cnt);
+    void NotifyPaletteReplaced(ImgID const& id);
 
     void SetModifiedFlag( bool newmodifiedflag );
 private:

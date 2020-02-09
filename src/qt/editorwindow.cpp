@@ -368,11 +368,27 @@ void EditorWindow::OnPaletteChanged( int n, Colour const& c )
 
 }
 
+void EditorWindow::OnLayerReplaced() {
+    ImgID everywhere(-1,-1);
+    OnPaletteReplaced(everywhere);
+}
 
-void EditorWindow::OnPaletteReplaced()
+void EditorWindow::OnPaletteReplaced(ImgID const& id)
 {
     Palette const& pal = Proj().PaletteConst();
     m_PaletteWidget->SetPalette(pal);
+
+    // Ensure pen validity.
+    int n = pal.NumColours();
+    PenColour fg = FGPen();
+    if (fg.IdxValid() && fg.idx() >= n) {
+        fgColourPicked(n-1);
+    }
+    PenColour bg = BGPen();
+    if (bg.IdxValid() && bg.idx() >= n) {
+        bgColourPicked(n-1);
+    }
+    RethinkWindowTitle();
 }
 
 void EditorWindow::OnModifiedFlagChanged( bool )

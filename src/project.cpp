@@ -71,14 +71,13 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
     }
 }
 
-
+// KILL THIS!
 void Project::ReplacePalette(Palette* newpalette)
 {
     m_Layer.SetPalette(*newpalette);
     delete newpalette;  // UGH!
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-        (*it)->OnPaletteReplaced();
+    ImgID everything(-1,-1);
+    NotifyPaletteReplaced(everything);
 }
 
 
@@ -138,11 +137,21 @@ void Project::NotifyPaletteChange( int first, int cnt )
     {
         // TODO: which palette?
         Colour c = PaletteConst().GetColour(first);
-        for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-            (*it)->OnPaletteChanged(first,c);
+        for (auto l : m_Listeners) {
+            l->OnPaletteChanged(first,c);
+        }
     } else {
-        for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-            (*it)->OnPaletteReplaced();
+        for (auto l : m_Listeners) {
+            ImgID id(-1,-1);
+            l->OnPaletteReplaced(id);
+        }
+    }
+}
+
+void Project::NotifyPaletteReplaced(ImgID const& id)
+{
+    for (auto l: m_Listeners) {
+        l->OnPaletteReplaced(id);
     }
 }
 

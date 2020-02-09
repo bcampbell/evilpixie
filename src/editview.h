@@ -26,7 +26,7 @@ public:
     // ProjectListener Implementation
 	virtual void OnDamaged(ImgID const& id, Box const& projdmg );
     virtual void OnPaletteChanged( int n, Colour const& c );
-    virtual void OnPaletteReplaced();
+    virtual void OnPaletteReplaced(ImgID const& id);
     virtual void OnFramesAdded(int first, int last);
     virtual void OnFramesRemoved(int first, int last);
     virtual void OnLayerReplaced();

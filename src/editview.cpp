@@ -407,10 +407,11 @@ void EditView::OnDamaged(ImgID const& id, Box const& projdmg)
 
 void EditView::OnPaletteChanged( int, Colour const& )
 {
-    OnPaletteReplaced();
+    ImgID everywhere(-1,-1);
+    OnPaletteReplaced(everywhere);
 }
 
-void EditView::OnPaletteReplaced()
+void EditView::OnPaletteReplaced(ImgID const& id)
 {
     // redraw the whole project
     Box area(ProjToView(FocusedImgConst().Bounds()));

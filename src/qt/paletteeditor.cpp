@@ -96,8 +96,6 @@ void PaletteEditor::colourDropped(int idx, Colour const& c)
 
 void PaletteEditor::SetSelected(int idx)
 {
-    if( m_Selected==idx )
-        return;
     m_Selected = idx;
     m_PaletteWidget->SetLeftSelected(idx);
     Colour c( m_Proj.GetColour( idx ) );
@@ -121,12 +119,20 @@ void PaletteEditor::OnPaletteChanged( int n, Colour const& c )
 }
 
 
-void PaletteEditor::OnPaletteReplaced()
+void PaletteEditor::OnPaletteReplaced(ImgID const& /*id*/)
 {
-    m_PaletteWidget->SetPalette(m_Proj.PaletteConst());
+    Palette const& pal = m_Proj.PaletteConst();
+    m_PaletteWidget->SetPalette(pal);
+
+    // make sure we've got something valid selected.
+    if (m_Selected>=pal.NumColours()) {
+        SetSelected(pal.NumColours()-1);
+    }
+
     if (m_Applying) {
         return;
     }
+
     Colour c( m_Proj.GetColour( m_Selected ) );
     showColour(c);
 }

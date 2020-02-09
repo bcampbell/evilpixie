@@ -82,10 +82,11 @@ public:
 
     // projectlistener stuff
     virtual void OnPaletteChanged( int n, Colour const& c );
-    virtual void OnPaletteReplaced();
+    virtual void OnPaletteReplaced(ImgID const& id);
     virtual void OnModifiedFlagChanged( bool modified );
     virtual void OnFramesAdded(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
     virtual void OnFramesRemoved(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
+    virtual void OnLayerReplaced();
 
     // Qt widget overrides
     virtual void closeEvent(QCloseEvent *event);

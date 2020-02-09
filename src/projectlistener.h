@@ -14,7 +14,7 @@ public:
     virtual ~ProjectListener() {}
 	virtual void OnDamaged( ImgID const& /*id*/, Box const& /*projdmg*/ ) {}
     virtual void OnPaletteChanged( int /*n*/, Colour const& /*c*/ ) {}
-    virtual void OnPaletteReplaced() {}
+    virtual void OnPaletteReplaced(ImgID const&) {}
     virtual void OnModifiedFlagChanged( bool ) {}
     virtual void OnPenChange() {}
     virtual void OnFramesAdded(int /*first*/, int /*last*/) {}

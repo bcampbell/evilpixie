@@ -22,7 +22,7 @@ public:
     // projectlistener stuff
 	virtual void OnDamaged( int frame, Box const& viewdmg );
     virtual void OnPaletteChanged( int n, Colour const& c );
-    virtual void OnPaletteReplaced();
+    virtual void OnPaletteReplaced(ImgID const& id);
 
 public slots:
     void colourPicked(int idx);
