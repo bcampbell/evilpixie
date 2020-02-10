@@ -137,6 +137,11 @@ void PaletteEditor::OnPaletteReplaced(ImgID const& /*id*/)
     showColour(c);
 }
 
+void PaletteEditor::OnLayerReplaced()
+{
+    ImgID everywhere(-1, -1);
+    OnPaletteReplaced(everywhere);
+}
 
 void PaletteEditor::showColourInRGB(Colour const& c)
 {
