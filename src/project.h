@@ -17,7 +17,7 @@
 class Tool;
 class ProjectListener;
 
-// id to get at images within the project.
+// ID to refer to images within the project.
 struct ImgID
 {
     ImgID(int layerIdx = -1, int frameIdx = -1) :
@@ -85,10 +85,12 @@ public:
 
     void Save( std::string const& filename);
 
-    // pixel access
+    // Layer access - 0 is bottom layer.
     Layer& GetLayer(int i) { return *m_Layers[i]; }
     Layer const& GetLayerConst(int i) const { return *m_Layers[i]; }
     int NumLayers() const { return (int)m_Layers.size(); }
+    // Project takes ownership of layer.
+    void InsertLayer(Layer* layer, int pos);
 
     // shortcuts
     Img& GetImg(ImgID const& id) {
@@ -105,13 +107,15 @@ public:
     }
 
 
-    PixelFormat Fmt() const { return m_Layer.GetFrameConst(0).Fmt(); }
-    int NumFrames() const { return m_Layer.NumFrames(); }
+    // TODO: KILL KILL KILL
+    PixelFormat Fmt() const { return m_Layers[0]->GetFrameConst(0).Fmt(); }
+    // TODO: KILL KILL KILL
+    int NumFrames() const { return m_Layers[0]->NumFrames(); }
 
     PenColour PickUpPen(ImgID const& id, Point const& pt) const;
 
     // TODO: KILL THESE
-    Palette const& PaletteConst() const { return m_Layer.GetPaletteConst(); }
+    Palette const& PaletteConst() const { return m_Layers[0]->GetPaletteConst(); }
     Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
 
     // return current filename of project (empty string if no name)
@@ -144,8 +148,6 @@ private:
     bool m_Expendable;
 
     std::vector<Layer*> m_Layers;
-    Layer m_Layer;  // KILL KILL KILL!
-
 
     // has project been modified?
     bool m_Modified;

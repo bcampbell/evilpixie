@@ -15,8 +15,9 @@ Project::Project( std::string const& filename ) :
     m_Expendable(false),
     m_Modified( false )
 {
-    m_Layer.Load( filename.c_str() );
-    m_Layers.push_back(&m_Layer);
+    Layer *l = new Layer();
+    l->Load(filename.c_str());
+    InsertLayer(l, 0);
     m_Filename = filename;
 }
 
@@ -29,10 +30,11 @@ Project::Project() :
     int h = 128;
 
     Palette* tmp = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
-    m_Layers.push_back(&m_Layer);
-    m_Layer.SetPalette(*tmp);
+    Layer *l = new Layer();
+    l->SetPalette(*tmp);
     delete tmp;
-    m_Layer.Append(new Img(FMT_I8,w,h));
+    l->Append(new Img(FMT_I8,w,h));
+    InsertLayer(l, 0);
 }
 
 
@@ -44,16 +46,23 @@ Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frame
     if(!palette) {
         palette = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
     }
-    m_Layer.SetPalette(*palette);
+    Layer *l = new Layer();
+    l->SetPalette(*palette);
     delete palette;
     int i;
-    for(i=0;i<num_frames;++i)
-        m_Layer.Append(new Img(fmt,w,h));
+    for(i = 0; i < num_frames; ++i) {
+        l->Append(new Img(fmt, w, h));
+    }
+    InsertLayer(l,0);
 }
 
 
 Project::~Project()
 {
+    while (!m_Layers.empty()) {
+        delete(m_Layers.back());
+        m_Layers.pop_back();
+    }
 }
 
 void Project::SetModifiedFlag( bool newmodifiedflag )
@@ -71,10 +80,16 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
     }
 }
 
+void Project::InsertLayer(Layer* layer, int pos)
+{
+    assert(pos >= 0 && pos <= (int)m_Layers.size());
+    m_Layers.insert(m_Layers.begin() + pos, layer);
+}
+
 // KILL THIS!
 void Project::ReplacePalette(Palette* newpalette)
 {
-    m_Layer.SetPalette(*newpalette);
+    m_Layers[0]->SetPalette(*newpalette);
     delete newpalette;  // UGH!
     ImgID everything(-1,-1);
     NotifyPaletteReplaced(everything);
@@ -83,7 +98,7 @@ void Project::ReplacePalette(Palette* newpalette)
 
 void Project::Save( std::string const& filename )
 {
-    m_Layer.Save(filename.c_str());
+    m_Layers[0]->Save(filename.c_str());
     SetModifiedFlag(false);
     m_Filename = filename;
 }
