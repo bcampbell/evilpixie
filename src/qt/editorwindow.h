@@ -129,6 +129,8 @@ public slots:
     void do_tospritesheet();
     void do_fromspritesheet();
 
+    void do_addlayer();
+
     void do_addframe();
     void do_zapframe();
     void do_prevframe();

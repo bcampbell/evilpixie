@@ -162,6 +162,18 @@ private:
     std::vector<Cmd*> m_Cmds;
 };
 
+class Cmd_NewLayer : public Cmd
+{
+public:
+    Cmd_NewLayer(Project& proj, Layer* layer, int pos);
+    virtual ~Cmd_NewLayer();
+    virtual void Do();
+    virtual void Undo();
+private:
+    Layer* m_Layer;
+    int m_Pos;
+};
+
 
 #endif // CMD_H
 

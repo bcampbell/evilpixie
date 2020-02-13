@@ -725,6 +725,16 @@ void EditorWindow::do_scale2xbrush()
     ShowToolCursor();
 }
 
+void EditorWindow::do_addlayer()
+{
+    Layer *l = new Layer();
+    l->Append(new Img(FMT_RGBA8,128,128));  // TODO
+    
+    Cmd* c = new Cmd_NewLayer(Proj(), l, Proj().NumLayers());
+
+    AddCmd(c);
+}
+
 void EditorWindow::do_addframe()
 {
     int frame = m_ViewWidget->FrameNum();
@@ -1014,6 +1024,13 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addAction( m_ActionToSpritesheet);
         m->addAction( m_ActionFromSpritesheet);
     }
+
+    // Layer menu
+    {
+        QMenu* m = menubar->addMenu("Layers");
+        m->addAction( "&Add Layer", this, SLOT( do_addlayer()) );
+    }
+
 
     // DrawMode menu
     {

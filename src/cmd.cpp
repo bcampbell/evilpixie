@@ -408,3 +408,39 @@ void Cmd_Batch::Undo()
     }
 }
 
+
+//-----------
+//
+//
+
+Cmd_NewLayer::Cmd_NewLayer(Project& proj, Layer* l, int pos) :
+    Cmd(proj,NOT_DONE),
+    m_Layer(l),
+    m_Pos(pos)
+{
+}
+
+Cmd_NewLayer::~Cmd_NewLayer()
+{
+    delete m_Layer;
+}
+
+void Cmd_NewLayer::Do()
+{
+    assert(m_Layer);
+    Proj().InsertLayer(m_Layer, m_Pos);
+    m_Layer = nullptr;
+    Proj().NotifyLayerReplaced();
+    SetState( DONE );
+}
+
+
+void Cmd_NewLayer::Undo()
+{
+    assert(!m_Layer);
+    m_Layer = Proj().DetachLayer(m_Pos);
+    Proj().NotifyLayerReplaced();
+    SetState(NOT_DONE);
+}
+
+

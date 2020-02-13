@@ -91,6 +91,7 @@ public:
     int NumLayers() const { return (int)m_Layers.size(); }
     // Project takes ownership of layer.
     void InsertLayer(Layer* layer, int pos);
+    Layer* DetachLayer(int pos);
 
     // shortcuts
     Img& GetImg(ImgID const& id) {

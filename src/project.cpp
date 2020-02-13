@@ -86,6 +86,14 @@ void Project::InsertLayer(Layer* layer, int pos)
     m_Layers.insert(m_Layers.begin() + pos, layer);
 }
 
+Layer* Project::DetachLayer(int pos)
+{
+    assert(pos >= 0 && pos < (int)m_Layers.size());
+    Layer* l = m_Layers[pos];
+    m_Layers.erase(m_Layers.begin() + pos);
+    return l;
+}
+
 // KILL THIS!
 void Project::ReplacePalette(Palette* newpalette)
 {
