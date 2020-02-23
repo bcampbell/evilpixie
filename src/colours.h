@@ -82,7 +82,7 @@ typedef uint8_t I8;
 
 
 
-// higher-level colour handling:
+// TODO: just use RGBA8?
 struct Colour
 {
     Colour(uint8_t red=0, uint8_t green=0, uint8_t blue=0, uint8_t alpha=255 ) :
@@ -153,7 +153,6 @@ inline Colour Lerp(Colour const& a, Colour const& b, float t)
         (int)(a.a*inv + b.a*t));
 }
 
-bool ParseHexColour(const char* in, Colour& out);
 
 
 // a colour value to pass into drawing functions, which can cope with
@@ -187,5 +186,49 @@ private:
 };
 
 
+// higher-level colour handling
+
+struct RGBf
+{
+    float r, g, b;
+
+    RGBf(float red, float green, float blue) :
+        r(red), g(green), b(blue)
+    {}
+
+    RGBf(Colour const& c) :
+        r((float)c.r / 255.0f),
+        g((float)c.g / 255.0f),
+        b((float)c.b / 255.0f)
+    {}
+
+};
+
+struct HSVf
+{
+    float h, s, v;
+
+    HSVf(float hue, float sat, float var) :
+        h(hue), s(sat), v(var)
+    {}
+};
+
+
+// ----
+// Helper functions
+
+bool ParseHexColour(const char* in, Colour& out);
+
+// can probably phase these two out
+void RGBToHSV(float r, float g, float b, float& h, float& s, float& v);
+void HSVToRGB(float h, float s, float v, float& r, float& g, float& b);
+
+inline void RGBToHSV(RGBf const& rgb, HSVf& hsv) {
+    RGBToHSV(rgb.r, rgb.g, rgb.b, hsv.h, hsv.s, hsv.v);
+}
+
+inline void HSVToRGB(HSVf const& hsv, RGBf& rgb) {
+    HSVToRGB(hsv.h, hsv.s, hsv.v, rgb.r, rgb.g, rgb.b);
+}
 #endif // COLOURS_H
 

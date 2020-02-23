@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include "colours.h"
-#include "hsv.h"
 #include "util.h"
 #include "exception.h"
 #include <string>
@@ -130,7 +129,7 @@ void Palette::SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 )
         float t = (float)(n-n0) / (float)(n1-n0);
         float inv = 1.0f-t;
         float h = h0*inv + h1*t;
-        float s = s0*inv+ s1*t;
+        float s = s0*inv + s1*t;
         float v = v0*inv + v1*t;
         float a = a0*inv + a1*t;
 

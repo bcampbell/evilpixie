@@ -27,7 +27,6 @@ SOURCES += src/app.cpp \
     src/draw_blitzoom.cpp \
     src/editor.cpp \
     src/editview.cpp \
-    src/hsv.cpp \
     src/img.cpp \
     src/img_convert.cpp \
     src/layer.cpp \
@@ -66,7 +65,6 @@ HEADERS += src/app.h \
     src/editor.h \
     src/editview.h \
     src/global.h \
-    src/hsv.h \
     src/img.h \
     src/img_convert.h \
     src/layer.h \

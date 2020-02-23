@@ -8,7 +8,6 @@
 #include "../palette.h"
 #include "../project.h"
 #include "../editor.h"
-#include "../hsv.h"
 
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
