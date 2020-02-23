@@ -120,8 +120,6 @@ protected:
     virtual void OnBrushChanged() = 0;
     virtual void OnPenChanged() = 0;
 
-    // options
-    bool m_SaveBGAsTransparent;
 private:
     Editor();                   // disallowed
     Editor( Editor const& );    // disallowed

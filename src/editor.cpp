@@ -13,7 +13,6 @@
 
 
 Editor::Editor( Project* proj ) :
-    m_SaveBGAsTransparent(true),
     m_Tool(0),
     m_Mode(DrawMode::DM_NORMAL),
     m_Brush(0),
