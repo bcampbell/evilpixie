@@ -42,6 +42,7 @@ SOURCES += src/app.cpp \
     src/qt/editviewwidget.cpp \
     src/qt/griddialog.cpp \
     src/qt/hsvwidget.cpp \
+    src/qt/layerswidget.cpp \
     src/qt/palettewidget.cpp \
     src/qt/paletteeditor.cpp \
     src/qt/miscwindows.cpp \
@@ -80,6 +81,7 @@ HEADERS += src/app.h \
     src/qt/editorwindow.h \
     src/qt/griddialog.h \
     src/qt/hsvwidget.h \
+    src/qt/layerswidget.h \
     src/qt/palettewidget.h \
     src/qt/paletteeditor.h \
     src/qt/miscwindows.h \

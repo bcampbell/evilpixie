@@ -19,6 +19,7 @@
 #include "resizeprojectdialog.h"
 #include "spritesheetdialogs.h"
 #include "miscwindows.h"
+#include "layerswidget.h"
 
 #include <cassert>
 #ifdef WIN32
@@ -181,6 +182,10 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         }
     }
 
+    LayersWidget* layersWidget = new LayersWidget(&Proj());
+    layout->addWidget( layersWidget, 6,1 );
+
+
     /* status bar */
     {
         QStatusBar* statusbar = new QStatusBar();
@@ -189,7 +194,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
 
         statusbar->addWidget( m_StatusViewInfo );
 //        statusbar->showMessage( "blah blah blah" );
-        layout->addWidget( statusbar, 6,0,1,2 );
+        layout->addWidget( statusbar, 7,0,1,2 );
     }
 
     // some misc keyboard shortcuts
