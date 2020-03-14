@@ -742,19 +742,25 @@ void EditorWindow::do_zapframe()
 
 void EditorWindow::do_prevframe()
 {
-    int n = m_ViewWidget->FrameNum()-1;
-    if(n<0)
-        n=Proj().NumFrames()-1;
+    int n = m_ViewWidget->FrameNum() - 1;
+    if(n < 0)
+        n = Proj().NumFrames() - 1;
     m_ViewWidget->SetFrameNum(n);
+    if (m_MagView) {
+        m_MagView->SetFrameNum(n);
+    }
     RethinkWindowTitle();
 }
 
 void EditorWindow::do_nextframe()
 {
-    int n = m_ViewWidget->FrameNum()+1;
-    if(n>=Proj().NumFrames())
+    int n = m_ViewWidget->FrameNum() + 1;
+    if(n >= Proj().NumFrames())
         n=0;//Proj().NumFrames()-1;
     m_ViewWidget->SetFrameNum(n);
+    if (m_MagView) {
+        m_MagView->SetFrameNum(n);
+    }
     RethinkWindowTitle();
 }
 
