@@ -93,6 +93,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     QWidget(parent),
     Editor(proj),
     m_ViewWidget(0),
+    m_MagView(nullptr),
     m_PaletteWidget(0),
     m_RGBPicker(0),
     m_CurrentColourWidget(0),
@@ -132,8 +133,12 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_ViewWidget = new EditViewWidget( *this );
     m_ViewWidget->setCursor( *m_MouseCursors[MOUSESTYLE_DEFAULT] );
 
-    layout->addWidget( m_ViewWidget, 1,0,5,1 );
+    m_MagView = nullptr;
 
+    m_ViewSplitter = new QSplitter(parent);
+    layout->addWidget(m_ViewSplitter, 1,0,5,1 );
+
+    m_ViewSplitter->addWidget(m_ViewWidget);
 
     QFrame* hr = new QFrame();  // this, "<hr>", 0 );
     hr->setFrameStyle( QFrame::Sunken + QFrame::HLine );
@@ -223,62 +228,82 @@ EditorWindow::~EditorWindow()
     delete m_AboutBox;
     delete m_HelpWindow;
     delete m_ViewWidget;
+    delete m_MagView;
 }
 
 
 QLayout* EditorWindow::CreateToolButtons()
 {
-    QGridLayout *tb = new QGridLayout();
-    tb->setSpacing(0);
+    QGridLayout *grid = new QGridLayout();
+    grid->setSpacing(0);
 
-    QButtonGroup* grp = new QButtonGroup( tb );
+    QButtonGroup* grp = new QButtonGroup(grid);
     m_ToolButtons = grp;
 
     grp->setExclusive(true);
 
     struct {
+        int x,y;
         ToolType tool_id;
         const char* icon;
         QString tooltip;
-        QKeySequence shortcut;
+        const char* shortcut;
      } inf[] = {
-        { TOOL_PENCIL, "penciltool.png", tr("Draw"), QKeySequence("d") },
-        { TOOL_LINE, "linetool.png", tr("Line"), QKeySequence("l")},
-        { TOOL_BRUSH_PICKUP, "brushpickuptool.png", tr("Pick up brush"), QKeySequence("b")},
-        { TOOL_FLOODFILL, "filltool.png", tr("Flood Fill"), QKeySequence("f")},
-        { TOOL_RECT, "recttool.png", tr("Rectangle"), QKeySequence("r")},
-        { TOOL_FILLEDRECT, "filledrecttool.png", tr("Filled Rectangle"), QKeySequence("shift+r")},
-        { TOOL_CIRCLE, "circletool.png", tr("Circle"), QKeySequence("c")},
-        { TOOL_FILLEDCIRCLE, "filledcircletool.png", tr("Filled Circle"), QKeySequence("shift+c")},
-        { TOOL_EYEDROPPER, "eyedroppertool.png", tr("Pick up colour"), QKeySequence(",")},
+        {0, 0, TOOL_PENCIL, "penciltool.png", tr("Draw"), "d"},
+        {1, 0, TOOL_LINE, "linetool.png", tr("Line"), "l"},
+        {0, 1, TOOL_BRUSH_PICKUP, "brushpickuptool.png", tr("Pick up brush"), "b"},
+        {1, 1, TOOL_FLOODFILL, "filltool.png", tr("Flood Fill"), "f"},
+        {0, 2, TOOL_RECT, "recttool.png", tr("Rectangle"), "r"},
+        {1, 2, TOOL_FILLEDRECT, "filledrecttool.png", tr("Filled Rectangle"), "shift+r"},
+        {0, 3, TOOL_CIRCLE, "circletool.png", tr("Circle"), ("c")},
+        {1, 3, TOOL_FILLEDCIRCLE, "filledcircletool.png", tr("Filled Circle"), "shift+c"},
+        {1, 4, TOOL_EYEDROPPER, "eyedroppertool.png", tr("Pick up colour"), ","},
     };
     const int n = sizeof(inf) / sizeof(inf[0]);
 
-    std::string iconDir( JoinPath(g_App->DataPath(), "icons"));
+    std::string iconDir(JoinPath(g_App->DataPath(), "icons"));
 
     int i;
     for( i=0; i<n; ++i )
     {
         QIcon icon;
-        icon.addFile( JoinPath(iconDir, inf[i].icon).c_str(), QSize(), QIcon::Normal, QIcon::Off );
+        icon.addFile(JoinPath(iconDir, inf[i].icon).c_str(), QSize(), QIcon::Normal, QIcon::Off);
 
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
         b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        //b->setIconSize(QSize(32,32));
-        b->setCheckable( true );
+        b->setIconSize(QSize(64,64));
+        b->setCheckable(true);
         if( i==0 )
             b->setChecked(true);
-        b->setAutoRaise( true );
-        b->setProperty( "tool_id", QVariant( (int)inf[i].tool_id ) );
-        b->setToolTip( inf[i].tooltip );
-        b->setShortcut( inf[i].shortcut );
-        tb->addWidget( b, i/2, i%2 );
+        b->setAutoRaise(true);
+        b->setProperty("tool_id", QVariant((int)inf[i].tool_id));
+        b->setToolTip(inf[i].tooltip);
+        b->setShortcut(QKeySequence(inf[i].shortcut));
+        grid->addWidget(b, inf[i].y, inf[i].x);
 //        connect(b, SIGNAL(clicked()), this, SLOT(toolbuttonclicked()));
-        grp->addButton( b );
+        grp->addButton(b);
     }
     connect(grp, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(toolclicked( QAbstractButton* )));
-    return tb;
+
+    // special case for magnify button - it's a toggle button, not a tool.
+    {
+        QIcon icon;
+        icon.addFile(JoinPath(iconDir, "magnify.png").c_str(), QSize(), QIcon::Normal, QIcon::Off);
+        QToolButton* b = new QToolButton();
+        b->setIcon( icon );
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        //b->setIconSize(QSize(32,32));
+        b->setCheckable(true);
+        b->setAutoRaise(true);
+        b->setToolTip(tr("Magnify"));
+        b->setShortcut(QKeySequence("m"));
+        grid->addWidget(b, 4, 0);
+        connect(b, SIGNAL(toggled(bool)), this, SLOT(magnifyButtonToggled(bool)));
+    }
+
+
+    return grid;
 }
 
 QLayout* EditorWindow::CreateBrushButtons()
@@ -373,7 +398,7 @@ void EditorWindow::OnLayerReplaced() {
     OnPaletteReplaced(everywhere);
 }
 
-void EditorWindow::OnPaletteReplaced(ImgID const& id)
+void EditorWindow::OnPaletteReplaced(ImgID const& /*id*/)
 {
     Palette const& pal = Proj().PaletteConst();
     m_PaletteWidget->SetPalette(pal);
@@ -426,6 +451,43 @@ void EditorWindow::OnBrushChanged()
 void EditorWindow::GUIShowError( const char* msg )
 {
     QMessageBox::warning( this, "Error", msg );
+}
+
+void EditorWindow::magnifyButtonToggled(bool checked)
+{
+    if (checked) {
+        if (!m_MagView) {
+            // If mouse is on the view (eg if magnify was turned on via
+            // keyboard shortcut), then center both views upon it.
+            // Otherwise, retain the current view center.
+            QPoint focusPoint = m_ViewWidget->mapFromGlobal(QCursor::pos());
+            if (!m_ViewWidget->rect().contains(focusPoint)) {
+                focusPoint = m_ViewWidget->rect().center();
+            }
+
+            Point projFocus = m_ViewWidget->ViewToProj(Point(focusPoint.x(), focusPoint.y()));
+            // Create the magnified view and figure out position/zoom.
+            m_MagView = new EditViewWidget(*this);
+            m_MagView->setCursor(*m_MouseCursors[MOUSESTYLE_DEFAULT]);
+            m_MagView->SetZoom(m_ViewWidget->Zoom() * 4);
+            m_ViewSplitter->addWidget(m_MagView);
+
+            // adding the widget will have set up the view dimensions, so
+            // now we can center both views around the focuspoint.
+            m_ViewWidget->AlignView(
+                Point(m_ViewWidget->Width() / 2, m_ViewWidget->Height() / 2),
+                projFocus);
+            m_MagView->AlignView(
+                Point(m_MagView->Width() / 2, m_MagView->Height() / 2),
+                projFocus);
+        }
+    } else {
+        if (m_MagView) {
+            // Destroy the magnified view (if it exists).
+            delete m_MagView;
+            m_MagView = nullptr;
+        }
+    }
 }
 
 void EditorWindow::toolclicked( QAbstractButton* b )

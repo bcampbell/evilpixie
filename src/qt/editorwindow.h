@@ -23,6 +23,7 @@ class QLabel;
 class QMenuBar;
 class QAction;
 class QTabWidget;
+class QSplitter;
 
 
 struct EditorActions {
@@ -93,6 +94,7 @@ public:
     virtual void dragEnterEvent(QDragEnterEvent *e);
     virtual void dropEvent(QDropEvent *e);
 public slots:
+    void magnifyButtonToggled(bool checked);
     void toolclicked( QAbstractButton* b );
     void brushclicked( QAbstractButton* b );
     void fgColourPicked( int c );
@@ -133,7 +135,9 @@ public slots:
     void do_nextframe();
 
 private:
-    EditViewWidget* m_ViewWidget;
+    QSplitter* m_ViewSplitter;      // container for main & magnified views.
+    EditViewWidget* m_ViewWidget;   // main view
+    EditViewWidget* m_MagView;      // magnified view (or null)
     PaletteWidget* m_PaletteWidget;
     RGBPickerWidget* m_RGBPicker;
     CurrentColourWidget* m_CurrentColourWidget;
