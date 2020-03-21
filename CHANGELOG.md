@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Change image format with colour quantisation if needed (WIP)
+- Change image format (with colour quantisation if needed)
 - Brush scale2x (TODO: check usage in RGB/RGBA)
 - Option to change grid settings.
 - Palette editor improvements
@@ -10,6 +10,7 @@
     - Add HSV sliders
     - Improved "spread" function using HSV
     - drag & drop colours (internally, and between other apps)
+- Magnify view (M to split screen)
 
 ## v0.2 (March 2017)
 
