@@ -1088,7 +1088,7 @@ void EditorWindow::RethinkWindowTitle()
     int w = layer0.GetFrameConst(0).W();
     int h = layer0.GetFrameConst(0).H();
 
-    char dim[32];
+    char dim[128];
     sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->FrameNum()+1,Proj().NumFrames() );
 
 
