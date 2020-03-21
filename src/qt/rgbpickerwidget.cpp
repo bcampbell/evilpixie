@@ -63,7 +63,7 @@ void RGBPickerWidget::SetRightSelected( Colour c )
 }
 
 
-QPoint RGBPickerWidget::RGBToPoint( Colour c ) const
+QPoint RGBPickerWidget::RGBToPoint( Colour /* c */ ) const
 {
     return QPoint(0,0);
 }
@@ -121,7 +121,7 @@ void RGBPickerWidget::mousePressEvent(QMouseEvent *event)
     update();
 }
 
-void RGBPickerWidget::mouseMoveEvent(QMouseEvent *event)
+void RGBPickerWidget::mouseMoveEvent(QMouseEvent *)
 {
     update();
 }
@@ -131,7 +131,7 @@ void RGBPickerWidget::mouseReleaseEvent(QMouseEvent *)
     update();
 }
 
-void RGBPickerWidget::leaveEvent( QEvent *event )
+void RGBPickerWidget::leaveEvent( QEvent *)
 {
     update();
 }

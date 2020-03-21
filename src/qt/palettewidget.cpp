@@ -157,7 +157,7 @@ void PaletteWidget::mouseMoveEvent(QMouseEvent *event)
         swatch.fill(qc);
         drag->setPixmap(swatch);
 
-        Qt::DropAction dropAction = drag->exec(Qt::CopyAction);
+        drag->exec(Qt::CopyAction);
         return;
     }
 

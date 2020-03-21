@@ -862,8 +862,6 @@ void FilledRectTool::OnUp( EditView& view, Point const& p, Button b )
     if( m_DownButton != b )
         return;
 
-    Project& proj = view.Proj();
-
     m_To = p;
     Img& img = view.FocusedImg();
     Box r( m_From, m_To );
@@ -976,7 +974,6 @@ void CircleTool::OnUp( EditView& view, Point const& p, Button b )
 void CircleTool::Plot_cb( int x, int y, void* user )
 {
     CircleTool* that = (CircleTool*)user;
-    Editor& ed = that->Owner();
     EditView& view = *that->m_View;
 
     Box dmg;
@@ -1014,7 +1011,6 @@ void CircleTool::PlotCursor_cb( int x, int y, void* user )
     EditView& view = *that->m_View;
     Editor& ed = that->Owner();
     Brush const& b = ed.CurrentBrush();
-//    Project& proj = view.Proj();
 
     Box pb( Point(x,y)-b.Handle(), b.W(), b.H() );
 
@@ -1089,7 +1085,6 @@ void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
 {
     FilledCircleTool* that = (FilledCircleTool*)user;
     EditView& view = *that->m_View;
-    Project& proj = view.Proj();
 
     Box b( x0,y,x1-x0,1 );
     if( that->m_DownButton == DRAW )

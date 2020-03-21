@@ -13,7 +13,7 @@
 // assumes srcbox is already valid.
 // modifies srcbox and destbox appropriately.
 void clip_blit(
-    Box const& srcbounds, Box& srcbox,
+    Box const& /* srcbounds */, Box& srcbox,
     Box const& destbounds, Box& destbox,
     int xzoom,
     int yzoom )

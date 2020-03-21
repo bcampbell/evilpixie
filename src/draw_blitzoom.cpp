@@ -194,7 +194,6 @@ void BlitZoomMatteKeyed(
     int y;
     for( y=0; y<destclipped.H(); ++y )
     {
-        int x;
         RGBX8* dest = destimg.Ptr_RGBX8( destclipped.XMin() + 0, destclipped.YMin() + y );
         switch(srcimg.Fmt())
         {
