@@ -3,7 +3,7 @@
 
 struct Colour;
 struct Box;
-struct ImgID;
+struct NodePath;
 
 // base class for things that want to be informed of
 // changes to the Project.
@@ -12,12 +12,12 @@ class ProjectListener
 {
 public:
     virtual ~ProjectListener() {}
-	virtual void OnDamaged( ImgID const& /*id*/, Box const& /*projdmg*/ ) {}
-    virtual void OnPaletteChanged( int /*n*/, Colour const& /*c*/ ) {}
-    virtual void OnPaletteReplaced(ImgID const&) {}
+	virtual void OnDamaged(NodePath const& target, Box const& dmg) = 0;
+    virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c) = 0;
+    virtual void OnPaletteReplaced(NodePath const&) {}
     virtual void OnModifiedFlagChanged( bool ) {}
-    virtual void OnFramesAdded(int /*first*/, int /*last*/) {}
-    virtual void OnFramesRemoved(int /*first*/, int /*last*/) {}
+    virtual void OnFramesAdded(NodePath const& first, int /*cnt*/) {}
+    virtual void OnFramesRemoved(NodePath const& first, int /*last*/) {}
     virtual void OnLayerReplaced() {}
 
 private:

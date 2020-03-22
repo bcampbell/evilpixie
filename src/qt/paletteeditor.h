@@ -20,9 +20,9 @@ public:
     virtual ~PaletteEditor();
 
     // projectlistener stuff
-	virtual void OnDamaged( int frame, Box const& viewdmg );
-    virtual void OnPaletteChanged( int n, Colour const& c );
-    virtual void OnPaletteReplaced(ImgID const& id);
+	virtual void OnDamaged(NodePath const& targ, Box const& viewdmg);
+    virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c);
+    virtual void OnPaletteReplaced(NodePath const& owner);
     virtual void OnLayerReplaced();
 
 public slots:

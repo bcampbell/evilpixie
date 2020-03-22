@@ -2,17 +2,96 @@
 #define LAYER_H
 
 #include <vector>
+#include <algorithm>
+#include <string>
 #include "palette.h"
 #include "colours.h"
+#include "point.h"
 
 class Img;
 struct Box;
+class Layer;
+class Stack;
 
-class Layer
+
+//
+struct NodePath {
+    enum {SEL_MAIN=0, SEL_SPARE} sel;
+    std::vector<int> path;
+    int frame;  // frame within target (if layer)
+
+    NodePath() : sel(SEL_MAIN), frame(0) {}
+
+
+    bool operator==(NodePath const& other) const {
+        return (sel == other.sel &&
+            path == other.path &&
+            frame == other.frame);
+    }
+    bool operator!=(NodePath const& other) const {
+        return (!(*this == other));
+    }
+};
+
+
+
+
+
+class BaseNode {
+public:
+    std::string name;
+    Point offset;
+    BaseNode* parent;  // root stack has null parent
+    std::vector<BaseNode*> children;
+    // opacity, visibility, composite-op?
+
+    BaseNode() : offset(0,0), parent(nullptr) {
+    }
+
+    virtual ~BaseNode() {
+        assert(!parent);    // still attached!
+        for (auto child : children) {
+            child->parent = nullptr;
+            delete child;
+        }
+    }
+
+    // cheesy rtti
+    virtual Layer* ToLayer() {return nullptr;}
+    virtual Stack* ToStack() {return nullptr;}
+
+    // transfers ownership
+    void AddChild(BaseNode* n) {
+        assert(!n->parent);
+        n->parent = this;
+        children.push_back(n);
+    }
+
+    // detach from parent
+    void Detach() {
+        assert(parent);
+        auto it = std::find(parent->children.begin(), parent->children.end(), this);
+        assert(it != parent->children.end());
+        parent->children.erase(it);
+        parent = nullptr;
+    }
+
+
+};
+
+
+struct Stack : public BaseNode {
+    virtual Stack* ToStack() {return this;}
+};
+
+
+class Layer : public BaseNode
 {
 public:
     Layer();
     ~Layer();
+
+    virtual Layer* ToLayer() {return this;}
 
     int NumFrames() const { return m_Frames.size(); }
     Img& GetFrame(int n) {

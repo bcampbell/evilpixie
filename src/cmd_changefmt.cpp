@@ -7,6 +7,8 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, int layerNum, PixelFormat newFmt, in
     Cmd(proj,NOT_DONE),
     m_LayerNum(layerNum)
 {
+    assert(false);  // TODO: implement!
+#if 0
     Layer const& srcLayer = Proj().GetLayerConst(m_LayerNum);
     Palette const& srcPalette = Proj().PaletteConst();
 
@@ -57,6 +59,7 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, int layerNum, PixelFormat newFmt, in
 
         m_FrameSwap.Append(destImg);
     }
+#endif
 }
 
 
@@ -67,6 +70,8 @@ Cmd_ChangeFmt::~Cmd_ChangeFmt()
 
 void Cmd_ChangeFmt::Swap()
 {
+    assert(false);  // TODO: implement!
+#if 0
     Layer& layer = Proj().GetLayer(m_LayerNum);
     Layer tmp;
 
@@ -83,6 +88,7 @@ void Cmd_ChangeFmt::Swap()
 
     // notify damage.
     Proj().NotifyLayerReplaced();
+#endif
 }
 
 void Cmd_ChangeFmt::Do()

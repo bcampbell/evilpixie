@@ -153,9 +153,10 @@ void ToSpritesheetDialog::OnFramesRemoved(int /*first*/, int /*last*/)
 void ToSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
-    Layer const& layer0 = m_Proj->GetLayerConst(0);
+    NodePath fook;  //TODO: implement this!
+    Layer const* layer0 = m_Proj->ResolveLayer(fook);
 
-    Box extent = LayoutSpritesheet(layer0, NumAcross(), frames);
+    Box extent = LayoutSpritesheet(*layer0, NumAcross(), frames);
     /*
     printf("extent: %d,%d %dx%d\n",
             extent.x,
@@ -185,8 +186,9 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project* proj)
     m_Proj->AddListener(this);
 
     // TODO: multilayer support
-    assert(m_Proj->NumLayers()==1);
-    ImgID fook = {0,0};
+//    assert(m_Proj->NumLayers()==1);
+    assert(false);
+    NodePath fook;
 
     int initialWidth = 4;
     m_NWide = new QSpinBox();
@@ -260,8 +262,9 @@ void FromSpritesheetDialog::rethinkPreview()
     std::vector<Box> frames;
     
     // TODO: multilayer support
-    assert(m_Proj->NumLayers()==1);
-    ImgID fook = {0,0};
+    assert(false);
+//    assert(m_Proj->NumLayers()==1);
+    NodePath fook;
 
     Box srcBox = m_Proj->GetImgConst(fook).Bounds();
 

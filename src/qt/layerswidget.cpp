@@ -10,6 +10,7 @@
 LayersWidget::LayersWidget(Project *targ, QWidget* parent ) : QListWidget(parent),
     m_Proj(*targ)
 {
+#if 0
     int i;
     for( i=0; i<m_Proj.NumLayers(); ++i )
     {
@@ -31,5 +32,6 @@ LayersWidget::LayersWidget(Project *targ, QWidget* parent ) : QListWidget(parent
         addItem(item);
         setItemWidget(item, widget);
     }
+#endif
 }
 

@@ -47,11 +47,11 @@ private:
 class Cmd_Draw : public Cmd
 {
 public:
-    Cmd_Draw( Project& proj, ImgID const& target, Box const& affected, Img const& undoimg );
+    Cmd_Draw( Project& proj, NodePath const& target, Box const& affected, Img const& undoimg );
     virtual void Do();
     virtual void Undo();
 private:
-    ImgID m_Target;
+    NodePath m_Target;
     Img m_Img;
     Box m_Affected;
 };

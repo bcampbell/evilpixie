@@ -17,26 +17,6 @@
 class Tool;
 class ProjectListener;
 
-// ID to refer to images within the project.
-struct ImgID
-{
-    ImgID(int layerIdx = -1, int frameIdx = -1) :
-        layer(layerIdx),
-        frame(frameIdx)
-    {}
-
-    int layer;  // -1 = global: all layers and frames
-    int frame;  // -1 = all frames in layer
-};
-
-inline bool operator==(ImgID const& a, ImgID const&b) {
-    return a.layer == b.layer && a.frame == b.frame;
-}
-
-inline bool operator!=(ImgID const& a, ImgID const&b) {
-    return a.layer != b.layer || a.frame != b.frame;
-}
-
 
 struct ProjSettings
 {
@@ -85,39 +65,56 @@ public:
 
     void Save( std::string const& filename);
 
+#if 0
     // Layer access - 0 is bottom layer.
+
     Layer& GetLayer(int i) { return *m_Layers[i]; }
     Layer const& GetLayerConst(int i) const { return *m_Layers[i]; }
     int NumLayers() const { return (int)m_Layers.size(); }
     // Project takes ownership of layer.
     void InsertLayer(Layer* layer, int pos);
     Layer* DetachLayer(int pos);
+#endif
+    // TODO: figure this out
+    int NumFrames() const { return 1;};
 
-    // shortcuts
-    Img& GetImg(ImgID const& id) {
-        assert(id.layer >= 0 && id.layer < (int)m_Layers.size());
-        Layer* l = m_Layers[id.layer];
-        return l->GetFrame(id.frame);
+    Layer* ResolveLayer(NodePath const& target) const {
+        assert(target.sel == NodePath::SEL_MAIN);
+        BaseNode *n = root;
+        for (auto i : target.path) {
+            n = n->children[i];
+        }
+        Layer* l = n->ToLayer();
+        assert(l);  // must be layer!
+        return l;
     }
-    Img const& GetImgConst(ImgID const& id) const {
-        assert(id.layer >= 0 && id.layer < (int)m_Layers.size());
-        Layer const* l = m_Layers[id.layer];
-        Img const& img = l->GetFrameConst(id.frame);
-        assert(img.Bounds().x==0);
-        return img;
+
+    // shortcuts. Maybe kill these?
+    Img& GetImg(NodePath const& targ) const {
+        return ResolveLayer(targ)->GetFrame(targ.frame);
     }
 
+    Img const& GetImgConst(NodePath const& targ) const {
+        return ResolveLayer(targ)->GetFrameConst(targ.frame);
+    }
 
+    Palette const& PaletteConst(NodePath const& targ) const {
+        return ResolveLayer(targ)->GetPaletteConst();
+    }
+
+#if 0
+    Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
     // TODO: KILL KILL KILL
     PixelFormat Fmt() const { return m_Layers[0]->GetFrameConst(0).Fmt(); }
     // TODO: KILL KILL KILL
     int NumFrames() const { return m_Layers[0]->NumFrames(); }
+#endif
 
-    PenColour PickUpPen(ImgID const& id, Point const& pt) const;
+    PenColour PickUpPen(NodePath const& target, Point const& pt) const;
 
     // TODO: KILL THESE
-    Palette const& PaletteConst() const { return m_Layers[0]->GetPaletteConst(); }
-    Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
+//    Palette const& PaletteConst() const { return m_Layers[0]->GetPaletteConst(); }
+//    Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
 
     // return current filename of project (empty string if no name)
     std::string const& Filename() const { return m_Filename; }
@@ -125,20 +122,28 @@ public:
     // --------------------------------------
     // Notifcation fns. To be called when project is fiddled with.
     // --------------------------------------
-	void NotifyDamage(ImgID const& target, Box const& b);
+	void NotifyDamage(NodePath const& target, Box const& b);
 
-    // notify operations on frames in range [first,last)
-    void NotifyFramesAdded(int first, int last);
-    void NotifyFramesRemoved(int first, int last);
+    // notify operations on frames
+    void NotifyFramesAdded(NodePath const& first, int cnt);
+    void NotifyFramesRemoved(NodePath const& first, int cnt);
 
     // Layer completely changed.
-    void NotifyLayerReplaced();
+    void NotifyLayerReplaced(); // TODO!
 
     // notify palette modified
-    void NotifyPaletteChange(int first, int cnt);
-    void NotifyPaletteReplaced(ImgID const& id);
+    void NotifyPaletteChange(NodePath const& owner, int first, int cnt);
+    void NotifyPaletteReplaced(NodePath const& owner);
 
     void SetModifiedFlag( bool newmodifiedflag );
+
+    // --------------------------------------
+    // DATA
+    // --------------------------------------
+
+    // The root stack of the project.
+    Stack* root;
+
 private:
     Project( Project const& );  // disallowed
 
@@ -147,8 +152,6 @@ private:
     ProjSettings m_Settings;
 
     bool m_Expendable;
-
-    std::vector<Layer*> m_Layers;
 
     // has project been modified?
     bool m_Modified;

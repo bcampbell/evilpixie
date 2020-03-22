@@ -24,9 +24,9 @@ public:
 	virtual ~EditView();
 
     // ProjectListener Implementation
-	virtual void OnDamaged(ImgID const& id, Box const& projdmg );
-    virtual void OnPaletteChanged( int n, Colour const& c );
-    virtual void OnPaletteReplaced(ImgID const& id);
+	virtual void OnDamaged(NodePath const& target, Box const& dmg);
+    virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c);
+    virtual void OnPaletteReplaced(NodePath const& owner);
     virtual void OnFramesAdded(int first, int last);
     virtual void OnFramesRemoved(int first, int last);
     virtual void OnLayerReplaced();
@@ -44,7 +44,7 @@ public:
 	int XZoom() const { return m_XZoom; }
 	int YZoom() const { return m_YZoom; }
     int FrameNum() const { return m_Focus.frame; }
-    ImgID const& Focus() const {return m_Focus;}
+    NodePath const& Focus() const {return m_Focus;}
 
 	void OnMouseDown( Point const& viewpos, Button button );
 	void OnMouseMove( Point const& viewpos );
@@ -63,6 +63,7 @@ public:
     // helper to find the currently-focused image
     Img& FocusedImg() {return Proj().GetImg(m_Focus);}
     Img const& FocusedImgConst() const {return Proj().GetImgConst(m_Focus);}
+    Palette const& FocusedPaletteConst() const {return Proj().PaletteConst(m_Focus);}
 
 	// For tools...
     // TODO: not enough to overlay brushes upon the view canvas.
@@ -88,11 +89,10 @@ private:
 
     // TODO: canvas should probably be held by the gui layer... (editviewwidget)
 	Img* m_Canvas;
-//	RGB* m_Canvas;
 	Box m_ViewBox;	// x,y always 0
 
-    // current frame number
-    ImgID m_Focus;
+    // current frame being edited
+    NodePath m_Focus;
 
 	int m_Zoom;
 	int m_XZoom;

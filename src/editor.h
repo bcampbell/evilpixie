@@ -110,8 +110,8 @@ public:
     // projectlistener implementation:
     // editor is a projectlistener so that gui can react to changes
     // (editviews owned by the editor are also projectlisteners)
-	virtual void OnDamaged( int, Box const& ) {}
-    virtual void OnPaletteChanged( int, Colour const& ) {}
+	virtual void OnDamaged(NodePath const& target, Box const&) {}
+    virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const&) {}
 
 
 protected:

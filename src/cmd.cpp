@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <cstdio>
 
-Cmd_Draw::Cmd_Draw(Project& proj, ImgID const& target, Box const& affected, Img const& undoimg) :
+Cmd_Draw::Cmd_Draw(Project& proj, NodePath const& target, Box const& affected, Img const& undoimg) :
     Cmd(proj, DONE),
     m_Target(target),
     m_Img(undoimg, affected),
@@ -40,6 +40,8 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
     m_First(framefirst),
     m_Last(framelast)
 {
+    assert(false);  // TODO: implement this!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
 
@@ -47,7 +49,7 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
     int n;
     for(n=m_First; n<m_Last; ++n)
     {
-        ImgID id = {0,n};
+        NodePath id = {0,n};
         Img const& src_img = Proj().GetImgConst(id);
         Img* dest_img = new Img(src_img.Fmt(), new_area.w, new_area.h);
         Box foo(dest_img->Bounds());
@@ -59,6 +61,7 @@ Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int f
         Blit(src_img, src_area, *dest_img, dest_area);
         m_FrameSwap.Append(dest_img);
     }
+#endif
 }
 
 
@@ -69,6 +72,8 @@ Cmd_Resize::~Cmd_Resize()
 
 void Cmd_Resize::Swap()
 {
+    assert(false);  // TODO: implement this!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& targLayer = Proj().GetLayer(0);
@@ -86,9 +91,10 @@ void Cmd_Resize::Swap()
     int n;
     for( n=m_First; n<m_Last; ++n)
     {
-        ImgID id = {0,n};   // TODO: multilayer...
+        NodePath id = {0,n};   // TODO: multilayer...
         Proj().NotifyDamage(id, b1);
     }
+#endif
 }
 
 void Cmd_Resize::Do()
@@ -120,6 +126,8 @@ Cmd_InsertFrames::~Cmd_InsertFrames()
 
 void Cmd_InsertFrames::Do()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& targLayer = Proj().GetLayer(0);
@@ -134,11 +142,14 @@ void Cmd_InsertFrames::Do()
 
     Proj().NotifyFramesAdded(m_Pos+1,m_Pos+1+m_Num);
     SetState( DONE );
+#endif
 }
 
 
 void Cmd_InsertFrames::Undo()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& targLayer = Proj().GetLayer(0);
@@ -148,6 +159,7 @@ void Cmd_InsertFrames::Undo()
     // tmp will delete the frames as it goes out of scope
     Proj().NotifyFramesRemoved(m_Pos+1, m_Pos + 1 + m_Num);
     SetState(NOT_DONE);
+#endif
 }
 
 
@@ -169,23 +181,29 @@ Cmd_DeleteFrames::~Cmd_DeleteFrames()
 
 void Cmd_DeleteFrames::Do()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& targLayer = Proj().GetLayer(0);
     targLayer.TransferFrames(m_First, m_Last, m_FrameSwap,0);
     Proj().NotifyFramesRemoved(m_First,m_Last);
     SetState(DONE);
+#endif
 }
 
 
 void Cmd_DeleteFrames::Undo()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& targLayer = Proj().GetLayer(0);
     m_FrameSwap.TransferFrames( 0,m_FrameSwap.NumFrames(), targLayer, m_First);
     Proj().NotifyFramesAdded(m_First,m_Last);
     SetState(NOT_DONE);
+#endif
 }
 
 
@@ -194,13 +212,16 @@ void Cmd_DeleteFrames::Undo()
 //
 Cmd_ToSpriteSheet::Cmd_ToSpriteSheet(Project& proj, int nWide) :
     Cmd(proj,NOT_DONE),
-    m_NumFrames(proj.NumFrames()),
+    m_NumFrames(/*proj.NumFrames()*/),
     m_NWide(nWide)
 {
+    assert(false);  // TODO: implement!
+#if 0
     if( m_NWide>m_NumFrames)
     {
         m_NWide = m_NumFrames;
     }
+#endif
 }
 
 Cmd_ToSpriteSheet::~Cmd_ToSpriteSheet()
@@ -211,6 +232,8 @@ Cmd_ToSpriteSheet::~Cmd_ToSpriteSheet()
 
 void Cmd_ToSpriteSheet::Do()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& layer = Proj().GetLayer(0);
@@ -223,11 +246,14 @@ void Cmd_ToSpriteSheet::Do()
 
     Proj().NotifyLayerReplaced();
     SetState(DONE);
+#endif
 }
 
 
 void Cmd_ToSpriteSheet::Undo()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& targLayer = Proj().GetLayer(0);
@@ -244,6 +270,7 @@ void Cmd_ToSpriteSheet::Undo()
     }
     Proj().NotifyLayerReplaced();
     SetState(NOT_DONE);
+#endif
 }
 
 //-----------
@@ -267,6 +294,8 @@ Cmd_FromSpriteSheet::~Cmd_FromSpriteSheet()
 
 void Cmd_FromSpriteSheet::Do()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& layer = Proj().GetLayer(0);
@@ -284,10 +313,13 @@ void Cmd_FromSpriteSheet::Do()
     }
     Proj().NotifyLayerReplaced();
     SetState( DONE );
+#endif
 }
 
 void Cmd_FromSpriteSheet::Undo()
 {
+    assert(false);  // TODO: implement!
+#if 0
     // TODO: figure out what to do with multiple layers
     assert(Proj().NumLayers() == 1);
     Layer& layer = Proj().GetLayer(0);
@@ -300,6 +332,7 @@ void Cmd_FromSpriteSheet::Undo()
 
     Proj().NotifyLayerReplaced();
     SetState( NOT_DONE );
+#endif
 }
 
 //-----------
@@ -323,6 +356,8 @@ Cmd_PaletteModify::~Cmd_PaletteModify()
 
 void Cmd_PaletteModify::swap()
 {
+    assert(false);  // TODO: implement!
+#if 0
     assert(Proj().NumLayers()==1);  // TODO: figure out multilayer behavour!
     Palette& pal = Proj().GetLayer(0).GetPalette();
     int i;
@@ -334,6 +369,7 @@ void Cmd_PaletteModify::swap()
     }
 
     Proj().NotifyPaletteChange(m_First, m_Cnt);
+#endif
 }
 
 void Cmd_PaletteModify::Do()
@@ -354,6 +390,8 @@ void Cmd_PaletteModify::Undo()
 // returns true if the merge occured, false if a new cmd is required.
 bool Cmd_PaletteModify::Merge( int idx, Colour const& newc)
 {
+    assert(false);  // TODO: implement!
+#if 0
     if (m_Cnt!=1 || m_First!=idx)
         return false;
     if (State()!=DONE)
@@ -364,6 +402,7 @@ bool Cmd_PaletteModify::Merge( int idx, Colour const& newc)
     pal.SetColour(m_First, newc);
     Proj().NotifyPaletteChange(m_First, m_Cnt);
     return true;
+#endif
 }
 
 
@@ -427,20 +466,26 @@ Cmd_NewLayer::~Cmd_NewLayer()
 
 void Cmd_NewLayer::Do()
 {
+    assert(false);  // TODO: implement!
+#if 0
     assert(m_Layer);
     Proj().InsertLayer(m_Layer, m_Pos);
     m_Layer = nullptr;
     Proj().NotifyLayerReplaced();
     SetState( DONE );
+#endif
 }
 
 
 void Cmd_NewLayer::Undo()
 {
+    assert(false);  // TODO: implement!
+#if 0
     assert(!m_Layer);
     m_Layer = Proj().DetachLayer(m_Pos);
     Proj().NotifyLayerReplaced();
     SetState(NOT_DONE);
+#endif
 }
 
 

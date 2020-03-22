@@ -29,7 +29,7 @@ public:
     ~DrawTransaction();
 
     // call AddDamage as often as needed, within Begin/End pairs
-    void BeginDamage(ImgID const& targID);
+    void BeginDamage(NodePath const& targID);
     void AddDamage(Box const& affected);
     void EndDamage();
 
@@ -44,7 +44,7 @@ private:
     void flush();
 
     Project& m_Proj;
-    ImgID m_TargID;
+    NodePath m_TargID;
     Img* m_Backup;
     Box m_Affected;
 
@@ -56,9 +56,8 @@ DrawTransaction::DrawTransaction( Project& proj) :
     m_Backup(0),
     m_Affected( 0,0,0,0 ),           // start with nothing affected
     m_Batch( new Cmd_Batch(proj, Cmd::DONE))
-{   
-    m_TargID.layer = -1;
-    m_TargID.frame = -1;
+{
+  m_TargID.frame = -1;  // TODO: need a null NodePath?  
 }
 
 DrawTransaction::~DrawTransaction() {
@@ -73,12 +72,10 @@ DrawTransaction::~DrawTransaction() {
 
 
 
-void DrawTransaction::BeginDamage(ImgID const& targID)
+void DrawTransaction::BeginDamage(NodePath const& targID)
 {
-    int frame = targID.frame;
-    assert(frame>=0 && frame<m_Proj.NumFrames());
-
-    // if we're changing frames, we need to wrap up the previous frame first
+    // if we're changing target (eg drawing to another frame), we need
+    // to wrap up the previous one first.
     if (targID != m_TargID) {
         flush();
 
@@ -89,8 +86,6 @@ void DrawTransaction::BeginDamage(ImgID const& targID)
 
 void DrawTransaction::AddDamage(Box const& affected)
 {
-    assert(m_TargID.frame>=0 && m_TargID.frame<m_Proj.NumFrames());
-
     assert( m_Backup->Bounds().Contains(affected) );
     m_Proj.NotifyDamage(m_TargID, affected);
     m_Affected.Merge(affected);
@@ -114,7 +109,6 @@ void DrawTransaction::flush()
 {
     if( !m_Affected.Empty()) {
         assert(m_Backup);
-        assert(m_TargID.frame>=0 && m_TargID.frame<m_Proj.NumFrames());
 
         Cmd* c = new Cmd_Draw(m_Proj, m_TargID, m_Affected, *m_Backup);
         m_Batch->Append(c);
@@ -123,8 +117,7 @@ void DrawTransaction::flush()
     if(m_Backup) {
         delete m_Backup;
         m_Backup = 0;
-        m_TargID.frame = -1;
-        m_TargID.layer = -1;
+        m_TargID.frame = -1;    // TODO: need a null NodePath?
     }
     assert(m_Backup==0);
 }
@@ -167,7 +160,7 @@ static void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
     {
         case DrawMode::DM_NORMAL:
             BlitZoomKeyed( b, b.Bounds(),
-                view.Proj().PaletteConst(),
+                view.FocusedPaletteConst(),
                 view.Canvas(), viewdmg,
                 view.XZoom(),
                 view.YZoom(),
@@ -549,7 +542,7 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
     Brush* brush = new Brush( FULLCOLOUR, view.FocusedImgConst(), pickup, Owner().BGPen() );
 
     // copy in palette
-    brush->SetPalette( proj.PaletteConst() );
+    brush->SetPalette(view.FocusedPaletteConst());
 
     if( Owner().GridActive() )
         brush->SetHandle( Point(0,0) );

@@ -23,7 +23,9 @@ Editor::Editor( Project* proj ) :
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);
 
-    Palette const& pal = Proj().PaletteConst();
+    NodePath fook;   // TODO!!!
+    fook.path.push_back(0);
+    Palette const& pal = Proj().PaletteConst(fook);
     m_BGPen = PenColour(pal.GetColour(0), 0);
     m_FGPen = PenColour(pal.GetColour(1), 1);
 }
@@ -176,7 +178,8 @@ void Editor::NextFGPen()
         return;
     }
 
-    Palette const& pal = Proj().PaletteConst();
+    NodePath fook;   // TODO!!!
+    Palette const& pal = Proj().PaletteConst(fook);
     int idx = m_FGPen.idx()+1;
     if (idx<pal.NumColours()) {
         SetFGPen( PenColour( pal.GetColour(idx), idx) );
@@ -189,7 +192,9 @@ void Editor::PrevFGPen()
     if (!m_FGPen.IdxValid()) {
         return;
     }
-    Palette const& pal = Proj().PaletteConst();
+    NodePath fook;   // TODO!!!
+    fook.path.push_back(0);
+    Palette const& pal = Proj().PaletteConst(fook);
     int idx = m_FGPen.idx()-1;
     if (idx>=0) {
         SetFGPen( PenColour( pal.GetColour(idx), idx) );

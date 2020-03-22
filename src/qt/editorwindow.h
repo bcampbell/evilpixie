@@ -82,11 +82,11 @@ public:
     virtual void OnUndoRedoChanged() { update_menu_states(); }
 
     // projectlistener stuff
-    virtual void OnPaletteChanged( int n, Colour const& c );
-    virtual void OnPaletteReplaced(ImgID const& id);
+    virtual void OnPaletteChanged(NodePath const& owner,int index, Colour const& c );
+    virtual void OnPaletteReplaced(NodePath const& owner);
     virtual void OnModifiedFlagChanged( bool modified );
-    virtual void OnFramesAdded(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
-    virtual void OnFramesRemoved(int /*first*/, int /*last*/) { RethinkWindowTitle(); }
+    virtual void OnFramesAdded(NodePath const& first, int /*cnt*/) { RethinkWindowTitle(); }
+    virtual void OnFramesRemoved(NodePath const& /*first/*, int /*cnt*/) { RethinkWindowTitle(); }
     virtual void OnLayerReplaced();
 
     // Qt widget overrides

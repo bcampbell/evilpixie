@@ -9,12 +9,14 @@ EditView::EditView( Editor& editor, int w, int h ) :
     m_PrevPos(-1,-1),
     m_Canvas( new Img(FMT_RGBX8,w,h ) ),
     m_ViewBox(0,0,w,h),
-    m_Focus({0,0}),
+    m_Focus(),
     m_Zoom(4),
     m_Offset(0,0),
     m_Panning(false),
     m_PanAnchor(0,0)
 {
+    m_Focus.path.push_back(0);
+
     m_XZoom = m_Zoom*editor.Proj().Settings().PixW;
     m_YZoom = m_Zoom*editor.Proj().Settings().PixH;
     CenterView();
@@ -78,6 +80,8 @@ void EditView::SetZoom( int zoom )
 
 void EditView::SetFrameNum( int frame )
 {
+    assert(false);  //TODO: implement!
+#if 0
     assert( frame>=0);
     assert( frame<Proj().GetLayer(m_Focus.layer).NumFrames());
 
@@ -85,6 +89,7 @@ void EditView::SetFrameNum( int frame )
     ConfineView();
     DrawView(m_ViewBox);
     Redraw(m_ViewBox);
+#endif
 }
 
 void EditView::SetOffset( Point const& projpos )
@@ -304,6 +309,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 
             case FMT_I8:
                 {
+                    Palette const& pal = FocusedPaletteConst();
                     /*
                     if( p.x<0) {
                         printf("POOP:\n");
@@ -325,7 +331,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
                         int pixstop = x + (m_XZoom-(cx%m_XZoom));
                         if(pixstop>xend)
                             pixstop=xend;
-                        RGBA8 c = Proj().PaletteConst().GetColour(*src++);
+                        RGBA8 c = pal.GetColour(*src++);
                         while(x<pixstop)
                         {
                             //*dest++ = c;
@@ -387,10 +393,10 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 
 
 // called when project has been modified
-void EditView::OnDamaged(ImgID const& id, Box const& projdmg)
+void EditView::OnDamaged(NodePath const& id, Box const& projdmg)
 {
-    // TODO: handle layers with static image over all frames...
-    if (id.frame != m_Focus.frame || id.layer != m_Focus.layer) {
+    // TODO: drawing on other layers will affect the view!
+    if(m_Focus != id) {
         return;
     }
 
@@ -405,13 +411,12 @@ void EditView::OnDamaged(ImgID const& id, Box const& projdmg)
 }
 
 
-void EditView::OnPaletteChanged( int, Colour const& )
+void EditView::OnPaletteChanged(NodePath const& owner, int /*index*/, Colour const&/*newColour*/)
 {
-    ImgID everywhere(-1,-1);
-    OnPaletteReplaced(everywhere);
+    OnPaletteReplaced(owner);
 }
 
-void EditView::OnPaletteReplaced(ImgID const& /* id */)
+void EditView::OnPaletteReplaced(NodePath const& /* owner */)
 {
     // redraw the whole project
     Box area(ProjToView(FocusedImgConst().Bounds()));
@@ -422,12 +427,17 @@ void EditView::OnPaletteReplaced(ImgID const& /* id */)
 
 void EditView::OnFramesAdded(int first, int last)
 {
+    assert(false);  // TODO
+#if 0
     if(FrameNum()>first)
         SetFrameNum(FrameNum()+(last-first));
+#endif
 }
 
 void EditView::OnFramesRemoved(int first, int last)
 {
+    assert(false);  // TODO
+#if 0
     if(FrameNum()>=first)
     {
         int newframe = FrameNum()-(last-first);
@@ -437,12 +447,15 @@ void EditView::OnFramesRemoved(int first, int last)
             newframe = Proj().GetLayer(m_Focus.layer).NumFrames()-1;
         SetFrameNum(newframe);
     }
+#endif
 }
 
 void EditView::OnLayerReplaced()
 {
-    assert(Proj().GetLayer(m_Focus.layer).NumFrames() > 0);
+    assert(false);  // TODO
+/*
     SetFrameNum(0);
+*/
 }
 
 void EditView::AddCursorDamage( Box const& viewdmg )

@@ -168,7 +168,9 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         layout->addWidget( m_ColourTab, 5,1 );
 
         {
-            m_PaletteWidget = new PaletteWidget(Proj().PaletteConst());
+            NodePath fook;  // TODO: IMPLEMENT!
+            fook.path.push_back(0);
+            m_PaletteWidget = new PaletteWidget(Proj().PaletteConst(fook));
             connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
             connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
             m_ColourTab->addTab(m_PaletteWidget, "Palette");
@@ -381,31 +383,31 @@ void EditorWindow::OnPenChanged()
     }
 }
 
-void EditorWindow::OnPaletteChanged( int n, Colour const& c )
+void EditorWindow::OnPaletteChanged(NodePath const& owner, int index, Colour const& c)
 {
     // make sure the gui reflects any palette changes
-    m_PaletteWidget->SetColour(n,c);
+    m_PaletteWidget->SetColour(index, c);
 
     // one of the active pens changed?
-    if( FGPen().IdxValid() && FGPen().idx()==n )
-    {
-        SetFGPen( PenColour(c,n) );
+    if (FGPen().IdxValid() && FGPen().idx() == index) {
+        SetFGPen(PenColour(c, index));
     }
-    if( BGPen().IdxValid() && BGPen().idx()==n )
-    {
-        SetBGPen( PenColour(c,n) );
+    if (BGPen().IdxValid() && BGPen().idx() == index) {
+        SetBGPen(PenColour(c, index));
     }
 
 }
 
 void EditorWindow::OnLayerReplaced() {
-    ImgID everywhere(-1,-1);
+    assert(false);
+/*
     OnPaletteReplaced(everywhere);
+*/
 }
 
-void EditorWindow::OnPaletteReplaced(ImgID const& /*id*/)
+void EditorWindow::OnPaletteReplaced(NodePath const& owner)
 {
-    Palette const& pal = Proj().PaletteConst();
+    Palette const& pal = Proj().PaletteConst(owner);
     m_PaletteWidget->SetPalette(pal);
 
     // Ensure pen validity.
@@ -516,37 +518,51 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 void EditorWindow::fgColourPicked( int idx )
 {
-    Colour c = Proj().PaletteConst().GetColour(idx);
+    NodePath fook;  // TODO: implement!
+    fook.path.push_back(0);
+    Colour c = Proj().PaletteConst(fook).GetColour(idx);
     SetFGPen( PenColour(c,idx) );
 }
 
 void EditorWindow::bgColourPicked( int idx )
 {
-    Colour c = Proj().PaletteConst().GetColour(idx);
+    NodePath fook;  // TODO: implement!
+    fook.path.push_back(0);
+    Colour c = Proj().PaletteConst(fook).GetColour(idx);
     SetBGPen( PenColour(c,idx) );
 }
 
 
 void EditorWindow::fgColourPickedRGB( Colour c )
 {
-    Palette const& pal = Proj().PaletteConst();
+    assert(false);
+#if 0
+    NodePath fook;  // TODO: implement!
+    fook.path.push_back(0);
+    Palette const& pal = Proj().PaletteConst(fook);
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
     if(Proj().Fmt()==FMT_I8 && idx >=0) {
         c = pal.Colours[idx];
     }
     SetFGPen(PenColour(c, idx));
+#endif
 }
 
 void EditorWindow::bgColourPickedRGB( Colour c )
 {
-    Palette const& pal = Proj().PaletteConst();
+    assert(false);
+#if 0
+    NodePath fook;  // TODO: implement!
+    fook.path.push_back(0);
+    Palette const& pal = Proj().PaletteConst(fook);
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
     if(Proj().Fmt()==FMT_I8 && idx >=0) {
         c = pal.Colours[idx];
     }
     SetBGPen(PenColour(c, idx));
+#endif
 }
 
 void EditorWindow::togglepaletteeditor()
@@ -577,7 +593,9 @@ void EditorWindow::update_menu_states()
     m_ActionScale2xBrush->setEnabled(
         GetBrush() == -1 && CurrentBrush().Fmt() == FMT_I8);
 
-    int nframes= Proj().GetLayer(ActiveLayer()).NumFrames();
+    // int nframes= Proj().GetLayer(ActiveLayer()).NumFrames();
+    // TODO: IMPLEMENT!
+    int nframes = 0;
     m_ActionZapFrame->setEnabled(nframes>1);
     m_ActionNextFrame->setEnabled(nframes>1);
     m_ActionPrevFrame->setEnabled(nframes>1);
@@ -623,6 +641,8 @@ void EditorWindow::do_drawmodeChanged( QAction* act )
 
 void EditorWindow::do_resize()
 {
+    assert(false);
+#if 0
     Box b = m_ViewWidget->FocusedImgConst().Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
     if( dlg.exec() == QDialog::Accepted )
@@ -634,10 +654,13 @@ void EditorWindow::do_resize()
             Proj().GetLayer(ActiveLayer()).NumFrames(), BGPen() );
         AddCmd(c);
     }
+#endif
 }
 
 void EditorWindow::do_changefmt()
 {
+    assert(false);
+#if 0
     int currColours = Proj().PaletteConst().NumColours();
 
     ChangeFmtDialog dlg(this, Proj().Fmt(), currColours);
@@ -649,6 +672,7 @@ void EditorWindow::do_changefmt()
             AddCmd(c);
         }
     }
+#endif
 }
 
 
@@ -732,31 +756,42 @@ void EditorWindow::do_scale2xbrush()
 
 void EditorWindow::do_addlayer()
 {
+    assert(false);  //TODO: implement
+#if 0
     Layer *l = new Layer();
     l->Append(new Img(FMT_RGBA8,128,128));  // TODO
     
     Cmd* c = new Cmd_NewLayer(Proj(), l, Proj().NumLayers());
 
     AddCmd(c);
+#endif
 }
 
 void EditorWindow::do_addframe()
 {
+    assert(false);  //TODO: implement
+#if 0
     int frame = m_ViewWidget->FrameNum();
     Cmd* c = new Cmd_InsertFrames(Proj(), frame, 1);
     AddCmd(c);
+#endif
 }
 
 void EditorWindow::do_zapframe()
 {
+    assert(false);  //TODO: implement
+#if 0
     assert(Proj().GetLayer(ActiveLayer()).NumFrames() > 1);
     int frame = m_ViewWidget->FrameNum();
     Cmd* c= new Cmd_DeleteFrames(Proj(), frame, frame+1);
     AddCmd(c);
+#endif
 }
 
 void EditorWindow::do_prevframe()
 {
+    assert(false);  //TODO: implement
+#if 0
     int n = m_ViewWidget->FrameNum() - 1;
     if(n < 0)
         n = Proj().NumFrames() - 1;
@@ -765,10 +800,13 @@ void EditorWindow::do_prevframe()
         m_MagView->SetFrameNum(n);
     }
     RethinkWindowTitle();
+#endif
 }
 
 void EditorWindow::do_nextframe()
 {
+    assert(false);  //TODO: implement
+#if 0
     int n = m_ViewWidget->FrameNum() + 1;
     if(n >= Proj().NumFrames())
         n=0;//Proj().NumFrames()-1;
@@ -777,21 +815,27 @@ void EditorWindow::do_nextframe()
         m_MagView->SetFrameNum(n);
     }
     RethinkWindowTitle();
+#endif
 }
 
 
 void EditorWindow::do_tospritesheet()
 {
+    assert(false);  //TODO: implement
+#if 0
     ToSpritesheetDialog dlg(this, &Proj());
     if( dlg.exec() == QDialog::Accepted )
     {
         Cmd* c= new Cmd_ToSpriteSheet(Proj(), dlg.NumAcross());
         AddCmd(c);
     }
+#endif
 }
 
 void EditorWindow::do_fromspritesheet()
 {
+    assert(false);  //TODO: implement
+#if 0
     // TODO - multilayer!
     assert(Proj().NumLayers()==1);
     Layer& layer0 = Proj().GetLayer(0);
@@ -806,6 +850,7 @@ void EditorWindow::do_fromspritesheet()
         Cmd* c= new Cmd_FromSpriteSheet(Proj(), dlg.getNWide(), frames.size());
         AddCmd(c);
     }
+#endif
 }
 
 
@@ -823,7 +868,10 @@ void EditorWindow::do_loadpalette()
     try
     {
         Palette* p = Palette::Load(filename.toStdString().c_str());
+    assert(false);  //TODO: implement
+#if 0
         Proj().ReplacePalette(p);
+#endif
     }
     catch( Exception const& e )
     {
@@ -897,7 +945,8 @@ void EditorWindow::do_save()
 
 void EditorWindow::do_saveas()
 {
-
+    assert(false);
+#if 0
     QString savefilters;
   
     if (Proj().NumFrames()>1) { 
@@ -925,6 +974,7 @@ void EditorWindow::do_saveas()
     }
 
     RethinkWindowTitle();
+#endif
 }
 
 
@@ -1105,14 +1155,16 @@ void EditorWindow::RethinkWindowTitle()
     if( f.empty() )
         f = "Untitled";
 
-    //TODO! multilayer support
+    //TODO! implement!
+#if 0
     Layer& layer0 = Proj().GetLayer(0);
     int w = layer0.GetFrameConst(0).W();
     int h = layer0.GetFrameConst(0).H();
 
     char dim[128];
     sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->FrameNum()+1,Proj().NumFrames() );
-
+#endif
+    const char* dim = "????";
 
     std::string title = "[*]";
     title += f;

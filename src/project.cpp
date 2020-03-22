@@ -12,17 +12,21 @@
 
 
 Project::Project( std::string const& filename ) :
+    root(nullptr),
     m_Expendable(false),
     m_Modified( false )
 {
+    m_Filename = filename;
     Layer *l = new Layer();
     l->Load(filename.c_str());
-    InsertLayer(l, 0);
-    m_Filename = filename;
+    assert(false);  //TODO: implement!
+    root = new Stack();
+    root->AddChild(l);
 }
 
 
 Project::Project() :
+    root(nullptr),
     m_Expendable(true),
     m_Modified( false )
 {
@@ -34,11 +38,13 @@ Project::Project() :
     l->SetPalette(*tmp);
     delete tmp;
     l->Append(new Img(FMT_I8,w,h));
-    InsertLayer(l, 0);
+    root = new Stack();
+    root->AddChild(l);
 }
 
 
 Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frames ) :
+    root(nullptr),
     m_Expendable(false),
     m_Modified( false )
 {
@@ -53,16 +59,14 @@ Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frame
     for(i = 0; i < num_frames; ++i) {
         l->Append(new Img(fmt, w, h));
     }
-    InsertLayer(l,0);
+    root = new Stack();
+    root->AddChild(l);
 }
 
 
 Project::~Project()
 {
-    while (!m_Layers.empty()) {
-        delete(m_Layers.back());
-        m_Layers.pop_back();
-    }
+    delete root;
 }
 
 void Project::SetModifiedFlag( bool newmodifiedflag )
@@ -80,6 +84,7 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
     }
 }
 
+#if 0
 void Project::InsertLayer(Layer* layer, int pos)
 {
     assert(pos >= 0 && pos <= (int)m_Layers.size());
@@ -93,50 +98,54 @@ Layer* Project::DetachLayer(int pos)
     m_Layers.erase(m_Layers.begin() + pos);
     return l;
 }
+#endif
 
 // KILL THIS!
 void Project::ReplacePalette(Palette* newpalette)
 {
+    /*
     m_Layers[0]->SetPalette(*newpalette);
     delete newpalette;  // UGH!
-    ImgID everything(-1,-1);
     NotifyPaletteReplaced(everything);
+    */
 }
 
 
 void Project::Save( std::string const& filename )
 {
+/*
     m_Layers[0]->Save(filename.c_str());
     SetModifiedFlag(false);
     m_Filename = filename;
+*/
 }
 
 
 
-void Project::NotifyDamage(ImgID const& id, Box const& b )
+void Project::NotifyDamage(NodePath const& target, Box const& b )
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
-        (*it)->OnDamaged(id, b);
+        (*it)->OnDamaged(target, b);
     }
 }
 
-void Project::NotifyFramesAdded(int first, int last)
+void Project::NotifyFramesAdded(NodePath const& first, int cnt)
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
-        (*it)->OnFramesAdded( first,last );
+        (*it)->OnFramesAdded(first, cnt);
     }
 }
 
-void Project::NotifyFramesRemoved(int first, int last)
+void Project::NotifyFramesRemoved(NodePath const& first, int cnt)
 {
     std::set<ProjectListener*>::iterator it;
     for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
     {
-        (*it)->OnFramesRemoved( first,last );
+        (*it)->OnFramesRemoved(first, cnt);
     }
 }
 
@@ -153,43 +162,42 @@ void Project::NotifyLayerReplaced()
 
 
 
-void Project::NotifyPaletteChange( int first, int cnt )
+void Project::NotifyPaletteChange(NodePath const& owner, int first, int cnt )
 {
     std::set<ProjectListener*>::iterator it;
     if (cnt == 1)
     {
         // TODO: which palette?
-        Colour c = PaletteConst().GetColour(first);
+        Colour c = PaletteConst(owner).GetColour(first);
         for (auto l : m_Listeners) {
-            l->OnPaletteChanged(first,c);
+            l->OnPaletteChanged(owner, first, c);
         }
     } else {
         for (auto l : m_Listeners) {
-            ImgID id(-1,-1);
-            l->OnPaletteReplaced(id);
+            l->OnPaletteReplaced(owner);
         }
     }
 }
 
-void Project::NotifyPaletteReplaced(ImgID const& id)
+void Project::NotifyPaletteReplaced(NodePath const& owner)
 {
     for (auto l: m_Listeners) {
-        l->OnPaletteReplaced(id);
+        l->OnPaletteReplaced(owner);
     }
 }
 
 
 
 
-PenColour Project::PickUpPen(ImgID const& id, Point const& pt) const
+PenColour Project::PickUpPen(NodePath const& target, Point const& pt) const
 {
-    Img const& srcimg = GetImgConst(id);
+    Img const& srcimg = GetImgConst(target);
     switch(srcimg.Fmt())
     {
     case FMT_I8:
         {
             I8 const* src = srcimg.PtrConst_I8(pt.x,pt.y);
-            return PenColour(PaletteConst().GetColour(*src),*src);
+            return PenColour(PaletteConst(target).GetColour(*src),*src);
         }
         break;
     case FMT_RGBX8:
