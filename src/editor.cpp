@@ -11,21 +11,64 @@
 #include <cstdio>
 
 
+static Layer* FindLayer(BaseNode* n)
+{
+    Layer* l = n->ToLayer();
+    if (l) {
+        return l;
+    }
+    for (auto child : n->children) {
+        l = FindLayer(child);
+        if (l) {
+            return l;
+        }
+    }
+    return nullptr;
+}
 
-Editor::Editor( Project* proj ) :
-    m_Tool(0),
+static NodePath CalcPath(BaseNode *n)
+{
+    std::vector<int> trace;
+    while(n->parent) {
+        int i;
+        for (i = 0; i < n->parent->children.size(); ++i) {
+            if (n == n->parent->children[i]) {
+                break;
+            }
+        }
+        if (i >= n->parent->children.size()) {
+            // not found! should never get here.
+            assert(false);
+            return NodePath();
+        }
+        trace.push_back(i);
+        n = n->parent;
+    }
+    std::reverse(trace.begin(), trace.end());
+    NodePath out;
+    out.path = trace;
+    return out;
+}
+
+
+Editor::Editor(Project* proj) :
+    m_Project(proj),
+    m_Tool(nullptr),
     m_Mode(DrawMode::DM_NORMAL),
     m_Brush(0),
-    m_Project( proj ),
     m_GridActive(false),
-    m_Grid( 0,0,8,8 )
+    m_Grid(0,0,8,8)
 {
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);
 
-    NodePath fook;   // TODO!!!
-    fook.path.push_back(0);
-    Palette const& pal = Proj().PaletteConst(fook);
+    // focus the first Layer
+    Layer *firstLayer = FindLayer(proj->root);
+    assert(firstLayer); // TODO: support null focus layer?
+    m_Focus = CalcPath(firstLayer);
+    printf("focus: ");
+    m_Focus.dump();
+    Palette const& pal = Proj().PaletteConst(m_Focus);
     m_BGPen = PenColour(pal.GetColour(0), 0);
     m_FGPen = PenColour(pal.GetColour(1), 1);
 }
@@ -41,6 +84,15 @@ Editor::~Editor()
     // but here in ~Editor() we'll get Editor::SetMouseStyle() instead...
     delete m_Tool;
     delete m_Project;
+}
+
+
+
+void Editor::SetFocus(NodePath const& layer)
+{
+    m_Focus = layer;
+    printf("focus: ");
+    m_Focus.dump();
 }
 
 void Editor::UseTool( int tooltype, bool notifygui )

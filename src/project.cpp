@@ -84,6 +84,7 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
     }
 }
 
+
 #if 0
 void Project::InsertLayer(Layer* layer, int pos)
 {

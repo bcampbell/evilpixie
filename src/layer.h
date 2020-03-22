@@ -31,9 +31,16 @@ struct NodePath {
     bool operator!=(NodePath const& other) const {
         return (!(*this == other));
     }
+
+
+    void dump() {
+        printf("%d:", sel);
+        for( auto i : path) {
+            printf("%d/",i);
+        }
+        printf("f%d\n", frame);
+    }
 };
-
-
 
 
 
@@ -75,9 +82,8 @@ public:
         parent->children.erase(it);
         parent = nullptr;
     }
-
-
 };
+
 
 
 struct Stack : public BaseNode {

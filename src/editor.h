@@ -49,7 +49,9 @@ public:
     Tool& CurrentTool() { return *m_Tool; }
 //    void SetTool( Tool* newtool, bool notifygui=true );
 
-    int ActiveLayer() const { return 0; }
+    // The currently-focused layer
+    NodePath Focus() const;
+    void SetFocus(NodePath const& layer);
 
     DrawMode const& Mode() const { return m_Mode; }
     void SetMode( DrawMode const& mode) { m_Mode= mode; }
@@ -124,18 +126,20 @@ private:
     Editor();                   // disallowed
     Editor( Editor const& );    // disallowed
 
-	// editing state stuff
+    Project* m_Project;
+
+    // track the views this editor is managing
+	std::set< EditView* > m_Views;
+
+    // The currently-focused layer
+    NodePath m_Focus;
+
     Tool* m_Tool;
     int m_CurrentToolType;
 
     DrawMode m_Mode;
 
     int m_Brush; // StdBrush index, or -1 for custombrush
-
-    Project* m_Project;
-
-    // track the views this editor is managing
-	std::set< EditView* > m_Views;
 
     // grid stuff
     bool m_GridActive;
