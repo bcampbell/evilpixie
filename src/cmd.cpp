@@ -337,8 +337,9 @@ void Cmd_FromSpriteSheet::Undo()
 
 //-----------
 //
-Cmd_PaletteModify::Cmd_PaletteModify(Project& proj, int first, int cnt, Colour const* colours) :
+Cmd_PaletteModify::Cmd_PaletteModify(Project& proj, NodePath const& targ, int first, int cnt, Colour const* colours) :
     Cmd(proj,NOT_DONE),
+    m_Targ(targ),
     m_First(first),
     m_Cnt(cnt)
 {
@@ -356,10 +357,7 @@ Cmd_PaletteModify::~Cmd_PaletteModify()
 
 void Cmd_PaletteModify::swap()
 {
-    assert(false);  // TODO: implement!
-#if 0
-    assert(Proj().NumLayers()==1);  // TODO: figure out multilayer behavour!
-    Palette& pal = Proj().GetLayer(0).GetPalette();
+    Palette& pal = Proj().GetPalette(m_Targ);
     int i;
     for (i=0; i<m_Cnt; ++i)
     {
@@ -368,8 +366,7 @@ void Cmd_PaletteModify::swap()
         m_Colours[i] = tmp;
     }
 
-    Proj().NotifyPaletteChange(m_First, m_Cnt);
-#endif
+    Proj().NotifyPaletteChange(m_Targ, m_First, m_Cnt);
 }
 
 void Cmd_PaletteModify::Do()
@@ -388,21 +385,19 @@ void Cmd_PaletteModify::Undo()
 // this lets us keep the project up-to-date as user twiddles the colour,
 // but also avoids clogging up the undo stack with insane numbers of operations.
 // returns true if the merge occured, false if a new cmd is required.
-bool Cmd_PaletteModify::Merge( int idx, Colour const& newc)
+bool Cmd_PaletteModify::Merge(NodePath const& targ, int idx, Colour const& newc)
 {
-    assert(false);  // TODO: implement!
-#if 0
-    if (m_Cnt!=1 || m_First!=idx)
+    if (m_Cnt != 1 || m_First != idx || !Proj().IsSamePalette(targ, m_Targ)) {
         return false;
-    if (State()!=DONE)
+    }
+    // can only merge to already-applied ops.
+    if (State() != DONE)
         return false;
 
-    assert(Proj().NumLayers()==1);  // TODO: figure out multilayer behavour!
-    Palette& pal = Proj().GetLayer(0).GetPalette();
+    Palette& pal = Proj().GetPalette(m_Targ);
     pal.SetColour(m_First, newc);
-    Proj().NotifyPaletteChange(m_First, m_Cnt);
+    Proj().NotifyPaletteChange(m_Targ, m_First, m_Cnt);
     return true;
-#endif
 }
 
 

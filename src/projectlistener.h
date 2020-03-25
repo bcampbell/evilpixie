@@ -16,8 +16,8 @@ public:
     virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c) = 0;
     virtual void OnPaletteReplaced(NodePath const&) {}
     virtual void OnModifiedFlagChanged( bool ) {}
-    virtual void OnFramesAdded(NodePath const& first, int /*cnt*/) {}
-    virtual void OnFramesRemoved(NodePath const& first, int /*last*/) {}
+    virtual void OnFramesAdded(NodePath const& first, int /* count */) {}
+    virtual void OnFramesRemoved(NodePath const& first, int /* count */) {}
     virtual void OnLayerReplaced() {}
 
 private:

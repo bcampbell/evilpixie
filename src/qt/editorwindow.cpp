@@ -101,7 +101,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_ColourTab(0),
     m_BrushButtons(0),
     m_ToolButtons(0),
-    m_PaletteEditor(0),
+    m_PaletteEditor(nullptr),
     m_AboutBox(0),
     m_HelpWindow(0),
     m_ActionUndo(0),
@@ -118,7 +118,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         assert( MOUSESTYLE_NUM==2 );
     }
 
-    m_PaletteEditor = new PaletteEditor( *this, this );
+    m_PaletteEditor = new PaletteEditor(this, *this, Focus());
     m_PaletteEditor->hide();
 
     resize( 700,500 );
@@ -168,9 +168,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         layout->addWidget( m_ColourTab, 5,1 );
 
         {
-            NodePath fook;  // TODO: IMPLEMENT!
-            fook.path.push_back(0);
-            m_PaletteWidget = new PaletteWidget(Proj().PaletteConst(fook));
+            m_PaletteWidget = new PaletteWidget(Proj().PaletteConst(Focus()));
             connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
             connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
             m_ColourTab->addTab(m_PaletteWidget, "Palette");
@@ -398,6 +396,7 @@ void EditorWindow::OnPaletteChanged(NodePath const& owner, int index, Colour con
 
 }
 
+
 void EditorWindow::OnLayerReplaced() {
     assert(false);
 /*
@@ -423,11 +422,14 @@ void EditorWindow::OnPaletteReplaced(NodePath const& owner)
     RethinkWindowTitle();
 }
 
+
+
 void EditorWindow::OnModifiedFlagChanged( bool )
 {
     RethinkWindowTitle();
 }
 
+// end of ProjectListener methods
 
 void EditorWindow::OnToolChanged()
 {
@@ -518,56 +520,44 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 void EditorWindow::fgColourPicked( int idx )
 {
-    NodePath fook;  // TODO: implement!
-    fook.path.push_back(0);
-    Colour c = Proj().PaletteConst(fook).GetColour(idx);
+    Colour c = Proj().PaletteConst(Focus()).GetColour(idx);
     SetFGPen( PenColour(c,idx) );
 }
 
 void EditorWindow::bgColourPicked( int idx )
 {
-    NodePath fook;  // TODO: implement!
-    fook.path.push_back(0);
-    Colour c = Proj().PaletteConst(fook).GetColour(idx);
+    Colour c = Proj().PaletteConst(Focus()).GetColour(idx);
     SetBGPen( PenColour(c,idx) );
 }
 
 
 void EditorWindow::fgColourPickedRGB( Colour c )
 {
-    assert(false);
-#if 0
-    NodePath fook;  // TODO: implement!
-    fook.path.push_back(0);
-    Palette const& pal = Proj().PaletteConst(fook);
+    Palette const& pal = Proj().PaletteConst(Focus());
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
-    if(Proj().Fmt()==FMT_I8 && idx >=0) {
+    Layer& l = *Proj().ResolveLayer(Focus());
+    if(l.Fmt()==FMT_I8 && idx >=0) {
         c = pal.Colours[idx];
     }
     SetFGPen(PenColour(c, idx));
-#endif
 }
 
 void EditorWindow::bgColourPickedRGB( Colour c )
 {
-    assert(false);
-#if 0
-    NodePath fook;  // TODO: implement!
-    fook.path.push_back(0);
-    Palette const& pal = Proj().PaletteConst(fook);
+    Palette const& pal = Proj().PaletteConst(Focus());
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
-    if(Proj().Fmt()==FMT_I8 && idx >=0) {
+    Layer& l = *Proj().ResolveLayer(Focus());
+    if(l.Fmt()==FMT_I8 && idx >=0) {
         c = pal.Colours[idx];
     }
     SetBGPen(PenColour(c, idx));
-#endif
 }
 
 void EditorWindow::togglepaletteeditor()
 {
-    m_PaletteEditor->setVisible( !m_PaletteEditor->isVisible() );
+    m_PaletteEditor->setVisible(!m_PaletteEditor->isVisible());
 }
 
 void EditorWindow::useeyedroppertool()
@@ -704,9 +694,8 @@ void EditorWindow::do_usebrushpalette()
     if( GetBrush() != -1 )
         return; // std brush - do nothing
 
-
     Palette const& pal = CurrentBrush().GetPalette();
-    Cmd* cmd = new Cmd_PaletteModify(Proj(), 0, pal.NColours, pal.Colours);
+    Cmd* cmd = new Cmd_PaletteModify(Proj(), Focus(), 0, pal.NColours, pal.Colours);
     AddCmd(cmd);
 }
 

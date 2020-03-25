@@ -12,10 +12,12 @@
 
 #include <vector>
 
-// A gui-neutral view for editing a project
-
 class Editor;
 
+// EditView is a gui-neutral view for editing a project.
+// Maintains a backing canvas (raw bitmap image) for displaying project
+// and tool cursors. GUI windows can just blit that canvas to screen.
+// Also handles tool interaction.
 class EditView : public ProjectListener
 {
 public:

@@ -111,6 +111,11 @@ void Project::ReplacePalette(Palette* newpalette)
     */
 }
 
+bool Project::IsSamePalette(NodePath const& a, NodePath const& b) const
+{
+    // TODO: handle palette/layer policy when implemented!
+    return a==b;
+}
 
 void Project::Save( std::string const& filename )
 {

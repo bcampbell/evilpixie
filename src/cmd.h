@@ -130,7 +130,7 @@ private:
 class Cmd_PaletteModify : public Cmd
 {
 public:
-    Cmd_PaletteModify(Project& proj, int first, int cnt, Colour const* colours);
+    Cmd_PaletteModify(Project& proj, NodePath const& targ, int first, int cnt, Colour const* colours);
     virtual ~Cmd_PaletteModify();
     virtual void Do();
     virtual void Undo();
@@ -138,9 +138,10 @@ public:
     // cheesy RTTI
     virtual Cmd_PaletteModify* ToPaletteModify() { return this; }
 
-    bool Merge(int idx, Colour const& newc);
+    bool Merge(NodePath const& targ, int idx, Colour const& newc);
 private:
     void swap();
+    NodePath m_Targ;
     int m_First;
     int m_Cnt;
     Colour* m_Colours;

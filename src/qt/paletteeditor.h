@@ -3,6 +3,7 @@
 
 #include <QtWidgets/QDialog>
 #include "../projectlistener.h"
+#include "../project.h"
 
 class PaletteWidget;
 class RGBWidget;
@@ -16,14 +17,18 @@ class PaletteEditor : public QDialog, public ProjectListener
 {
     Q_OBJECT
 public:
-    PaletteEditor( Editor& ed, QWidget* parent );
+    PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus);
     virtual ~PaletteEditor();
 
-    // projectlistener stuff
+    // ProjectListener stuff
 	virtual void OnDamaged(NodePath const& targ, Box const& viewdmg);
     virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c);
     virtual void OnPaletteReplaced(NodePath const& owner);
     virtual void OnLayerReplaced();
+
+    // Set the frame whose palette we're editing
+    // TODO
+//    void SetFocus(NodePath const& targ);
 
 public slots:
     void colourPicked(int idx);
@@ -32,6 +37,8 @@ public slots:
 private:
     Editor& m_Ed;
     Project& m_Proj;
+    NodePath m_Focus;
+
     int m_Selected;
 
     bool m_Applying;    // Latch to prevent feedback during edits.

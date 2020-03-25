@@ -78,6 +78,7 @@ public:
     // TODO: figure this out
     int NumFrames() const { return 1;};
 
+    // TODO: return reference!
     Layer* ResolveLayer(NodePath const& target) const {
         assert(target.sel == NodePath::SEL_MAIN);
         BaseNode *n = root;
@@ -100,6 +101,9 @@ public:
 
     Palette const& PaletteConst(NodePath const& targ) const {
         return ResolveLayer(targ)->GetPaletteConst();
+    }
+    Palette& GetPalette(NodePath const& targ) const {
+        return ResolveLayer(targ)->GetPalette();
     }
 
 #if 0
@@ -136,6 +140,10 @@ public:
     void NotifyPaletteReplaced(NodePath const& owner);
 
     void SetModifiedFlag( bool newmodifiedflag );
+
+
+    // Return true if both paths share the same palette
+    bool IsSamePalette(NodePath const& a, NodePath const& b) const;
 
     // --------------------------------------
     // DATA

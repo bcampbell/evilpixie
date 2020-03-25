@@ -16,10 +16,11 @@
 #include <QLineEdit>
 #include <QFontDatabase>
 
-PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
+PaletteEditor::PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus) :
     QDialog( parent ),
     m_Ed(ed),
     m_Proj( ed.Proj()),
+    m_Focus(focus),
     m_Selected( 1 ),
     m_Applying(false)
 {
@@ -28,9 +29,8 @@ PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
     m_HexEntry->setFont(fixedFont);
     m_RGBWidget = new RGBWidget();
     m_HSVWidget = new HSVWidget();
-    NodePath fook;  // TODO: implement!!!
-    fook.path.push_back(0);
-    m_PaletteWidget = new PaletteWidget(m_Proj.PaletteConst(fook));
+    Palette const& focusedPalette = m_Proj.PaletteConst(m_Focus);
+    m_PaletteWidget = new PaletteWidget(focusedPalette);
     m_PaletteWidget->EnableRangePicking(true);
     m_PaletteWidget->EnableDnD(true);
     m_SpreadButton = new QPushButton("Spread");
@@ -55,13 +55,11 @@ PaletteEditor::PaletteEditor( Editor& ed, QWidget* parent ) :
     h->setStretchFactor(m_PaletteWidget,1);
     setLayout( h );
 
-#if 0
-    // TODO: IMPLEMENT!
     {
-        Colour c( m_Proj.GetColour( m_Selected ) );
+        Colour c(focusedPalette.GetColour(m_Selected));
         showColour(c);
     }
-#endif
+
     connect(m_RGBWidget, SIGNAL(colourChanged()), this, SLOT(rgbChanged()));
     connect(m_HSVWidget, SIGNAL(colourChanged()), this, SLOT(hsvChanged()));
     connect(m_HexEntry, &QLineEdit::editingFinished, this, &PaletteEditor::hexChanged);
@@ -84,33 +82,29 @@ PaletteEditor::~PaletteEditor()
 
 void PaletteEditor::colourPicked(int idx)
 {
-    assert(false); // TODO: IMPLEMENT!
-#if 0
     m_Selected = idx;
-    Colour c( m_Proj.GetColour( idx ) );
+    Colour c(m_Proj.PaletteConst(m_Focus).GetColour(idx));
     showColour(c);
-#endif
 }
 
 // a colour has been dropped into a cell on the palette widget.
 void PaletteEditor::colourDropped(int idx, Colour const& c)
 {
     // Apply without any Cmd merging.
-    Cmd* cmd = new Cmd_PaletteModify(m_Proj, idx, 1, &c);
+    Cmd* cmd = new Cmd_PaletteModify(m_Proj, m_Focus, idx, 1, &c);
     m_Ed.AddCmd(cmd);
+    // We'll hear about the change via OnPaletteChanged()
 }
 
 
 void PaletteEditor::SetSelected(int idx)
 {
-    assert(false); // TODO: IMPLEMENT!
-#if 0
     m_Selected = idx;
     m_PaletteWidget->SetLeftSelected(idx);
-    Colour c( m_Proj.GetColour( idx ) );
+    Colour c(m_Proj.PaletteConst(m_Focus).GetColour(idx));
     showColour(c);
-#endif
 }
+
 
 void PaletteEditor::OnDamaged(NodePath const& /*targ*/, Box const& )
 {
@@ -119,20 +113,27 @@ void PaletteEditor::OnDamaged(NodePath const& /*targ*/, Box const& )
 
 void PaletteEditor::OnPaletteChanged(NodePath const& targ, int index, Colour const& c )
 {
-    assert(false);  // which palette????
-    m_PaletteWidget->SetColour(index,c);
+    if (!m_Proj.IsSamePalette(targ, m_Focus)) {
+        return; // not interested.
+    }
+
+    m_PaletteWidget->SetColour(index, c);
     if (m_Applying) {
         return;
     }
-    if(m_Selected == index) {
+    if (m_Selected == index) {
         showColour(c);
     }
 }
 
 
-void PaletteEditor::OnPaletteReplaced(NodePath const& owner)
+void PaletteEditor::OnPaletteReplaced(NodePath const& targ)
 {
-    Palette const& pal = m_Proj.PaletteConst(owner);
+    if (!m_Proj.IsSamePalette(targ, m_Focus)) {
+        return; // not interested.
+    }
+
+    Palette const& pal = m_Proj.PaletteConst(m_Focus);
     m_PaletteWidget->SetPalette(pal);
 
     // make sure we've got something valid selected.
@@ -183,15 +184,14 @@ void PaletteEditor::showColourInHex(Colour const& c)
 
 void PaletteEditor::hexChanged()
 {
-    assert(false);  // TODO: implement!
-#if 0
     Colour c;
     if (!ParseHexColour(m_HexEntry->text().toUtf8().constData(), c)) {
         // could indicate invalid value?
         return;
     }
-    Colour existing( m_Proj.GetColour( m_Selected ) );
-    if (c==existing) {
+    Palette const& pal = m_Proj.PaletteConst(m_Focus);
+    Colour existing(pal.GetColour(m_Selected));
+    if (c == existing) {
         return;
     }
 
@@ -201,18 +201,16 @@ void PaletteEditor::hexChanged()
 
     // apply edit to project
     applyEdit(c);
-#endif
 }
 
 // The rgb sliders have been twiddled.
 void PaletteEditor::rgbChanged()
 {
-    assert(false);  // TODO: implement!
-#if 0
     QColor qc = m_RGBWidget->colour();
     Colour c( qc.red(), qc.green(), qc.blue(), qc.alpha() );
-    Colour existing( m_Proj.GetColour( m_Selected ) );
-    if (c==existing) {
+    Palette const& pal = m_Proj.PaletteConst(m_Focus);
+    Colour existing(pal.GetColour(m_Selected));
+    if (c == existing) {
         return;
     }
 
@@ -222,14 +220,11 @@ void PaletteEditor::rgbChanged()
 
     // Apply the edit to the project.
     applyEdit(c);
-#endif
 }
 
 // The HSV sliders have been twiddled.
 void PaletteEditor::hsvChanged()
 {
-    assert(false);  // TODO: implement!
-#if 0
     float h, s, v, a;
     m_HSVWidget->getHSVA(h, s, v, a);
     float r, g, b;
@@ -239,8 +234,9 @@ void PaletteEditor::hsvChanged()
         (uint8_t)(b * 255.0f),
         (uint8_t)(a * 255.0f));
 
-    Colour existing( m_Proj.GetColour( m_Selected ) );
-    if (c==existing) {
+    Palette const& pal = m_Proj.PaletteConst(m_Focus);
+    Colour existing(pal.GetColour(m_Selected));
+    if (c == existing) {
         return;
     }
 
@@ -250,7 +246,6 @@ void PaletteEditor::hsvChanged()
 
     // apply edit to project
     applyEdit(c);
-#endif
 }
 
 
@@ -265,7 +260,7 @@ void PaletteEditor::applyEdit(Colour const &c) {
         Cmd_PaletteModify* mod = cmd->ToPaletteModify();
         if (mod)
         {
-            if (mod->Merge(m_Selected, c))
+            if (mod->Merge(m_Focus, m_Selected, c))
             {
                 m_Applying = false;
                 return;
@@ -274,7 +269,7 @@ void PaletteEditor::applyEdit(Colour const &c) {
     }
     
     // if we get this far we need a fresh cmd.
-    cmd = new Cmd_PaletteModify(m_Proj, m_Selected, 1, &c);
+    cmd = new Cmd_PaletteModify(m_Proj, m_Focus, m_Selected, 1, &c);
     m_Ed.AddCmd(cmd);
     m_Applying = false;
 }
@@ -286,21 +281,18 @@ void PaletteEditor::paletteRangeAltered()
 
 void PaletteEditor::spreadColours()
 {
-    assert(false);  // TODO: implement!
-#if 0
-    if( !m_PaletteWidget->RangeValid() )
+    if(!m_PaletteWidget->RangeValid())
         return;
 
-    Palette newpalette( m_Proj.PaletteConst() );
+    Palette newpalette(m_Proj.PaletteConst(m_Focus));
 
     int n0 = m_PaletteWidget->RangeFirst();
     int n1 = m_PaletteWidget->RangeLast();
 
-    newpalette.SpreadHSV( n0, newpalette.GetColour(n0), n1, newpalette.GetColour(n1) );
+    newpalette.SpreadHSV(n0, newpalette.GetColour(n0), n1, newpalette.GetColour(n1));
 
-    Cmd* cmd = new Cmd_PaletteModify(m_Proj, n0, n1-n0, &newpalette.Colours[n0]);
+    Cmd* cmd = new Cmd_PaletteModify(m_Proj, m_Focus, n0, n1-n0, &newpalette.Colours[n0]);
     m_Ed.AddCmd(cmd);
-#endif
 }
 
 void PaletteEditor::showColour(Colour const& c) {

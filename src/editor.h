@@ -50,7 +50,7 @@ public:
 //    void SetTool( Tool* newtool, bool notifygui=true );
 
     // The currently-focused layer
-    NodePath Focus() const;
+    NodePath Focus() const {return m_Focus;}
     void SetFocus(NodePath const& layer);
 
     DrawMode const& Mode() const { return m_Mode; }

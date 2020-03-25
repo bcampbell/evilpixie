@@ -16,12 +16,15 @@ class Stack;
 
 //
 struct NodePath {
-    enum {SEL_MAIN=0, SEL_SPARE} sel;
+    enum {SEL_NULL=0, SEL_MAIN, SEL_SPARE} sel;
     std::vector<int> path;
     int frame;  // frame within target (if layer)
 
-    NodePath() : sel(SEL_MAIN), frame(0) {}
+    NodePath() : sel(SEL_NULL), frame(0) {}
 
+    bool IsNull() const {
+        return sel == SEL_NULL;
+    }
 
     bool operator==(NodePath const& other) const {
         return (sel == other.sel &&
@@ -108,8 +111,9 @@ public:
         assert(n >= 0 && n < (int)m_Frames.size());
         return *m_Frames[n];
     }
+    // TODO: account for frames...
     Palette& GetPalette() { return m_Palette; }
-    void SetPalette( Palette const& pal ) { m_Palette=pal; }
+    void SetPalette(Palette const& pal) { m_Palette=pal; }
     Palette const& GetPaletteConst() const { return m_Palette; }
 
     void Load(const char* filename);

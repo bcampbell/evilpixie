@@ -9,14 +9,12 @@ EditView::EditView( Editor& editor, int w, int h ) :
     m_PrevPos(-1,-1),
     m_Canvas( new Img(FMT_RGBX8,w,h ) ),
     m_ViewBox(0,0,w,h),
-    m_Focus(),
+    m_Focus(editor.Focus()),
     m_Zoom(4),
     m_Offset(0,0),
     m_Panning(false),
     m_PanAnchor(0,0)
 {
-    m_Focus.path.push_back(0);
-
     m_XZoom = m_Zoom*editor.Proj().Settings().PixW;
     m_YZoom = m_Zoom*editor.Proj().Settings().PixH;
     CenterView();
@@ -179,7 +177,10 @@ void EditView::CenterView()
     m_Offset.y = -(v.h - p.h) / 2;
 }
 
-
+// TODO: maybe editview shouldn't deal with mousemovements:
+// - Have a "default" tool which handles panning etc...
+// - tools to handle their own grid snapping.
+// - move all mouse handling up to GUI layer.
 void EditView::OnMouseDown( Point const& viewpos, Button button )
 {
     Point p = ViewToProj( viewpos );
@@ -263,7 +264,7 @@ static RGBX8 checker2(int x,int y) {
         return RGBX8(224/2,224/2,224/2);
 }
 
-
+// Render project to canvas, with zooming.
 void EditView::DrawView( Box const& viewbox, Box* affectedview )
 {
     // note: viewbox can be outside the project boundary
@@ -396,6 +397,7 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 void EditView::OnDamaged(NodePath const& id, Box const& projdmg)
 {
     // TODO: drawing on other layers will affect the view!
+    // but different frames, probably not.
     if(m_Focus != id) {
         return;
     }

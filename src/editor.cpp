@@ -46,6 +46,7 @@ static NodePath CalcPath(BaseNode *n)
     }
     std::reverse(trace.begin(), trace.end());
     NodePath out;
+    out.sel = NodePath::SEL_MAIN;
     out.path = trace;
     return out;
 }
@@ -91,8 +92,6 @@ Editor::~Editor()
 void Editor::SetFocus(NodePath const& layer)
 {
     m_Focus = layer;
-    printf("focus: ");
-    m_Focus.dump();
 }
 
 void Editor::UseTool( int tooltype, bool notifygui )
