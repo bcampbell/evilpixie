@@ -29,9 +29,10 @@ public:
 	virtual void OnDamaged(NodePath const& target, Box const& dmg);
     virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c);
     virtual void OnPaletteReplaced(NodePath const& owner);
-    virtual void OnFramesAdded(int first, int last);
-    virtual void OnFramesRemoved(int first, int last);
-    virtual void OnLayerReplaced();
+    virtual void OnModifiedFlagChanged(bool changed);
+    virtual void OnFramesAdded(NodePath const& first, int count);
+    virtual void OnFramesRemoved(NodePath const& first, int count);
+    virtual void OnFramesBlatted(NodePath const& first, int count);
 
 	// these will all cause listener RedrawAll request
 	void Resize( int w, int h );
@@ -111,6 +112,9 @@ private:
 
     void DrawView( Box const& viewbox, Box* affectedview=0  );
     void ConfineView();
+
+    // return true if changes on targ contribute to this view
+    bool affectsView(NodePath const& targ) const;
 };
 
 

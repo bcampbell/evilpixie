@@ -35,75 +35,60 @@ void Cmd_Draw::Undo()
 }
 
 
-Cmd_Resize::Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast, PenColour const& fillpen) :
-    Cmd(proj,NOT_DONE),
-    m_First(framefirst),
-    m_Last(framelast)
+Cmd_ResizeLayer::Cmd_ResizeLayer(Project& proj, NodePath const& targ, Box const& newArea, PenColour const& fillpen) :
+    Cmd(proj, NOT_DONE),
+    m_Targ(targ),
+    m_FrameSwap()
 {
-    assert(false);  // TODO: implement this!
-#if 0
-    // TODO: figure out what to do with multiple layers
-    assert(Proj().NumLayers() == 1);
+    Layer& l = proj.ResolveLayer(m_Targ);
 
     // populate frameswap with the resized frames
     int n;
-    for(n=m_First; n<m_Last; ++n)
+    for (n = 0; n < l.NumFrames(); ++n)
     {
-        NodePath id = {0,n};
-        Img const& src_img = Proj().GetImgConst(id);
-        Img* dest_img = new Img(src_img.Fmt(), new_area.w, new_area.h);
-        Box foo(dest_img->Bounds());
-        dest_img->FillBox(fillpen,foo);
-        Box src_area(src_img.Bounds());
-        Box dest_area(src_area);
-        dest_area -= new_area.TopLeft();
+        Img const& srcImg = l.GetFrame(n);
+        Img* destImg = new Img(srcImg.Fmt(), newArea.w, newArea.h);
+        Box foo(destImg->Bounds());
+        destImg->FillBox(fillpen,foo);
+        Box srcArea(srcImg.Bounds());
+        Box destArea(srcArea);
+        destArea -= newArea.TopLeft();
 
-        Blit(src_img, src_area, *dest_img, dest_area);
-        m_FrameSwap.Append(dest_img);
+        Blit(srcImg, srcArea, *destImg, destArea);
+        m_FrameSwap.push_back(destImg);
     }
-#endif
 }
 
 
-Cmd_Resize::~Cmd_Resize()
+Cmd_ResizeLayer::~Cmd_ResizeLayer()
 {
+    for (auto img : m_FrameSwap) {
+        delete img;
+    }
 }
 
 
-void Cmd_Resize::Swap()
+void Cmd_ResizeLayer::Swap()
 {
-    assert(false);  // TODO: implement this!
-#if 0
-    // TODO: figure out what to do with multiple layers
-    assert(Proj().NumLayers() == 1);
-    Layer& targLayer = Proj().GetLayer(0);
+    Layer& l = Proj().ResolveLayer(m_Targ);
+    assert(l.mFrames.size() == m_FrameSwap.size());
+    std::vector<Img*> tmp = l.mFrames;
+    l.mFrames = m_FrameSwap;
+    m_FrameSwap = tmp;
 
-    Layer tmp;
-    targLayer.TransferFrames(m_First, m_Last, tmp, 0);
-    m_FrameSwap.TransferFrames(0,m_FrameSwap.NumFrames(), targLayer, m_First);
-    assert(m_FrameSwap.NumFrames()==0);
-    tmp.TransferFrames(0,tmp.NumFrames(),m_FrameSwap,0);
-
-    Box b1,b2;
-    targLayer.CalcBounds(b1, m_First, m_Last);
-    m_FrameSwap.CalcBounds(b2, 0, m_FrameSwap.NumFrames());
-    b1.Merge(b2);
     int n;
-    for( n=m_First; n<m_Last; ++n)
-    {
-        NodePath id = {0,n};   // TODO: multilayer...
-        Proj().NotifyDamage(id, b1);
-    }
-#endif
+    NodePath first = m_Targ;
+    first.frame = 0;
+    Proj().NotifyFramesBlatted(first, l.NumFrames());
 }
 
-void Cmd_Resize::Do()
+void Cmd_ResizeLayer::Do()
 {
     Swap();
     SetState( DONE );
 }
 
-void Cmd_Resize::Undo()
+void Cmd_ResizeLayer::Undo()
 {
     Swap();
     SetState( NOT_DONE );

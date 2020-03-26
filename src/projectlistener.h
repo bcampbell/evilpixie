@@ -14,14 +14,11 @@ public:
     virtual ~ProjectListener() {}
 	virtual void OnDamaged(NodePath const& target, Box const& dmg) = 0;
     virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c) = 0;
-    virtual void OnPaletteReplaced(NodePath const&) {}
-    virtual void OnModifiedFlagChanged( bool ) {}
-    virtual void OnFramesAdded(NodePath const& first, int /* count */) {}
-    virtual void OnFramesRemoved(NodePath const& first, int /* count */) {}
-    virtual void OnLayerReplaced() {}
-
-private:
-
+    virtual void OnPaletteReplaced(NodePath const&) = 0;
+    virtual void OnModifiedFlagChanged(bool) = 0;
+    virtual void OnFramesAdded(NodePath const& first, int count) = 0;
+    virtual void OnFramesRemoved(NodePath const& first, int count) = 0;
+    virtual void OnFramesBlatted(NodePath const& first, int count) = 0;
 };
 
 #endif // PROJECTLISTENER_H

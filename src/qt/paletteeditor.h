@@ -21,10 +21,13 @@ public:
     virtual ~PaletteEditor();
 
     // ProjectListener stuff
-	virtual void OnDamaged(NodePath const& targ, Box const& viewdmg);
+	virtual void OnDamaged(NodePath const& target, Box const& dmg);
     virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c);
     virtual void OnPaletteReplaced(NodePath const& owner);
-    virtual void OnLayerReplaced();
+    virtual void OnModifiedFlagChanged(bool changed);
+    virtual void OnFramesAdded(NodePath const& first, int count);
+    virtual void OnFramesRemoved(NodePath const& first, int count);
+    virtual void OnFramesBlatted(NodePath const& first, int count);
 
     // Set the frame whose palette we're editing
     // TODO

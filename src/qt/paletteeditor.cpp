@@ -105,8 +105,9 @@ void PaletteEditor::SetSelected(int idx)
     showColour(c);
 }
 
+// ProjectListener implementation
 
-void PaletteEditor::OnDamaged(NodePath const& /*targ*/, Box const& )
+void PaletteEditor::OnDamaged(NodePath const& /*targ*/, Box const& /*dmg*/ )
 {
     // don't care about image changes.
 }
@@ -125,7 +126,6 @@ void PaletteEditor::OnPaletteChanged(NodePath const& targ, int index, Colour con
         showColour(c);
     }
 }
-
 
 void PaletteEditor::OnPaletteReplaced(NodePath const& targ)
 {
@@ -149,12 +149,21 @@ void PaletteEditor::OnPaletteReplaced(NodePath const& targ)
     showColour(c);
 }
 
-void PaletteEditor::OnLayerReplaced()
-{
-    // TODO
-    assert(false);
-    //OnPaletteReplaced(everywhere);
-}
+void PaletteEditor::OnModifiedFlagChanged(bool /*changed*/)
+{}
+
+void PaletteEditor::OnFramesAdded(NodePath const& /*first*/, int /*count*/)
+{}
+
+void PaletteEditor::OnFramesRemoved(NodePath const& /*first*/, int /*count*/)
+{}
+
+void PaletteEditor::OnFramesBlatted(NodePath const& /*first*/, int /*count*/)
+{}
+
+
+// end of ProjectListener implementation
+
 
 void PaletteEditor::showColourInRGB(Colour const& c)
 {

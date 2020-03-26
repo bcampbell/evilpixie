@@ -155,18 +155,12 @@ void Project::NotifyFramesRemoved(NodePath const& first, int cnt)
     }
 }
 
-void Project::NotifyLayerReplaced()
+void Project::NotifyFramesBlatted(NodePath const& first, int count)
 {
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnLayerReplaced();
+    for (auto listener : m_Listeners) {
+        listener->OnFramesBlatted(first, count);
     }
 }
-
-
-
-
 
 void Project::NotifyPaletteChange(NodePath const& owner, int first, int cnt )
 {

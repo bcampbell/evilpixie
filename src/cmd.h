@@ -58,19 +58,19 @@ private:
 
 
 
-// Resize/clip a project
-class Cmd_Resize : public Cmd
+// Resize a layer without scaling - just clip or pad as needed.
+class Cmd_ResizeLayer : public Cmd
 {
 public:
-    Cmd_Resize(Project& proj, Box const& new_area, int framefirst, int framelast, PenColour const& fillpen);
-    virtual ~Cmd_Resize();
+    Cmd_ResizeLayer(Project& proj, NodePath const& layer,
+        Box const& new_area, PenColour const& fillpen);
+    virtual ~Cmd_ResizeLayer();
     virtual void Do();
     virtual void Undo();
 private:
     void Swap();
-    int m_First;
-    int m_Last;
-    Layer m_FrameSwap;
+    NodePath m_Targ;
+    std::vector<Img*> m_FrameSwap;
 };
 
 

@@ -76,10 +76,9 @@ public:
     Layer* DetachLayer(int pos);
 #endif
     // TODO: figure this out
-    int NumFrames() const { return 1;};
+//    int NumFrames() const { return 1;};
 
-    // TODO: return reference!
-    Layer* ResolveLayer(NodePath const& target) const {
+    Layer& ResolveLayer(NodePath const& target) const {
         assert(target.sel == NodePath::SEL_MAIN);
         BaseNode *n = root;
         for (auto i : target.path) {
@@ -87,23 +86,23 @@ public:
         }
         Layer* l = n->ToLayer();
         assert(l);  // must be layer!
-        return l;
+        return *l;
     }
 
     // shortcuts. Maybe kill these?
     Img& GetImg(NodePath const& targ) const {
-        return ResolveLayer(targ)->GetFrame(targ.frame);
+        return ResolveLayer(targ).GetFrame(targ.frame);
     }
 
     Img const& GetImgConst(NodePath const& targ) const {
-        return ResolveLayer(targ)->GetFrameConst(targ.frame);
+        return ResolveLayer(targ).GetFrameConst(targ.frame);
     }
 
     Palette const& PaletteConst(NodePath const& targ) const {
-        return ResolveLayer(targ)->GetPaletteConst();
+        return ResolveLayer(targ).GetPaletteConst();
     }
     Palette& GetPalette(NodePath const& targ) const {
-        return ResolveLayer(targ)->GetPalette();
+        return ResolveLayer(targ).GetPalette();
     }
 
 #if 0
@@ -129,14 +128,12 @@ public:
 	void NotifyDamage(NodePath const& target, Box const& b);
 
     // notify operations on frames
-    void NotifyFramesAdded(NodePath const& first, int cnt);
-    void NotifyFramesRemoved(NodePath const& first, int cnt);
-
-    // Layer completely changed.
-    void NotifyLayerReplaced(); // TODO!
+    void NotifyFramesAdded(NodePath const& first, int count);
+    void NotifyFramesRemoved(NodePath const& first, int count);
+    void NotifyFramesBlatted(NodePath const& first, int count);
 
     // notify palette modified
-    void NotifyPaletteChange(NodePath const& owner, int first, int cnt);
+    void NotifyPaletteChange(NodePath const& owner, int first, int count);
     void NotifyPaletteReplaced(NodePath const& owner);
 
     void SetModifiedFlag( bool newmodifiedflag );

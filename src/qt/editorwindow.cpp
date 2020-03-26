@@ -129,10 +129,10 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
 
     CreateActions();
     QMenuBar* menubar = CreateMenuBar();
-    layout->addWidget( menubar,0,0,1,2 );
+    layout->addWidget(menubar, 0, 0, 1, 2);
 
-    m_ViewWidget = new EditViewWidget( *this );
-    m_ViewWidget->setCursor( *m_MouseCursors[MOUSESTYLE_DEFAULT] );
+    m_ViewWidget = new EditViewWidget(*this);
+    m_ViewWidget->setCursor(*m_MouseCursors[MOUSESTYLE_DEFAULT]);
 
     m_MagView = nullptr;
 
@@ -381,8 +381,16 @@ void EditorWindow::OnPenChanged()
     }
 }
 
+// Begin ProjectListener implementation
+
+void EditorWindow::OnDamaged(NodePath const& target, Box const& dmg) {
+}
+
 void EditorWindow::OnPaletteChanged(NodePath const& owner, int index, Colour const& c)
 {
+    if (!Proj().IsSamePalette(Focus(), owner)) {
+        return;
+    }
     // make sure the gui reflects any palette changes
     m_PaletteWidget->SetColour(index, c);
 
@@ -393,19 +401,13 @@ void EditorWindow::OnPaletteChanged(NodePath const& owner, int index, Colour con
     if (BGPen().IdxValid() && BGPen().idx() == index) {
         SetBGPen(PenColour(c, index));
     }
-
-}
-
-
-void EditorWindow::OnLayerReplaced() {
-    assert(false);
-/*
-    OnPaletteReplaced(everywhere);
-*/
 }
 
 void EditorWindow::OnPaletteReplaced(NodePath const& owner)
 {
+    if (!Proj().IsSamePalette(Focus(), owner)) {
+        return;
+    }
     Palette const& pal = Proj().PaletteConst(owner);
     m_PaletteWidget->SetPalette(pal);
 
@@ -422,14 +424,26 @@ void EditorWindow::OnPaletteReplaced(NodePath const& owner)
     RethinkWindowTitle();
 }
 
-
-
-void EditorWindow::OnModifiedFlagChanged( bool )
+void EditorWindow::OnModifiedFlagChanged(bool)
 {
     RethinkWindowTitle();
 }
 
-// end of ProjectListener methods
+void EditorWindow::OnFramesAdded(NodePath const& first, int count)
+{
+    RethinkWindowTitle();
+}
+
+void EditorWindow::OnFramesRemoved(NodePath const& first, int count)
+{
+    RethinkWindowTitle();
+}
+
+void EditorWindow::OnFramesBlatted(NodePath const& first, int count)
+{
+}
+
+// End of ProjectListener implementation
 
 void EditorWindow::OnToolChanged()
 {
@@ -536,7 +550,7 @@ void EditorWindow::fgColourPickedRGB( Colour c )
     Palette const& pal = Proj().PaletteConst(Focus());
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
-    Layer& l = *Proj().ResolveLayer(Focus());
+    Layer& l = Proj().ResolveLayer(Focus());
     if(l.Fmt()==FMT_I8 && idx >=0) {
         c = pal.Colours[idx];
     }
@@ -548,7 +562,7 @@ void EditorWindow::bgColourPickedRGB( Colour c )
     Palette const& pal = Proj().PaletteConst(Focus());
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
-    Layer& l = *Proj().ResolveLayer(Focus());
+    Layer& l = Proj().ResolveLayer(Focus());
     if(l.Fmt()==FMT_I8 && idx >=0) {
         c = pal.Colours[idx];
     }
@@ -629,22 +643,21 @@ void EditorWindow::do_drawmodeChanged( QAction* act )
     RethinkWindowTitle();
 }
 
+// resize the currently-focused layer
 void EditorWindow::do_resize()
 {
-    assert(false);
-#if 0
+    Layer& l = Proj().ResolveLayer(Focus());
+    // use the currently-focused frame to populate the resize dialog.
     Box b = m_ViewWidget->FocusedImgConst().Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
-    if( dlg.exec() == QDialog::Accepted )
+    if (dlg.exec() == QDialog::Accepted)
     {
         QRect area = dlg.GetArea();
-        Cmd* c = new Cmd_Resize(Proj(),
+        Cmd* c = new Cmd_ResizeLayer(Proj(), Focus(),
             Box(0,0,area.width(),area.height()),
-            0,
-            Proj().GetLayer(ActiveLayer()).NumFrames(), BGPen() );
+            BGPen() );
         AddCmd(c);
     }
-#endif
 }
 
 void EditorWindow::do_changefmt()

@@ -35,7 +35,6 @@ struct NodePath {
         return (!(*this == other));
     }
 
-
     void dump() {
         printf("%d:", sel);
         for( auto i : path) {
@@ -102,14 +101,14 @@ public:
 
     virtual Layer* ToLayer() {return this;}
 
-    int NumFrames() const { return m_Frames.size(); }
+    int NumFrames() const { return mFrames.size(); }
     Img& GetFrame(int n) {
-        assert(n >= 0 && n < (int)m_Frames.size());
-        return *m_Frames[n];
+        assert(n >= 0 && n < (int)mFrames.size());
+        return *mFrames[n];
     }
     Img const& GetFrameConst(int n) const {
-        assert(n >= 0 && n < (int)m_Frames.size());
-        return *m_Frames[n];
+        assert(n >= 0 && n < (int)mFrames.size());
+        return *mFrames[n];
     }
     // TODO: account for frames...
     Palette& GetPalette() { return m_Palette; }
@@ -118,7 +117,7 @@ public:
 
     void Load(const char* filename);
     void Save(const char* filename);
-    void Append(Img* img) { m_Frames.push_back(img); }
+    void Append(Img* img) { mFrames.push_back(img); }
     void Zap();
 
     // transfer frames in range [srcfirst, srclast) to another Layer
@@ -133,8 +132,11 @@ public:
     void Dump() const;
 
     PixelFormat Fmt() const;
-private:
-    std::vector< Img* > m_Frames;
+
+
+    // DATA
+
+    std::vector<Img*> mFrames;
     int m_FPS;
     Palette m_Palette;
 };

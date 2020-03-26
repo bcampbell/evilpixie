@@ -86,11 +86,8 @@ ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Project* proj)
 
     int initialWidth = 4;
     m_Width = new QSpinBox();
-//    m_Width->setOrientation( Qt::Horizontal );
-    m_Width->setRange( 1,m_Proj->NumFrames() );
-//    m_Width->setTracking(true);
-//    m_Width->setSingleStep(1);
-//    m_Width->setPageStep(1);
+    assert(false);  // TODO: sort it out
+    //m_Width->setRange( 1,m_Proj->NumFrames() );
     m_Width->setValue(initialWidth);
 
     QLabel* widthlabel = new QLabel(tr("Frames across:"));
@@ -153,10 +150,12 @@ void ToSpritesheetDialog::OnFramesRemoved(int /*first*/, int /*last*/)
 void ToSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
-    NodePath fook;  //TODO: implement this!
-    Layer const* layer0 = m_Proj->ResolveLayer(fook);
+    //TODO: implement this!
+    assert(false);
+    NodePath fook;
+    Layer const& layer0 = m_Proj->ResolveLayer(fook);
 
-    Box extent = LayoutSpritesheet(*layer0, NumAcross(), frames);
+    Box extent = LayoutSpritesheet(layer0, NumAcross(), frames);
     /*
     printf("extent: %d,%d %dx%d\n",
             extent.x,

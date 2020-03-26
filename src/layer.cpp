@@ -20,10 +20,10 @@ Layer::~Layer()
 
 void Layer::Zap()
 {
-    while( !m_Frames.empty() )
+    while( !mFrames.empty() )
     {
-        delete m_Frames.back();
-        m_Frames.pop_back();
+        delete mFrames.back();
+        mFrames.pop_back();
     }
 }
 
@@ -50,12 +50,12 @@ void Layer::Dump() const
 */
 
 PixelFormat Layer::Fmt() const
-    { return m_Frames.front()->Fmt(); }
+    { return mFrames.front()->Fmt(); }
 
 void Layer::TransferFrames(int srcfirst, int srclast, Layer& dest, int destfirst)
 {
-    dest.m_Frames.insert( dest.m_Frames.begin()+destfirst, m_Frames.begin()+srcfirst, m_Frames.begin()+srclast );
-    m_Frames.erase(m_Frames.begin()+srcfirst, m_Frames.begin()+srclast);
+    dest.mFrames.insert( dest.mFrames.begin()+destfirst, mFrames.begin()+srcfirst, mFrames.begin()+srclast );
+    mFrames.erase(mFrames.begin()+srcfirst, mFrames.begin()+srclast);
 }
 
 void Layer::CalcBounds(Box& bound, int first, int last) const
@@ -101,7 +101,7 @@ void Layer::Load( const char* filename )
         }
 
         Img* img = from_im_img( srcimg, m_Palette);
-        m_Frames.push_back(img);
+        mFrames.push_back(img);
     }
 
     im_bundle_free(bundle);

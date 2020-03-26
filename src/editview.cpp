@@ -311,21 +311,6 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
             case FMT_I8:
                 {
                     Palette const& pal = FocusedPaletteConst();
-                    /*
-                    if( p.x<0) {
-                        printf("POOP:\n");
-                        printf("pbox: %d %d %d %d\n", pbox.x, pbox.y, pbox.w, pbox.h);
-                        printf("vb  : %d %d %d %d\n", vb.x, vb.y, vb.w, vb.h);
-                        printf("x,y : %d %d\n", x,y);
-                        printf("p.x,p.y : %d %d\n", p.x,p.y);
-                        printf("xbegin,xend : %d %d\n", xbegin,xend);
-                    }
-                    assert( p.x >=0);
-                    assert( p.x < img.W());
-                    assert( p.y < img.H());
-                    assert( p.y >=0);
-                    */
-                    //printf("%d\n",y);
                     I8 const* src = img.PtrConst_I8( p.x,p.y );
                     while(x<xend) {
                         int cx = x + (m_Offset.x*m_XZoom);
@@ -391,14 +376,23 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
         *affectedview = vb;
 }
 
+bool EditView::affectsView(NodePath const& targ) const
+{
+    // TODO: need to catch changes on any layer the same frame!
+    if (targ == m_Focus) {
+        return true;
+    }
+    // TODO: will also need to handle neighbouring frames, if onionskinning.
+    return false;
+}
 
+
+// Begin ProjectListener implementation.
 
 // called when project has been modified
 void EditView::OnDamaged(NodePath const& id, Box const& projdmg)
 {
-    // TODO: drawing on other layers will affect the view!
-    // but different frames, probably not.
-    if(m_Focus != id) {
+    if (!affectsView(id)) {
         return;
     }
 
@@ -409,56 +403,51 @@ void EditView::OnDamaged(NodePath const& id, Box const& projdmg)
     DrawView(area, &viewdirtied );
 
     // tell the gui to display damaged part
-    Redraw( viewdirtied );
+    Redraw(viewdirtied);
 }
-
 
 void EditView::OnPaletteChanged(NodePath const& owner, int /*index*/, Colour const&/*newColour*/)
 {
     OnPaletteReplaced(owner);
 }
 
-void EditView::OnPaletteReplaced(NodePath const& /* owner */)
+void EditView::OnPaletteReplaced(NodePath const& owner)
 {
-    // redraw the whole project
+    if (!Proj().IsSamePalette(owner, m_Focus)) {
+        return;
+    }
+    // redraw the whole project (don't need to redraw padding)
     Box area(ProjToView(FocusedImgConst().Bounds()));
     Box affected;
     DrawView(area,&affected);
     Redraw(affected);
 }
 
-void EditView::OnFramesAdded(int first, int last)
+void EditView::OnModifiedFlagChanged(bool /*changed*/)
 {
-    assert(false);  // TODO
-#if 0
-    if(FrameNum()>first)
-        SetFrameNum(FrameNum()+(last-first));
-#endif
 }
 
-void EditView::OnFramesRemoved(int first, int last)
+void EditView::OnFramesAdded(NodePath const& first, int count)
 {
     assert(false);  // TODO
-#if 0
-    if(FrameNum()>=first)
-    {
-        int newframe = FrameNum()-(last-first);
-        if(newframe<0)
-            newframe=0;
-        if(newframe>Proj().GetLayer(m_Focus.layer).NumFrames()-1)
-            newframe = Proj().GetLayer(m_Focus.layer).NumFrames()-1;
-        SetFrameNum(newframe);
+}
+void EditView::OnFramesRemoved(NodePath const& first, int count)
+{
+    assert(false);  // TODO
+}
+void EditView::OnFramesBlatted(NodePath const& first, int count)
+{
+    assert(count==1); // TODO - handle multiple frames!
+    if (!affectsView(first)) {
+        return;
     }
-#endif
+    // redraw the whole view (including padding)
+    Box affected;
+    DrawView(m_ViewBox,&affected);
+    Redraw(affected);
 }
 
-void EditView::OnLayerReplaced()
-{
-    assert(false);  // TODO
-/*
-    SetFrameNum(0);
-*/
-}
+// End of ProjectListener implementation
 
 void EditView::AddCursorDamage( Box const& viewdmg )
 {
