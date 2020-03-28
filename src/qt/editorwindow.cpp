@@ -846,7 +846,7 @@ void EditorWindow::do_fromspritesheet()
     if( dlg.exec() == QDialog::Accepted )
     {
         std::vector<Box> frames;
-        SplitSpritesheet(layer0.GetFrameConst(0).Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
+        SplitSpritesheet(layer0.GetImgConst(0).Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
 
         // TODO: pass in frames
         Cmd* c= new Cmd_FromSpriteSheet(Proj(), dlg.getNWide(), frames.size());
@@ -1160,8 +1160,8 @@ void EditorWindow::RethinkWindowTitle()
     //TODO! implement!
 #if 0
     Layer& layer0 = Proj().GetLayer(0);
-    int w = layer0.GetFrameConst(0).W();
-    int h = layer0.GetFrameConst(0).H();
+    int w = layer0.GetImgConst(0).W();
+    int h = layer0.GetImgConst(0).H();
 
     char dim[128];
     sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->FrameNum()+1,Proj().NumFrames() );

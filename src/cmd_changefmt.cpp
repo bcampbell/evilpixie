@@ -16,7 +16,7 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, int layerNum, PixelFormat newFmt, in
     if (nColours > 0 && srcLayer.NumFrames() > 0) {
         // TODO: for global palette, need to take all frames into consideration!!!
         std::vector<Colour> quantised;
-        CalculatePalette(srcLayer.GetFrameConst(0), quantised, nColours, &srcPalette);
+        CalculatePalette(srcLayer.GetImgConst(0), quantised, nColours, &srcPalette);
         Palette newPalette(nColours);
         for (int i=0; i<(int)quantised.size(); ++i) {
             newPalette.SetColour(i, quantised[i]);
@@ -28,7 +28,7 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, int layerNum, PixelFormat newFmt, in
     int n;
     for (n = 0; n < srcLayer.NumFrames(); ++n)
     {
-        Img const& srcImg = srcLayer.GetFrameConst(n);
+        Img const& srcImg = srcLayer.GetImgConst(n);
         Img* destImg = nullptr;
         switch (srcImg.Fmt()) {
             case FMT_I8:

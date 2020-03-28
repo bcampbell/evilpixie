@@ -50,20 +50,14 @@ void Layer::Dump() const
 */
 
 PixelFormat Layer::Fmt() const
-    { return mFrames.front()->Fmt(); }
-
-void Layer::TransferFrames(int srcfirst, int srclast, Layer& dest, int destfirst)
-{
-    dest.mFrames.insert( dest.mFrames.begin()+destfirst, mFrames.begin()+srcfirst, mFrames.begin()+srclast );
-    mFrames.erase(mFrames.begin()+srcfirst, mFrames.begin()+srclast);
-}
+    { return mFrames.front()->mImg->Fmt(); }
 
 void Layer::CalcBounds(Box& bound, int first, int last) const
 {
     int n;
-    bound = GetFrameConst(first).Bounds();
-    for(n=first+1;n<last; ++n)
-        bound.Merge(GetFrameConst(n).Bounds());
+    for (auto f : mFrames) {
+        bound.Merge(f->mImg->Bounds());
+    }
 }
 
 
@@ -100,8 +94,9 @@ void Layer::Load( const char* filename )
             continue;
         }
 
-        Img* img = from_im_img( srcimg, m_Palette);
-        mFrames.push_back(img);
+        Frame* frame = new Frame();
+        frame->mImg = from_im_img( srcimg, m_Palette);
+        mFrames.push_back(frame);
     }
 
     im_bundle_free(bundle);
@@ -307,7 +302,7 @@ void Layer::Save( const char* filename )
         for (i=0; i<NumFrames(); ++i) {
             SlotID id = {0,0,0,0};
             id.frame = i;
-            im_img* img = to_im_img(GetFrame(i), GetPaletteConst());
+            im_img* img = to_im_img(GetImgConst(i), GetPaletteConst());
             im_bundle_set( bundle, id, img);
         }
         ImErr err;

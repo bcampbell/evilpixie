@@ -70,7 +70,7 @@ public:
 private:
     void Swap();
     NodePath m_Targ;
-    std::vector<Img*> m_FrameSwap;
+    std::vector<Frame*> m_FrameSwap;
 };
 
 

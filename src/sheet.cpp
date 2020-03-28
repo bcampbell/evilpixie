@@ -14,7 +14,7 @@ Box LayoutSpritesheet(Layer const& src, int nWide, std::vector<Box>& frames)
     Box contain;
     for (f=0; f<src.NumFrames(); ++f)
     {
-        Box const& b = src.GetFrameConst(f).Bounds();
+        Box const& b = src.GetImgConst(f).Bounds();
         contain.Merge(b);
     }
     assert(!contain.Empty());
@@ -27,7 +27,7 @@ Box LayoutSpritesheet(Layer const& src, int nWide, std::vector<Box>& frames)
         Point offset(
             (f % nWide) * contain.w,
             (f / nWide) * contain.h );
-        Box b( src.GetFrameConst(f).Bounds() );
+        Box b( src.GetImgConst(f).Bounds() );
         b += offset;
         frames.push_back(b);
         extent.Merge(b);
@@ -86,7 +86,7 @@ Img* GenerateSpriteSheet(Layer const& src, int maxAcross)
         {
             if(frame>=src.NumFrames())
                 continue;
-            Img const& srcImg = src.GetFrameConst(frame);
+            Img const& srcImg = src.GetImgConst(frame);
             Box destBox(x*frameW, y*frameH, srcImg.W(), srcImg.H());
             Blit(srcImg, srcImg.Bounds(), *dest, destBox);
         }

@@ -91,11 +91,11 @@ public:
 
     // shortcuts. Maybe kill these?
     Img& GetImg(NodePath const& targ) const {
-        return ResolveLayer(targ).GetFrame(targ.frame);
+        return ResolveLayer(targ).GetImg(targ.frame);
     }
 
     Img const& GetImgConst(NodePath const& targ) const {
-        return ResolveLayer(targ).GetFrameConst(targ.frame);
+        return ResolveLayer(targ).GetImgConst(targ.frame);
     }
 
     Palette const& PaletteConst(NodePath const& targ) const {
@@ -108,7 +108,7 @@ public:
 #if 0
     Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
     // TODO: KILL KILL KILL
-    PixelFormat Fmt() const { return m_Layers[0]->GetFrameConst(0).Fmt(); }
+    PixelFormat Fmt() const { return m_Layers[0]->GetImgConst(0).Fmt(); }
     // TODO: KILL KILL KILL
     int NumFrames() const { return m_Layers[0]->NumFrames(); }
 #endif

@@ -43,27 +43,25 @@ Cmd_ResizeLayer::Cmd_ResizeLayer(Project& proj, NodePath const& targ, Box const&
     Layer& l = proj.ResolveLayer(m_Targ);
 
     // populate frameswap with the resized frames
-    int n;
-    for (n = 0; n < l.NumFrames(); ++n)
-    {
-        Img const& srcImg = l.GetFrame(n);
-        Img* destImg = new Img(srcImg.Fmt(), newArea.w, newArea.h);
-        Box foo(destImg->Bounds());
-        destImg->FillBox(fillpen,foo);
-        Box srcArea(srcImg.Bounds());
+    for (auto src : l.mFrames) {
+        Frame* dest = new Frame(*src);
+        dest->mImg = new Img(src->mImg->Fmt(), newArea.w, newArea.h);
+        Box foo(dest->mImg->Bounds());
+        dest->mImg->FillBox(fillpen, foo);
+        Box srcArea(src->mImg->Bounds());
         Box destArea(srcArea);
         destArea -= newArea.TopLeft();
+        Blit(*src->mImg, srcArea, *dest->mImg, destArea);
 
-        Blit(srcImg, srcArea, *destImg, destArea);
-        m_FrameSwap.push_back(destImg);
+        m_FrameSwap.push_back(dest);
     }
 }
 
 
 Cmd_ResizeLayer::~Cmd_ResizeLayer()
 {
-    for (auto img : m_FrameSwap) {
-        delete img;
+    for (auto frame : m_FrameSwap) {
+        delete frame;
     }
 }
 
@@ -72,7 +70,7 @@ void Cmd_ResizeLayer::Swap()
 {
     Layer& l = Proj().ResolveLayer(m_Targ);
     assert(l.mFrames.size() == m_FrameSwap.size());
-    std::vector<Img*> tmp = l.mFrames;
+    std::vector<Frame*> tmp = l.mFrames;
     l.mFrames = m_FrameSwap;
     m_FrameSwap = tmp;
 
@@ -117,7 +115,7 @@ void Cmd_InsertFrames::Do()
     assert(Proj().NumLayers() == 1);
     Layer& targLayer = Proj().GetLayer(0);
 
-    Img const& srcimg(targLayer.GetFrameConst(m_Pos));
+    Img const& srcimg(targLayer.GetImgConst(m_Pos));
     Layer tmp;
     int i;
     for(i=0;i<m_Num;++i)
@@ -244,7 +242,7 @@ void Cmd_ToSpriteSheet::Undo()
     Layer& targLayer = Proj().GetLayer(0);
 
     assert(targLayer.NumFrames()==1);
-    Img const& src = targLayer.GetFrameConst(0);
+    Img const& src = targLayer.GetImgConst(0);
 
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
@@ -286,7 +284,7 @@ void Cmd_FromSpriteSheet::Do()
     Layer& layer = Proj().GetLayer(0);
     assert(layer.NumFrames()==1);
 
-    Img const& src = layer.GetFrameConst(0);
+    Img const& src = layer.GetImgConst(0);
 
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);

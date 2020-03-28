@@ -45,9 +45,12 @@ struct NodePath {
 };
 
 
-
+// Base class for anything that can be part of the layer stack.
+// Think of it as like a DOM node in a web browser - it has
+// a parent and child nodes. The root's parent is null.
 class BaseNode {
 public:
+    // The data:
     std::string name;
     Point offset;
     BaseNode* parent;  // root stack has null parent
@@ -88,9 +91,29 @@ public:
 
 
 
-struct Stack : public BaseNode {
+class Stack : public BaseNode {
+public:
     virtual Stack* ToStack() {return this;}
 };
+
+
+
+class Frame {
+public:
+    int mTime;  // time, in milliseconds
+
+    // frame owns the Img object
+    Img* mImg;
+
+    // Palette mPalette;    // per-frame palette
+    Frame() : mTime(0), mImg(nullptr) {
+    }
+
+    ~Frame() {
+        delete mImg;
+    }
+};
+
 
 
 class Layer : public BaseNode
@@ -102,13 +125,13 @@ public:
     virtual Layer* ToLayer() {return this;}
 
     int NumFrames() const { return mFrames.size(); }
-    Img& GetFrame(int n) {
+    Img& GetImg(int n) {
         assert(n >= 0 && n < (int)mFrames.size());
-        return *mFrames[n];
+        return *mFrames[n]->mImg;
     }
-    Img const& GetFrameConst(int n) const {
+    Img const& GetImgConst(int n) const {
         assert(n >= 0 && n < (int)mFrames.size());
-        return *mFrames[n];
+        return *mFrames[n]->mImg;
     }
     // TODO: account for frames...
     Palette& GetPalette() { return m_Palette; }
@@ -117,7 +140,12 @@ public:
 
     void Load(const char* filename);
     void Save(const char* filename);
-    void Append(Img* img) { mFrames.push_back(img); }
+    void Append(Img* img) {
+        Frame* f = new Frame();
+        f->mTime = 0;   // TODO
+        f->mImg = img;
+        mFrames.push_back(f);
+    }
     void Zap();
 
     // transfer frames in range [srcfirst, srclast) to another Layer
@@ -136,7 +164,8 @@ public:
 
     // DATA
 
-    std::vector<Img*> mFrames;
+    std::vector<Frame*> mFrames;
+
     int m_FPS;
     Palette m_Palette;
 };
