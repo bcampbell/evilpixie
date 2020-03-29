@@ -8,8 +8,49 @@
 #include "util.h"
 
 
+Layer* FindLayer(BaseNode* n)
+{
+    Layer* l = n->ToLayer();
+    if (l) {
+        return l;
+    }
+    for (auto child : n->children) {
+        l = FindLayer(child);
+        if (l) {
+            return l;
+        }
+    }
+    return nullptr;
+}
+
+NodePath CalcPath(BaseNode *n)
+{
+    std::vector<int> trace;
+    while(n->parent) {
+        int i;
+        for (i = 0; i < n->parent->children.size(); ++i) {
+            if (n == n->parent->children[i]) {
+                break;
+            }
+        }
+        if (i >= n->parent->children.size()) {
+            // not found! should never get here.
+            assert(false);
+            return NodePath();
+        }
+        trace.push_back(i);
+        n = n->parent;
+    }
+    std::reverse(trace.begin(), trace.end());
+    NodePath out;
+    out.sel = NodePath::SEL_MAIN;
+    out.path = trace;
+    return out;
+}
+
+
 Layer::Layer() :
-    m_FPS(10)
+    mFPS(60)
 {
 }
 
@@ -330,4 +371,32 @@ void Layer::Save( const char* filename )
     im_bundle_free(bundle);
 }
 
+int Layer::FrameIndexClipped(uint64_t t) const
+{
+    assert(!mFrames.empty());
+    uint64_t accum = 0;
+    int idx = 0;
+    for (auto f : mFrames) {
+        accum += f->mDuration;
+        if (t < accum) {
+            break;
+        }
+        ++idx;
+    }
+    // clip to last frame.
+    if (idx >= (int)mFrames.size()) {
+        idx = (int)mFrames.size() - 1;
+    }
+    return idx;
+}
+
+uint64_t Layer::FrameTime(int frame) const
+{
+    assert(frame < mFrames.size());
+    uint64_t t = 0;
+    for (int i=0; i<frame; ++i) {
+        t += mFrames[i]->mDuration;
+    }
+    return t;
+}
 

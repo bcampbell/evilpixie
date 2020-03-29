@@ -29,7 +29,7 @@ public:
     ~DrawTransaction();
 
     // call AddDamage as often as needed, within Begin/End pairs
-    void BeginDamage(NodePath const& targID);
+    void BeginDamage(NodePath const& target, int frame);
     void AddDamage(Box const& affected);
     void EndDamage();
 
@@ -44,7 +44,8 @@ private:
     void flush();
 
     Project& m_Proj;
-    NodePath m_TargID;
+    NodePath m_Target;
+    int m_Frame;
     Img* m_Backup;
     Box m_Affected;
 
@@ -53,11 +54,13 @@ private:
 
 DrawTransaction::DrawTransaction( Project& proj) :
     m_Proj(proj),
+    m_Frame(-1),
     m_Backup(0),
     m_Affected( 0,0,0,0 ),           // start with nothing affected
     m_Batch( new Cmd_Batch(proj, Cmd::DONE))
 {
-  m_TargID.frame = -1;  // TODO: need a null NodePath?  
+    assert(false);
+  //TODO: m_TargID.frame = -1;  // TODO: need a null NodePath?  
 }
 
 DrawTransaction::~DrawTransaction() {
@@ -72,22 +75,25 @@ DrawTransaction::~DrawTransaction() {
 
 
 
-void DrawTransaction::BeginDamage(NodePath const& targID)
+void DrawTransaction::BeginDamage(NodePath const& target, int frame)
 {
     // if we're changing target (eg drawing to another frame), we need
     // to wrap up the previous one first.
-    if (targID != m_TargID) {
+    if (target != m_Target) {
         flush();
 
-        m_TargID = targID;
-        m_Backup = new Img(m_Proj.GetImgConst(targID));
+        m_Target = target;
+        m_Frame = frame;
+        m_Backup = new Img(m_Proj.GetImgConst(target, frame));
     }
 }
 
 void DrawTransaction::AddDamage(Box const& affected)
 {
+    assert(!m_Target.IsNull());
+    assert(!m_Frame != -1);
     assert( m_Backup->Bounds().Contains(affected) );
-    m_Proj.NotifyDamage(m_TargID, affected);
+    m_Proj.NotifyDamage(m_Target, m_Frame, affected);
     m_Affected.Merge(affected);
 }
 
@@ -107,19 +113,19 @@ Cmd* DrawTransaction::Commit()
 
 void DrawTransaction::flush()
 {
-    if( !m_Affected.Empty()) {
+    if (!m_Affected.Empty()) {
         assert(m_Backup);
 
-        Cmd* c = new Cmd_Draw(m_Proj, m_TargID, m_Affected, *m_Backup);
+        Cmd* c = new Cmd_Draw(m_Proj, m_Target, m_Frame, m_Affected, *m_Backup);
         m_Batch->Append(c);
         m_Affected.SetEmpty();
     }
-    if(m_Backup) {
+    if (m_Backup) {
         delete m_Backup;
-        m_Backup = 0;
-        m_TargID.frame = -1;    // TODO: need a null NodePath?
+        m_Backup = nullptr;
+        m_Target = NodePath();  // null
+        m_Frame = -1;
     }
-    assert(m_Backup==0);
 }
 
 void DrawTransaction::Rollback()
@@ -314,7 +320,7 @@ void PencilTool::OnDown( EditView& view, Point const& p, Button b )
     m_Tx = new DrawTransaction(view.Proj());
 
     // draw 1st pixel
-    m_Tx->BeginDamage(view.Focus());
+    m_Tx->BeginDamage(view.Focus(), view.Frame());
     Plot_cb( p.x, p.y, (void*)this );
     m_Tx->EndDamage();
 }
@@ -328,7 +334,7 @@ void PencilTool::OnMove( EditView& view, Point const& p)
     }
 
     assert(m_Tx);
-    m_Tx->BeginDamage(view.Focus());
+    m_Tx->BeginDamage(view.Focus(), view.Frame());
     // feels 'wrong' to do continuous lines if grid is on...
     if( Owner().GridActive() )
         Plot_cb( p.x, p.y, (void*)this );
@@ -425,7 +431,7 @@ void LineTool::OnUp( EditView& view, Point const& p, Button b )
         DrawTransaction tx(view.Proj());
         m_To = p;
         m_Tx = &tx; // to give plot_cb access
-        tx.BeginDamage(view.Focus());
+        m_Tx->BeginDamage(view.Focus(), view.Frame());
         WalkLine( m_From.x, m_From.y, m_To.x, m_To.y, Plot_cb, this );
         tx.EndDamage();
         m_Tx = 0;
@@ -556,7 +562,7 @@ void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
         // don't really need a draw transaction here (could just directly craft a Cmd_Draw())
         // but hey :-)
         DrawTransaction tx(view.Proj());
-        tx.BeginDamage(view.Focus());
+        tx.BeginDamage(view.Focus(), view.Frame());
         view.FocusedImg().FillBox( Owner().BGPen(), pickup );
         tx.AddDamage(pickup );
         tx.EndDamage();
@@ -621,7 +627,7 @@ void FloodFillTool::OnDown( EditView& view, Point const& p, Button b )
     {
         DrawTransaction tx(proj);
         Box dmg;
-        tx.BeginDamage(view.Focus());
+        tx.BeginDamage(view.Focus(), view.Frame());
         FloodFill(view.FocusedImg(), p, fillcolour, dmg);
         tx.AddDamage( dmg );
         tx.EndDamage();
@@ -698,7 +704,7 @@ void RectTool::OnUp( EditView& view, Point const& p, Button b )
 
     DrawTransaction tx(view.Proj());
 
-    tx.BeginDamage(view.Focus());
+    tx.BeginDamage(view.Focus(), view.Frame());
 
     // top (including left and rightmost pixels)
     dmg.SetEmpty();
@@ -860,7 +866,7 @@ void FilledRectTool::OnUp( EditView& view, Point const& p, Button b )
     Box r( m_From, m_To );
 
     DrawTransaction tx(view.Proj());
-    tx.BeginDamage(view.Focus());
+    tx.BeginDamage(view.Focus(), view.Frame());
     if( m_DownButton == DRAW )
         img.FillBox( Owner().FGPen(),r );
     else    //if( m_DownButton == ERASE )
@@ -952,7 +958,7 @@ void CircleTool::OnUp( EditView& view, Point const& p, Button b )
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
 
-    tx.BeginDamage(view.Focus());
+    tx.BeginDamage(view.Focus(), view.Frame());
     WalkEllipse( m_From.x, m_From.y, rx, ry, Plot_cb, this );
     tx.EndDamage();
     Cmd* c= tx.Commit();
@@ -1062,7 +1068,7 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
     m_Tx = &tx;
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
-    tx.BeginDamage(view.Focus());
+    tx.BeginDamage(view.Focus(), view.Frame());
     WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
     tx.EndDamage();
     Cmd* c = tx.Commit();
@@ -1154,7 +1160,7 @@ void EyeDropperTool::OnDown( EditView& view, Point const& p, Button b )
     if( !view.FocusedImgConst().Bounds().Contains(p ) )
         return;
 
-    PenColour c = proj.PickUpPen(view.Focus(), p);
+    PenColour c = proj.PickUpPen(view.Focus(), view.Frame(), p);
 
     if( b == DRAW )
         Owner().SetFGPen(c);

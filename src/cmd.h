@@ -47,11 +47,12 @@ private:
 class Cmd_Draw : public Cmd
 {
 public:
-    Cmd_Draw( Project& proj, NodePath const& target, Box const& affected, Img const& undoimg );
+    Cmd_Draw( Project& proj, NodePath const& target, int frame, Box const& affected, Img const& undoimg );
     virtual void Do();
     virtual void Undo();
 private:
     NodePath m_Target;
+    int m_Frame;
     Img m_Img;
     Box m_Affected;
 };
@@ -74,29 +75,34 @@ private:
 };
 
 
+// Add frames to a layer.
 class Cmd_InsertFrames : public Cmd
 {
 public:
-    Cmd_InsertFrames(Project& proj, int position, int numframes);
+    Cmd_InsertFrames(Project& proj, NodePath const& target, int pos, int numFrames);
     virtual ~Cmd_InsertFrames();
     virtual void Do();
     virtual void Undo();
 private:
+    NodePath m_Target;
     int m_Pos;
-    int m_Num;
+    int m_NumFrames;
 };
 
+
+// Delete frames from a layer.
 class Cmd_DeleteFrames : public Cmd
 {
 public:
-    Cmd_DeleteFrames(Project& proj, int first, int last);
+    Cmd_DeleteFrames(Project& proj, NodePath const& target, int pos, int numFrames);
     virtual ~Cmd_DeleteFrames();
     virtual void Do();
     virtual void Undo();
 private:
-    int m_First;
-    int m_Last;
-    Layer m_FrameSwap;
+    NodePath m_Target;
+    int m_Pos;
+    int m_NumFrames;
+    std::vector<Frame*> m_FrameSwap;
 };
 
 
@@ -130,7 +136,7 @@ private:
 class Cmd_PaletteModify : public Cmd
 {
 public:
-    Cmd_PaletteModify(Project& proj, NodePath const& targ, int first, int cnt, Colour const* colours);
+    Cmd_PaletteModify(Project& proj, NodePath const& target, int frame, int first, int cnt, Colour const* colours);
     virtual ~Cmd_PaletteModify();
     virtual void Do();
     virtual void Undo();
@@ -138,10 +144,11 @@ public:
     // cheesy RTTI
     virtual Cmd_PaletteModify* ToPaletteModify() { return this; }
 
-    bool Merge(NodePath const& targ, int idx, Colour const& newc);
+    bool Merge(NodePath const& target, int frame, int idx, Colour const& newc);
 private:
     void swap();
-    NodePath m_Targ;
+    NodePath m_Target;
+    int m_Frame;
     int m_First;
     int m_Cnt;
     Colour* m_Colours;

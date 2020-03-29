@@ -49,10 +49,6 @@ public:
     Tool& CurrentTool() { return *m_Tool; }
 //    void SetTool( Tool* newtool, bool notifygui=true );
 
-    // The currently-focused layer
-    NodePath Focus() const {return m_Focus;}
-    void SetFocus(NodePath const& layer);
-
     DrawMode const& Mode() const { return m_Mode; }
     void SetMode( DrawMode const& mode) { m_Mode= mode; }
 
@@ -133,9 +129,6 @@ private:
 
     // track the views this editor is managing
 	std::set< EditView* > m_Views;
-
-    // The currently-focused layer
-    NodePath m_Focus;
 
     Tool* m_Tool;
     int m_CurrentToolType;

@@ -170,16 +170,16 @@ public:
     {
     }
 
-    PenColour( Colour c, int i=-1) :
+    PenColour(Colour c, int i=-1) :
         m_rgb(c),
         m_idx(i)
     {
     }
 
     Colour rgb() const {return m_rgb; }
-    int idx() const { assert(IdxValid());return m_idx; }
+    int idx() const {assert(IdxValid()); return m_idx;}
 
-    bool IdxValid() const { return m_idx>=0; }
+    bool IdxValid() const {return m_idx >= 0;}
 private:
     Colour m_rgb;
     int m_idx; // -1 = invalid

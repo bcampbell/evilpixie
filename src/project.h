@@ -90,19 +90,19 @@ public:
     }
 
     // shortcuts. Maybe kill these?
-    Img& GetImg(NodePath const& targ) const {
-        return ResolveLayer(targ).GetImg(targ.frame);
+    Img& GetImg(NodePath const& target, int frame) const {
+        return ResolveLayer(target).GetImg(frame);
     }
 
-    Img const& GetImgConst(NodePath const& targ) const {
-        return ResolveLayer(targ).GetImgConst(targ.frame);
+    Img const& GetImgConst(NodePath const& target, int frame) const {
+        return ResolveLayer(target).GetImgConst(frame);
     }
 
-    Palette const& PaletteConst(NodePath const& targ) const {
-        return ResolveLayer(targ).GetPaletteConst();
+    Palette const& PaletteConst(NodePath const& target, int frame) const {
+        return ResolveLayer(target).GetPaletteConst();
     }
-    Palette& GetPalette(NodePath const& targ) const {
-        return ResolveLayer(targ).GetPalette();
+    Palette& GetPalette(NodePath const& target, int frame) const {
+        return ResolveLayer(target).GetPalette();
     }
 
 #if 0
@@ -113,7 +113,7 @@ public:
     int NumFrames() const { return m_Layers[0]->NumFrames(); }
 #endif
 
-    PenColour PickUpPen(NodePath const& target, Point const& pt) const;
+    PenColour PickUpPen(NodePath const& target, int frame, Point const& pt) const;
 
     // TODO: KILL THESE
 //    Palette const& PaletteConst() const { return m_Layers[0]->GetPaletteConst(); }
@@ -125,21 +125,21 @@ public:
     // --------------------------------------
     // Notifcation fns. To be called when project is fiddled with.
     // --------------------------------------
-	void NotifyDamage(NodePath const& target, Box const& b);
+	void NotifyDamage(NodePath const& target, int frame, Box const& b);
 
     // notify operations on frames
-    void NotifyFramesAdded(NodePath const& first, int count);
-    void NotifyFramesRemoved(NodePath const& first, int count);
-    void NotifyFramesBlatted(NodePath const& first, int count);
+    void NotifyFramesAdded(NodePath const& target, int first, int count);
+    void NotifyFramesRemoved(NodePath const& target, int first, int count);
+    void NotifyFramesBlatted(NodePath const& ftarget, int irst, int count);
 
     // notify palette modified
-    void NotifyPaletteChange(NodePath const& owner, int first, int count);
-    void NotifyPaletteReplaced(NodePath const& owner);
+    void NotifyPaletteChange(NodePath const& target, int frame, int index, int count);
+    void NotifyPaletteReplaced(NodePath const& target, int frame);
 
     void SetModifiedFlag( bool newmodifiedflag );
 
-
     // Return true if both paths share the same palette
+    // TODO: - frames?
     bool IsSamePalette(NodePath const& a, NodePath const& b) const;
 
     // --------------------------------------

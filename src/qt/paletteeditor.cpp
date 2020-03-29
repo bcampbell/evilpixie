@@ -16,11 +16,12 @@
 #include <QLineEdit>
 #include <QFontDatabase>
 
-PaletteEditor::PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus) :
+PaletteEditor::PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus, int frame) :
     QDialog( parent ),
     m_Ed(ed),
     m_Proj( ed.Proj()),
     m_Focus(focus),
+    m_Frame(frame),
     m_Selected( 1 ),
     m_Applying(false)
 {
@@ -107,14 +108,14 @@ void PaletteEditor::SetSelected(int idx)
 
 // ProjectListener implementation
 
-void PaletteEditor::OnDamaged(NodePath const& /*targ*/, Box const& /*dmg*/ )
+void PaletteEditor::OnDamaged(NodePath const& /*target*/, int /* frame */Box const& /*dmg*/ )
 {
     // don't care about image changes.
 }
 
-void PaletteEditor::OnPaletteChanged(NodePath const& targ, int index, Colour const& c )
+void PaletteEditor::OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c )
 {
-    if (!m_Proj.IsSamePalette(targ, m_Focus)) {
+    if (!m_Proj.IsSamePalette(target, m_Focus)) {
         return; // not interested.
     }
 
@@ -127,13 +128,13 @@ void PaletteEditor::OnPaletteChanged(NodePath const& targ, int index, Colour con
     }
 }
 
-void PaletteEditor::OnPaletteReplaced(NodePath const& targ)
+void PaletteEditor::OnPaletteReplaced(NodePath const& target, int frame)
 {
-    if (!m_Proj.IsSamePalette(targ, m_Focus)) {
+    if (!m_Proj.IsSamePalette(target, m_Focus)) {
         return; // not interested.
     }
 
-    Palette const& pal = m_Proj.PaletteConst(m_Focus);
+    Palette const& pal = m_Proj.PaletteConst(m_Focus, m_Frame);
     m_PaletteWidget->SetPalette(pal);
 
     // make sure we've got something valid selected.
@@ -152,13 +153,13 @@ void PaletteEditor::OnPaletteReplaced(NodePath const& targ)
 void PaletteEditor::OnModifiedFlagChanged(bool /*changed*/)
 {}
 
-void PaletteEditor::OnFramesAdded(NodePath const& /*first*/, int /*count*/)
+void PaletteEditor::OnFramesAdded(NodePath const& /*target*/, int /*first*/, int /*count*/)
 {}
 
-void PaletteEditor::OnFramesRemoved(NodePath const& /*first*/, int /*count*/)
+void PaletteEditor::OnFramesRemoved(NodePath const& /*target*/, int /*first*/, int /*count*/)
 {}
 
-void PaletteEditor::OnFramesBlatted(NodePath const& /*first*/, int /*count*/)
+void PaletteEditor::OnFramesBlatted(NodePath const& /*target*/, int /*first*/, int /*count*/)
 {}
 
 

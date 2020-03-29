@@ -22,22 +22,23 @@ class EditView : public ProjectListener
 {
 public:
 
-	EditView( Editor& editor, int w, int h );
+	EditView( Editor& editor, NodePath const& focus, int frame, int w, int h );
 	virtual ~EditView();
 
     // ProjectListener Implementation
-	virtual void OnDamaged(NodePath const& target, Box const& dmg);
-    virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c);
-    virtual void OnPaletteReplaced(NodePath const& owner);
+	virtual void OnDamaged(NodePath const& target, int frame, Box const& dmg);
+    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c);
+    virtual void OnPaletteReplaced(NodePath const& target, int frame);
     virtual void OnModifiedFlagChanged(bool changed);
-    virtual void OnFramesAdded(NodePath const& first, int count);
-    virtual void OnFramesRemoved(NodePath const& first, int count);
-    virtual void OnFramesBlatted(NodePath const& first, int count);
+    virtual void OnFramesAdded(NodePath const& target, int first, int count);
+    virtual void OnFramesRemoved(NodePath const& target, int first, int count);
+    virtual void OnFramesBlatted(NodePath const& target, int first, int count);
 
 	// these will all cause listener RedrawAll request
 	void Resize( int w, int h );
 	void SetZoom( int zoom );
-	void SetFrameNum( int framenum );
+    void SetFocus(NodePath const& focus);
+    void SetFrame(int frame);
 	void SetOffset( Point const& projpos );	// in project coord (pixels)
     void AlignView( Point const& viewp, Point const& projp );
     void CenterView();
@@ -46,8 +47,8 @@ public:
 	int Zoom() const { return m_Zoom; }
 	int XZoom() const { return m_XZoom; }
 	int YZoom() const { return m_YZoom; }
-    int FrameNum() const { return m_Focus.frame; }
     NodePath const& Focus() const {return m_Focus;}
+    int Frame() const {return m_Frame;}
 
 	void OnMouseDown( Point const& viewpos, Button button );
 	void OnMouseMove( Point const& viewpos );
@@ -64,9 +65,9 @@ public:
 
 
     // helper to find the currently-focused image
-    Img& FocusedImg() {return Proj().GetImg(m_Focus);}
-    Img const& FocusedImgConst() const {return Proj().GetImgConst(m_Focus);}
-    Palette const& FocusedPaletteConst() const {return Proj().PaletteConst(m_Focus);}
+    Img& FocusedImg() {return Proj().GetImg(m_Focus, m_Frame);}
+    Img const& FocusedImgConst() const {return Proj().GetImgConst(m_Focus, m_Frame);}
+    Palette const& FocusedPaletteConst() const {return Proj().PaletteConst(m_Focus, m_Frame);}
 
 	// For tools...
     // TODO: not enough to overlay brushes upon the view canvas.
@@ -94,8 +95,9 @@ private:
 	Img* m_Canvas;
 	Box m_ViewBox;	// x,y always 0
 
-    // current frame being edited
+    // current layer & frame being edited
     NodePath m_Focus;
+    int m_Frame;
 
 	int m_Zoom;
 	int m_XZoom;
@@ -112,9 +114,6 @@ private:
 
     void DrawView( Box const& viewbox, Box* affectedview=0  );
     void ConfineView();
-
-    // return true if changes on targ contribute to this view
-    bool affectsView(NodePath const& targ) const;
 };
 
 

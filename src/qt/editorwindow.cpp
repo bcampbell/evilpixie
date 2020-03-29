@@ -108,6 +108,14 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_ActionRedo(0),
     m_StatusViewInfo(0)
 {
+    // focus upon the first layer
+    Layer *firstLayer = FindLayer(proj->root);
+    assert(firstLayer); // TODO: support null focus layer?
+    assert(!firstLayer->mFrames.empty());
+    m_Focus = CalcPath(firstLayer);
+    m_Time = 0;
+    m_Frame = 0;
+
     // set up mouse cursors
     {
         int i;
@@ -131,7 +139,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     QMenuBar* menubar = CreateMenuBar();
     layout->addWidget(menubar, 0, 0, 1, 2);
 
-    m_ViewWidget = new EditViewWidget(*this);
+    m_ViewWidget = new EditViewWidget(*this, m_Focus, m_Frame);
     m_ViewWidget->setCursor(*m_MouseCursors[MOUSESTYLE_DEFAULT]);
 
     m_MagView = nullptr;
@@ -222,6 +230,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     OnPenChanged();
 
     RethinkWindowTitle();
+
 
     setAcceptDrops(true);
     show();
@@ -360,6 +369,25 @@ QLayout* EditorWindow::CreateBrushButtons()
 }
 
 
+void EditorWindow::SetFocus(NodePath const& focus)
+{
+    m_Focus = focus;
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+    m_Frame = l.FrameIndexClipped(m_Time);
+    // TODO: propagate!
+    assert(false);
+}
+
+void EditorWindow::SetTime(uint64_t micros)
+{
+    m_Time = micros;
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+    m_Frame = l.FrameIndexClipped(m_Time);
+    // TODO: propagate!
+    assert(false);
+}
+
+
 void EditorWindow::OnPenChanged()
 {
     // new fg or bg pen
@@ -490,7 +518,7 @@ void EditorWindow::magnifyButtonToggled(bool checked)
 
             Point projFocus = m_ViewWidget->ViewToProj(Point(focusPoint.x(), focusPoint.y()));
             // Create the magnified view and figure out position/zoom.
-            m_MagView = new EditViewWidget(*this);
+            m_MagView = new EditViewWidget(*this, m_Focus, m_Frame);
             m_MagView->setCursor(*m_MouseCursors[MOUSESTYLE_DEFAULT]);
             m_MagView->SetZoom(m_ViewWidget->Zoom() * 4);
             m_ViewSplitter->addWidget(m_MagView);
@@ -771,53 +799,56 @@ void EditorWindow::do_addlayer()
 
 void EditorWindow::do_addframe()
 {
-    assert(false);  //TODO: implement
-#if 0
-    int frame = m_ViewWidget->FrameNum();
-    Cmd* c = new Cmd_InsertFrames(Proj(), frame, 1);
+    assert(Focus().sel == NodePath::SEL_MAIN);
+    NodePath first = Focus();
+    first.frame++;
+    Cmd* c = new Cmd_InsertFrames(Proj(), first, 1);
     AddCmd(c);
-#endif
 }
 
 void EditorWindow::do_zapframe()
 {
-    assert(false);  //TODO: implement
-#if 0
-    assert(Proj().GetLayer(ActiveLayer()).NumFrames() > 1);
-    int frame = m_ViewWidget->FrameNum();
-    Cmd* c= new Cmd_DeleteFrames(Proj(), frame, frame+1);
+    assert(Focus().sel == NodePath::SEL_MAIN);
+    Cmd* c= new Cmd_DeleteFrames(Proj(), Focus(), 1);
     AddCmd(c);
-#endif
 }
 
 void EditorWindow::do_prevframe()
 {
-    assert(false);  //TODO: implement
-#if 0
-    int n = m_ViewWidget->FrameNum() - 1;
-    if(n < 0)
-        n = Proj().NumFrames() - 1;
-    m_ViewWidget->SetFrameNum(n);
+    Layer const& l = Proj().ResolveLayer(f);
+    assert(m_Focus.sel == NodePath::SEL_MAIN);
+    if (m_Frame > 0) {
+        --m_Frame;
+    } else {
+        m_Frame = l.mFrames.size() - 1; // wrap.
+    }
+
+    // TODO: if per-frame palette, need to update widgets
+    m_ViewWidget->SetFrame(m_Frame);
     if (m_MagView) {
-        m_MagView->SetFrameNum(n);
+        m_MagView->SetFrame(m_Frame);
     }
     RethinkWindowTitle();
-#endif
 }
 
 void EditorWindow::do_nextframe()
 {
-    assert(false);  //TODO: implement
-#if 0
-    int n = m_ViewWidget->FrameNum() + 1;
-    if(n >= Proj().NumFrames())
-        n=0;//Proj().NumFrames()-1;
-    m_ViewWidget->SetFrameNum(n);
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+    assert(m_Focus.sel == NodePath::SEL_MAIN);
+    if (m_Frame < l.mFrames.size() - 1) {
+        ++m_Frame;
+    } else {
+        m_Frame = 0;    // wrap.
+    }
+    m_Time = l.FrameTime(m_Frame);
+
+    // TODO: if per-frame palette, need to update widgets
+
+    m_ViewWidget->SetFrame(m_Frame);
     if (m_MagView) {
-        m_MagView->SetFrameNum(n);
+        m_MagView->SetFrame(m_Frame);
     }
     RethinkWindowTitle();
-#endif
 }
 
 
@@ -1153,23 +1184,21 @@ void EditorWindow::CreateActions()
 
 void EditorWindow::RethinkWindowTitle()
 {
-    std::string f = Proj().Filename();
-    if( f.empty() )
-        f = "Untitled";
+    std::string name = Proj().Filename();
+    if( name.empty() )
+        name = "Untitled";
 
-    //TODO! implement!
-#if 0
-    Layer& layer0 = Proj().GetLayer(0);
-    int w = layer0.GetImgConst(0).W();
-    int h = layer0.GetImgConst(0).H();
+    NodePath f = Focus();
+    Layer const& l = Proj().ResolveLayer(f);
+    Img const& img = *l.mFrames[f.frame]->mImg;
+    int w = img.W();
+    int h = img.H();
 
     char dim[128];
-    sprintf( dim, " (%dx%d) frame %d/%d", w,h,m_ViewWidget->FrameNum()+1,Proj().NumFrames() );
-#endif
-    const char* dim = "????";
+    sprintf( dim, " (%dx%d) frame %d/%d", w, h, f.frame+1, (int)l.mFrames.size());
 
-    std::string title = "[*]";
-    title += f;
+    std::string title;
+    title += name;
     title += dim;
     switch (Mode().mode) {
         case DrawMode::DM_NORMAL: title += " NORMAL"; break;

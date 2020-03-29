@@ -17,17 +17,17 @@ class PaletteEditor : public QDialog, public ProjectListener
 {
     Q_OBJECT
 public:
-    PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus);
+    PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus, int frame);
     virtual ~PaletteEditor();
 
     // ProjectListener stuff
-	virtual void OnDamaged(NodePath const& target, Box const& dmg);
-    virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c);
-    virtual void OnPaletteReplaced(NodePath const& owner);
+	virtual void OnDamaged(NodePath const& target, int frame, Box const& dmg);
+    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c);
+    virtual void OnPaletteReplaced(NodePath const& target, int frame);
     virtual void OnModifiedFlagChanged(bool changed);
-    virtual void OnFramesAdded(NodePath const& first, int count);
-    virtual void OnFramesRemoved(NodePath const& first, int count);
-    virtual void OnFramesBlatted(NodePath const& first, int count);
+    virtual void OnFramesAdded(NodePath const& target, int first, int count);
+    virtual void OnFramesRemoved(NodePath const& target, int first, int count);
+    virtual void OnFramesBlatted(NodePath const& target, int first, int count);
 
     // Set the frame whose palette we're editing
     // TODO
@@ -41,6 +41,7 @@ private:
     Editor& m_Ed;
     Project& m_Proj;
     NodePath m_Focus;
+    int m_Frame;
 
     int m_Selected;
 

@@ -4,12 +4,13 @@
 #include <cassert>
 
 
-EditView::EditView( Editor& editor, int w, int h ) :
+EditView::EditView(Editor& editor, NodePath const& focus, int frame, int w, int h) :
     m_Editor(editor),
     m_PrevPos(-1,-1),
     m_Canvas( new Img(FMT_RGBX8,w,h ) ),
     m_ViewBox(0,0,w,h),
-    m_Focus(editor.Focus()),
+    m_Focus(focus),
+    m_Frame(frame),
     m_Zoom(4),
     m_Offset(0,0),
     m_Panning(false),
@@ -23,16 +24,12 @@ EditView::EditView( Editor& editor, int w, int h ) :
     editor.AddView( this );
 }
 
-
 EditView::~EditView()
 {
     Proj().RemoveListener( this );
     Ed().RemoveView( this );
     delete m_Canvas;
 }
-
-
-
 
 void EditView::Resize( int w, int h )
 {
@@ -76,19 +73,22 @@ void EditView::SetZoom( int zoom )
     Redraw(m_ViewBox);
 }
 
-void EditView::SetFrameNum( int frame )
+void EditView::SetFocus(NodePath const& focus)
 {
-    assert(false);  //TODO: implement!
-#if 0
-    assert( frame>=0);
-    assert( frame<Proj().GetLayer(m_Focus.layer).NumFrames());
-
-    m_Focus.frame = frame;
+    m_Focus = focus;
     ConfineView();
     DrawView(m_ViewBox);
     Redraw(m_ViewBox);
-#endif
 }
+
+void EditView::SetFrame(int frame)
+{
+    m_Frame = frame;
+    ConfineView();
+    DrawView(m_ViewBox);
+    Redraw(m_ViewBox);
+}
+
 
 void EditView::SetOffset( Point const& projpos )
 {
@@ -376,25 +376,20 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
         *affectedview = vb;
 }
 
-bool EditView::affectsView(NodePath const& targ) const
-{
-    // TODO: need to catch changes on any layer the same frame!
-    if (targ == m_Focus) {
-        return true;
-    }
-    // TODO: will also need to handle neighbouring frames, if onionskinning.
-    return false;
-}
-
 
 // Begin ProjectListener implementation.
 
 // called when project has been modified
-void EditView::OnDamaged(NodePath const& id, Box const& projdmg)
+void EditView::OnDamaged(NodePath const& target, int frame, Box const& projdmg)
 {
-    if (!affectsView(id)) {
+    if (m_Focus.sel != target.sel) {
         return;
     }
+    if (m_Frame != frame) {
+        return;
+    }
+    // TODO: ignore non-visible layers...
+    // TODO: account for onionskinning.
 
     Box viewdirtied;
 
@@ -406,14 +401,14 @@ void EditView::OnDamaged(NodePath const& id, Box const& projdmg)
     Redraw(viewdirtied);
 }
 
-void EditView::OnPaletteChanged(NodePath const& owner, int /*index*/, Colour const&/*newColour*/)
+void EditView::OnPaletteChanged(NodePath const& target, int frame, int /*index*/, Colour const&/*newColour*/)
 {
-    OnPaletteReplaced(owner);
+    OnPaletteReplaced(target, frame);
 }
 
-void EditView::OnPaletteReplaced(NodePath const& owner)
+void EditView::OnPaletteReplaced(NodePath const& target, int frame)
 {
-    if (!Proj().IsSamePalette(owner, m_Focus)) {
+    if (!Proj().IsSamePalette(target, m_Focus)) {
         return;
     }
     // redraw the whole project (don't need to redraw padding)
@@ -427,20 +422,52 @@ void EditView::OnModifiedFlagChanged(bool /*changed*/)
 {
 }
 
-void EditView::OnFramesAdded(NodePath const& first, int count)
+void EditView::OnFramesAdded(NodePath const& target, int first, int count)
 {
-    assert(false);  // TODO
-}
-void EditView::OnFramesRemoved(NodePath const& first, int count)
-{
-    assert(false);  // TODO
-}
-void EditView::OnFramesBlatted(NodePath const& first, int count)
-{
-    assert(count==1); // TODO - handle multiple frames!
-    if (!affectsView(first)) {
+    if (m_Focus.sel != target.sel) {
         return;
     }
+    //Layer const& l = Proj().ResolveLayer(target);
+    // TODO: ignore changes on non-visible layers.
+
+    if (m_Frame >= first) {
+        m_Frame += count;
+    }
+
+    // redraw the whole view (including padding)
+    Box affected;
+    DrawView(m_ViewBox,&affected);
+    Redraw(affected);
+}
+
+void EditView::OnFramesRemoved(NodePath const& target, int first, int count)
+{
+    if (m_Focus.sel != target.sel) {
+        return;
+    }
+    //Layer const& l = Proj().ResolveLayer(target);
+    // TODO: ignore changes on non-visible layers.
+
+    // not sure what'll seem most intuitive to user here...
+    if (m_Frame >= first + count) {
+        m_Frame -= count;
+        if (m_Frame < 0) {
+            m_Frame = 0;
+        }
+    }
+
+    // redraw the whole view (including padding)
+    Box affected;
+    DrawView(m_ViewBox,&affected);
+    Redraw(affected);
+}
+
+void EditView::OnFramesBlatted(NodePath const& target, int /*first*/, int /*count*/)
+{
+    if (m_Focus.sel != target.sel) {
+        return;
+    }
+
     // redraw the whole view (including padding)
     Box affected;
     DrawView(m_ViewBox,&affected);
@@ -449,10 +476,10 @@ void EditView::OnFramesBlatted(NodePath const& first, int count)
 
 // End of ProjectListener implementation
 
-void EditView::AddCursorDamage( Box const& viewdmg )
+void EditView::AddCursorDamage(Box const& viewdmg)
 {
-    m_CursorDamage.push_back( viewdmg );
-    Redraw( viewdmg );
+    m_CursorDamage.push_back(viewdmg);
+    Redraw(viewdmg);
 }
 
 

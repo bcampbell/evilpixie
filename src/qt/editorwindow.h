@@ -72,6 +72,12 @@ public:
     EditorWindow(Project* proj, QWidget *parent = 0);
     virtual ~EditorWindow();
 
+    void SetTime(uint64_t micros);
+    uint64_t Time() const { return m_Time; }
+
+    void SetFocus(NodePath const& focus);
+    NodePath Focus() const { return m_Focus; };
+
     // Editor implementation
     virtual void GUIShowError( const char* msg );
     virtual void OnToolChanged();
@@ -138,6 +144,10 @@ public slots:
     void do_nextframe();
 
 private:
+    uint64_t m_Time;
+    NodePath m_Focus;
+    int m_Frame;
+
     QSplitter* m_ViewSplitter;      // container for main & magnified views.
     EditViewWidget* m_ViewWidget;   // main view
     EditViewWidget* m_MagView;      // magnified view (or null)

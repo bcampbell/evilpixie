@@ -10,8 +10,8 @@
 #include <QtWidgets/QShortcut>
 #include <cassert>
 
-EditViewWidget::EditViewWidget(Editor& editor) :
-	EditView(editor, 500, 500),
+EditViewWidget::EditViewWidget(Editor& editor, NodePath const& focus, int frame) :
+	EditView(editor, focus, frame, 500, 500),
 	m_Anchor(0, 0),
     m_Panning(false)
 {

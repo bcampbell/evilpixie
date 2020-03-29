@@ -7,8 +7,8 @@
 #include "palette.h"
 #include "colours.h"
 #include "point.h"
+#include "img.h"
 
-class Img;
 struct Box;
 class Layer;
 class Stack;
@@ -18,18 +18,16 @@ class Stack;
 struct NodePath {
     enum {SEL_NULL=0, SEL_MAIN, SEL_SPARE} sel;
     std::vector<int> path;
-    int frame;  // frame within target (if layer)
+    //int frame;  // frame within target (if layer)
 
-    NodePath() : sel(SEL_NULL), frame(0) {}
+    NodePath() : sel(SEL_NULL) {}
 
     bool IsNull() const {
         return sel == SEL_NULL;
     }
 
     bool operator==(NodePath const& other) const {
-        return (sel == other.sel &&
-            path == other.path &&
-            frame == other.frame);
+        return (sel == other.sel && path == other.path);
     }
     bool operator!=(NodePath const& other) const {
         return (!(*this == other));
@@ -40,7 +38,7 @@ struct NodePath {
         for( auto i : path) {
             printf("%d/",i);
         }
-        printf("f%d\n", frame);
+        printf("\n");
     }
 };
 
@@ -89,8 +87,14 @@ public:
     }
 };
 
+// Starting at n, find the first layer.
+Layer* FindLayer(BaseNode* n);
+
+// Return a path from root to the given node layer.
+NodePath CalcPath(BaseNode *n);
 
 
+// A Stack groups multiple Layers (and/or other Stacks).
 class Stack : public BaseNode {
 public:
     virtual Stack* ToStack() {return this;}
@@ -100,22 +104,20 @@ public:
 
 class Frame {
 public:
-    int mTime;  // time, in milliseconds
-
+    // How long this frame should be displayed, in microsecs.
+    int mDuration;
     // frame owns the Img object
     Img* mImg;
+    // can have per-frame palette
+    // Palette mPalette;
 
-    // Palette mPalette;    // per-frame palette
-    Frame() : mTime(0), mImg(nullptr) {
-    }
-
-    ~Frame() {
-        delete mImg;
-    }
+    Frame() : mDuration(0), mImg(nullptr) {}
+    ~Frame() { delete mImg; }
 };
 
 
-
+// Layers are where all the image data is stashed.
+// They should never have child nodes.
 class Layer : public BaseNode
 {
 public:
@@ -140,9 +142,12 @@ public:
 
     void Load(const char* filename);
     void Save(const char* filename);
+
+
+    // Kill this.
     void Append(Img* img) {
         Frame* f = new Frame();
-        f->mTime = 0;   // TODO
+        f->mDuration = 1000000/mFPS;
         f->mImg = img;
         mFrames.push_back(f);
     }
@@ -154,19 +159,26 @@ public:
     void CalcBounds(Box& bound, int first, int last) const;
 
     // frame rate control (in fps)
-    int FPS() const { return m_FPS; }
-    void SetFPS(int fps) { m_FPS=fps; }
+    int FPS() const { return mFPS; }
+    void SetFPS(int fps) { mFPS=fps; }
 
     void Dump() const;
 
     PixelFormat Fmt() const;
 
 
+    // Find frame index for time t (clips to last frame).
+    int FrameIndexClipped(uint64_t t) const;
+
+    // Calculate start time of frame (in microseconds).
+    uint64_t FrameTime(int frame) const;
+
+
     // DATA
 
     std::vector<Frame*> mFrames;
 
-    int m_FPS;
+    int mFPS;
     Palette m_Palette;
 };
 

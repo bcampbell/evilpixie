@@ -12,7 +12,7 @@ class EditViewWidget : public QWidget, public EditView
     Q_OBJECT
 
 public:
-	EditViewWidget( Editor& editor );
+	EditViewWidget(Editor& editor, NodePath const& focus, int frame);
 
 	// Editview virtuals
 	virtual void Redraw( Box const& b );

@@ -101,16 +101,6 @@ Layer* Project::DetachLayer(int pos)
 }
 #endif
 
-// KILL THIS!
-void Project::ReplacePalette(Palette* newpalette)
-{
-    /*
-    m_Layers[0]->SetPalette(*newpalette);
-    delete newpalette;  // UGH!
-    NotifyPaletteReplaced(everything);
-    */
-}
-
 bool Project::IsSamePalette(NodePath const& a, NodePath const& b) const
 {
     // TODO: handle palette/layer policy when implemented!
@@ -128,76 +118,70 @@ void Project::Save( std::string const& filename )
 
 
 
-void Project::NotifyDamage(NodePath const& target, Box const& b )
+void Project::NotifyDamage(NodePath const& target, int frame, Box const& b )
 {
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnDamaged(target, b);
+    for (auto l : m_Listeners) {
+        l->OnDamaged(target, frame, b);
     }
 }
 
-void Project::NotifyFramesAdded(NodePath const& first, int cnt)
+void Project::NotifyFramesAdded(NodePath const& target, int first, int count)
 {
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnFramesAdded(first, cnt);
+    for (auto l : m_Listeners) {
+        l->OnFramesAdded(target, first, count);
     }
 }
 
-void Project::NotifyFramesRemoved(NodePath const& first, int cnt)
+void Project::NotifyFramesRemoved(NodePath const& target, int first, int count)
 {
-    std::set<ProjectListener*>::iterator it;
-    for( it=m_Listeners.begin(); it!=m_Listeners.end(); ++it )
-    {
-        (*it)->OnFramesRemoved(first, cnt);
+    for (auto l : m_Listeners) {
+        l->OnFramesRemoved(target, first, count);
     }
 }
 
-void Project::NotifyFramesBlatted(NodePath const& first, int count)
+void Project::NotifyFramesBlatted(NodePath const& target, int first, int count)
 {
-    for (auto listener : m_Listeners) {
-        listener->OnFramesBlatted(first, count);
+    for (auto l : m_Listeners) {
+        l->OnFramesBlatted(target, first, count);
     }
 }
 
-void Project::NotifyPaletteChange(NodePath const& owner, int first, int cnt )
+void Project::NotifyPaletteChange(NodePath const& target, int frame, int first, int count )
 {
     std::set<ProjectListener*>::iterator it;
-    if (cnt == 1)
+    if (count == 1)
     {
         // TODO: which palette?
-        Colour c = PaletteConst(owner).GetColour(first);
+        Colour c = PaletteConst(target, frame).GetColour(first);
         for (auto l : m_Listeners) {
-            l->OnPaletteChanged(owner, first, c);
+            l->OnPaletteChanged(target, frame, first, c);
         }
     } else {
         for (auto l : m_Listeners) {
-            l->OnPaletteReplaced(owner);
+            l->OnPaletteReplaced(target, frame);
         }
     }
 }
 
-void Project::NotifyPaletteReplaced(NodePath const& owner)
+void Project::NotifyPaletteReplaced(NodePath const& target, int frame)
 {
     for (auto l: m_Listeners) {
-        l->OnPaletteReplaced(owner);
+        l->OnPaletteReplaced(target, frame);
     }
 }
 
 
 
 
-PenColour Project::PickUpPen(NodePath const& target, Point const& pt) const
+PenColour Project::PickUpPen(NodePath const& target, int frame, Point const& pt) const
 {
-    Img const& srcimg = GetImgConst(target);
+    Img const& srcimg = GetImgConst(target, frame);
     switch(srcimg.Fmt())
     {
     case FMT_I8:
         {
             I8 const* src = srcimg.PtrConst_I8(pt.x,pt.y);
-            return PenColour(PaletteConst(target).GetColour(*src),*src);
+            return PenColour(PaletteConst(target, frame).GetColour(*src),*src);
         }
         break;
     case FMT_RGBX8:

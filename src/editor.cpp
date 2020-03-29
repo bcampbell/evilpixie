@@ -11,47 +11,6 @@
 #include <cstdio>
 
 
-static Layer* FindLayer(BaseNode* n)
-{
-    Layer* l = n->ToLayer();
-    if (l) {
-        return l;
-    }
-    for (auto child : n->children) {
-        l = FindLayer(child);
-        if (l) {
-            return l;
-        }
-    }
-    return nullptr;
-}
-
-static NodePath CalcPath(BaseNode *n)
-{
-    std::vector<int> trace;
-    while(n->parent) {
-        int i;
-        for (i = 0; i < n->parent->children.size(); ++i) {
-            if (n == n->parent->children[i]) {
-                break;
-            }
-        }
-        if (i >= n->parent->children.size()) {
-            // not found! should never get here.
-            assert(false);
-            return NodePath();
-        }
-        trace.push_back(i);
-        n = n->parent;
-    }
-    std::reverse(trace.begin(), trace.end());
-    NodePath out;
-    out.sel = NodePath::SEL_MAIN;
-    out.path = trace;
-    return out;
-}
-
-
 Editor::Editor(Project* proj) :
     m_Project(proj),
     m_Tool(nullptr),
@@ -63,17 +22,15 @@ Editor::Editor(Project* proj) :
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);
 
-    // focus the first Layer
+    // assume we'll want pen colours from the first layer...
+    // (probably kill this).
     Layer *firstLayer = FindLayer(proj->root);
     assert(firstLayer); // TODO: support null focus layer?
-    m_Focus = CalcPath(firstLayer);
-    printf("focus: ");
-    m_Focus.dump();
-    Palette const& pal = Proj().PaletteConst(m_Focus);
+    NodePath focus = CalcPath(firstLayer);
+    Palette const& pal = Proj().PaletteConst(focus, 0);
     m_BGPen = PenColour(pal.GetColour(0), 0);
     m_FGPen = PenColour(pal.GetColour(1), 1);
 }
-
 
 Editor::~Editor()
 {
@@ -85,13 +42,6 @@ Editor::~Editor()
     // but here in ~Editor() we'll get Editor::SetMouseStyle() instead...
     delete m_Tool;
     delete m_Project;
-}
-
-
-
-void Editor::SetFocus(NodePath const& layer)
-{
-    m_Focus = layer;
 }
 
 void Editor::UseTool( int tooltype, bool notifygui )
@@ -155,7 +105,6 @@ Brush& Editor::CurrentBrush()
     return *g_App->StdBrush( m_Brush );
 }
 
-
 void Editor::SetBrush( int n )
 {
     HideToolCursor();
@@ -163,9 +112,6 @@ void Editor::SetBrush( int n )
     OnBrushChanged();
     ShowToolCursor();
 }
-
-
-
 
 void Editor::ShowToolCursor()
 {
@@ -179,7 +125,6 @@ void Editor::ShowToolCursor()
     }
 }
 
-
 void Editor::HideToolCursor()
 {
     std::set<EditView*>::iterator it;
@@ -189,7 +134,6 @@ void Editor::HideToolCursor()
 //        tool.EraseCursor( *(*it) );
     }
 }
-
 
 void Editor::GridSnap( Point& p )
 {
@@ -206,13 +150,11 @@ void Editor::GridSnap( Point& p )
     p.y += grid.y;
 }
 
-
 void Editor::SetFGPen( PenColour const& pen )
 {
     m_FGPen=pen;
     OnPenChanged();
 }
-
 
 void Editor::SetBGPen( PenColour const& pen )
 {
@@ -220,21 +162,21 @@ void Editor::SetBGPen( PenColour const& pen )
     OnPenChanged();
 }
 
-
-
 // advance the FG pen to the next palette index (if sane)
 void Editor::NextFGPen()
 {
     if (!m_FGPen.IdxValid()) {
         return;
     }
-
+    assert(false);
+#if 0
     NodePath fook;   // TODO!!!
     Palette const& pal = Proj().PaletteConst(fook);
     int idx = m_FGPen.idx()+1;
     if (idx<pal.NumColours()) {
         SetFGPen( PenColour( pal.GetColour(idx), idx) );
     }
+#endif
 }
 
 // move the FG pen back a palette index (if sane)
@@ -243,6 +185,8 @@ void Editor::PrevFGPen()
     if (!m_FGPen.IdxValid()) {
         return;
     }
+    assert(false);
+#if 0
     NodePath fook;   // TODO!!!
     fook.path.push_back(0);
     Palette const& pal = Proj().PaletteConst(fook);
@@ -250,6 +194,7 @@ void Editor::PrevFGPen()
     if (idx>=0) {
         SetFGPen( PenColour( pal.GetColour(idx), idx) );
     }
+#endif
 }
 
 
