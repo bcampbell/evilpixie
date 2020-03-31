@@ -30,7 +30,7 @@ PaletteEditor::PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus,
     m_HexEntry->setFont(fixedFont);
     m_RGBWidget = new RGBWidget();
     m_HSVWidget = new HSVWidget();
-    Palette const& focusedPalette = m_Proj.PaletteConst(m_Focus);
+    Palette const& focusedPalette = m_Proj.PaletteConst(m_Focus, m_Frame);
     m_PaletteWidget = new PaletteWidget(focusedPalette);
     m_PaletteWidget->EnableRangePicking(true);
     m_PaletteWidget->EnableDnD(true);
@@ -84,7 +84,7 @@ PaletteEditor::~PaletteEditor()
 void PaletteEditor::colourPicked(int idx)
 {
     m_Selected = idx;
-    Colour c(m_Proj.PaletteConst(m_Focus).GetColour(idx));
+    Colour c(m_Proj.PaletteConst(m_Focus, m_Frame).GetColour(idx));
     showColour(c);
 }
 
@@ -92,7 +92,7 @@ void PaletteEditor::colourPicked(int idx)
 void PaletteEditor::colourDropped(int idx, Colour const& c)
 {
     // Apply without any Cmd merging.
-    Cmd* cmd = new Cmd_PaletteModify(m_Proj, m_Focus, idx, 1, &c);
+    Cmd* cmd = new Cmd_PaletteModify(m_Proj, m_Focus, m_Frame, idx, 1, &c);
     m_Ed.AddCmd(cmd);
     // We'll hear about the change via OnPaletteChanged()
 }
@@ -102,13 +102,13 @@ void PaletteEditor::SetSelected(int idx)
 {
     m_Selected = idx;
     m_PaletteWidget->SetLeftSelected(idx);
-    Colour c(m_Proj.PaletteConst(m_Focus).GetColour(idx));
+    Colour c(m_Proj.PaletteConst(m_Focus, m_Frame).GetColour(idx));
     showColour(c);
 }
 
 // ProjectListener implementation
 
-void PaletteEditor::OnDamaged(NodePath const& /*target*/, int /* frame */Box const& /*dmg*/ )
+void PaletteEditor::OnDamaged(NodePath const& /*target*/, int /* frame */, Box const& /*dmg*/ )
 {
     // don't care about image changes.
 }
@@ -199,7 +199,7 @@ void PaletteEditor::hexChanged()
         // could indicate invalid value?
         return;
     }
-    Palette const& pal = m_Proj.PaletteConst(m_Focus);
+    Palette const& pal = m_Proj.PaletteConst(m_Focus, m_Frame);
     Colour existing(pal.GetColour(m_Selected));
     if (c == existing) {
         return;
@@ -218,7 +218,7 @@ void PaletteEditor::rgbChanged()
 {
     QColor qc = m_RGBWidget->colour();
     Colour c( qc.red(), qc.green(), qc.blue(), qc.alpha() );
-    Palette const& pal = m_Proj.PaletteConst(m_Focus);
+    Palette const& pal = m_Proj.PaletteConst(m_Focus, m_Frame);
     Colour existing(pal.GetColour(m_Selected));
     if (c == existing) {
         return;
@@ -244,7 +244,7 @@ void PaletteEditor::hsvChanged()
         (uint8_t)(b * 255.0f),
         (uint8_t)(a * 255.0f));
 
-    Palette const& pal = m_Proj.PaletteConst(m_Focus);
+    Palette const& pal = m_Proj.PaletteConst(m_Focus, m_Frame);
     Colour existing(pal.GetColour(m_Selected));
     if (c == existing) {
         return;
@@ -270,7 +270,7 @@ void PaletteEditor::applyEdit(Colour const &c) {
         Cmd_PaletteModify* mod = cmd->ToPaletteModify();
         if (mod)
         {
-            if (mod->Merge(m_Focus, m_Selected, c))
+            if (mod->Merge(m_Focus, m_Frame, m_Selected, c))
             {
                 m_Applying = false;
                 return;
@@ -279,7 +279,7 @@ void PaletteEditor::applyEdit(Colour const &c) {
     }
     
     // if we get this far we need a fresh cmd.
-    cmd = new Cmd_PaletteModify(m_Proj, m_Focus, m_Selected, 1, &c);
+    cmd = new Cmd_PaletteModify(m_Proj, m_Focus, m_Frame, m_Selected, 1, &c);
     m_Ed.AddCmd(cmd);
     m_Applying = false;
 }
@@ -294,14 +294,14 @@ void PaletteEditor::spreadColours()
     if(!m_PaletteWidget->RangeValid())
         return;
 
-    Palette newpalette(m_Proj.PaletteConst(m_Focus));
+    Palette newpalette(m_Proj.PaletteConst(m_Focus, m_Frame));
 
     int n0 = m_PaletteWidget->RangeFirst();
     int n1 = m_PaletteWidget->RangeLast();
 
     newpalette.SpreadHSV(n0, newpalette.GetColour(n0), n1, newpalette.GetColour(n1));
 
-    Cmd* cmd = new Cmd_PaletteModify(m_Proj, m_Focus, n0, n1-n0, &newpalette.Colours[n0]);
+    Cmd* cmd = new Cmd_PaletteModify(m_Proj, m_Focus, m_Frame, n0, n1-n0, &newpalette.Colours[n0]);
     m_Ed.AddCmd(cmd);
 }
 

@@ -83,10 +83,12 @@ void EditView::SetFocus(NodePath const& focus)
 
 void EditView::SetFrame(int frame)
 {
+    printf("EditView::SetFrame(%d->%d)\n", m_Frame, frame);
     m_Frame = frame;
     ConfineView();
     DrawView(m_ViewBox);
     Redraw(m_ViewBox);
+    printf("end EditView::SetFrame()\n");
 }
 
 
@@ -430,10 +432,6 @@ void EditView::OnFramesAdded(NodePath const& target, int first, int count)
     //Layer const& l = Proj().ResolveLayer(target);
     // TODO: ignore changes on non-visible layers.
 
-    if (m_Frame >= first) {
-        m_Frame += count;
-    }
-
     // redraw the whole view (including padding)
     Box affected;
     DrawView(m_ViewBox,&affected);
@@ -445,15 +443,12 @@ void EditView::OnFramesRemoved(NodePath const& target, int first, int count)
     if (m_Focus.sel != target.sel) {
         return;
     }
-    //Layer const& l = Proj().ResolveLayer(target);
+    Layer const& l = Proj().ResolveLayer(target);
     // TODO: ignore changes on non-visible layers.
 
-    // not sure what'll seem most intuitive to user here...
-    if (m_Frame >= first + count) {
-        m_Frame -= count;
-        if (m_Frame < 0) {
-            m_Frame = 0;
-        }
+    // make sure we're still pointing at a valid frame.
+    if (m_Frame >= l.mFrames.size()) {
+        m_Frame = l.mFrames.size()-1;
     }
 
     // redraw the whole view (including padding)

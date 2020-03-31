@@ -12,21 +12,20 @@
 
 
 Project::Project( std::string const& filename ) :
-    root(nullptr),
+    mRoot(nullptr),
     m_Expendable(false),
     m_Modified( false )
 {
-    m_Filename = filename;
+    mFilename = filename;
     Layer *l = new Layer();
     l->Load(filename.c_str());
-    assert(false);  //TODO: implement!
-    root = new Stack();
-    root->AddChild(l);
+    mRoot = new Stack();
+    mRoot->AddChild(l);
 }
 
 
 Project::Project() :
-    root(nullptr),
+    mRoot(nullptr),
     m_Expendable(true),
     m_Modified( false )
 {
@@ -38,13 +37,13 @@ Project::Project() :
     l->SetPalette(*tmp);
     delete tmp;
     l->Append(new Img(FMT_I8,w,h));
-    root = new Stack();
-    root->AddChild(l);
+    mRoot = new Stack();
+    mRoot->AddChild(l);
 }
 
 
 Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frames ) :
-    root(nullptr),
+    mRoot(nullptr),
     m_Expendable(false),
     m_Modified( false )
 {
@@ -59,14 +58,14 @@ Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frame
     for(i = 0; i < num_frames; ++i) {
         l->Append(new Img(fmt, w, h));
     }
-    root = new Stack();
-    root->AddChild(l);
+    mRoot = new Stack();
+    mRoot->AddChild(l);
 }
 
 
 Project::~Project()
 {
-    delete root;
+    delete mRoot;
 }
 
 void Project::SetModifiedFlag( bool newmodifiedflag )
@@ -106,17 +105,6 @@ bool Project::IsSamePalette(NodePath const& a, NodePath const& b) const
     // TODO: handle palette/layer policy when implemented!
     return a==b;
 }
-
-void Project::Save( std::string const& filename )
-{
-/*
-    m_Layers[0]->Save(filename.c_str());
-    SetModifiedFlag(false);
-    m_Filename = filename;
-*/
-}
-
-
 
 void Project::NotifyDamage(NodePath const& target, int frame, Box const& b )
 {

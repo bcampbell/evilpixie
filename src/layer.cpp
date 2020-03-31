@@ -102,11 +102,11 @@ void Layer::CalcBounds(Box& bound, int first, int last) const
 }
 
 
-void Layer::Load( const char* filename )
+void Layer::Load(std::string const& filename)
 {
     ImErr err;
 
-    im_bundle* bundle = im_bundle_load(filename, &err);
+    im_bundle* bundle = im_bundle_load(filename.c_str(), &err);
     if (!bundle) {
             switch(err) {
                 case ERR_NOMEM:
@@ -313,7 +313,7 @@ static im_img* to_im_img( Img const& img, Palette const& pal )
 
 
 
-void Layer::Save( const char* filename )
+void Layer::Save(std::string const& filename) const
 {
     // sanity check
     std::string ext = ToLower(ExtName(filename));
@@ -347,7 +347,7 @@ void Layer::Save( const char* filename )
             im_bundle_set( bundle, id, img);
         }
         ImErr err;
-        if (!im_bundle_save( bundle, filename, &err) ) {
+        if (!im_bundle_save( bundle, filename.c_str(), &err) ) {
             switch(err) {
                 case ERR_NOMEM:
                    throw Exception("Ran out of memory");

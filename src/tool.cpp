@@ -55,12 +55,10 @@ private:
 DrawTransaction::DrawTransaction( Project& proj) :
     m_Proj(proj),
     m_Frame(-1),
-    m_Backup(0),
+    m_Backup(nullptr),
     m_Affected( 0,0,0,0 ),           // start with nothing affected
     m_Batch( new Cmd_Batch(proj, Cmd::DONE))
 {
-    assert(false);
-  //TODO: m_TargID.frame = -1;  // TODO: need a null NodePath?  
 }
 
 DrawTransaction::~DrawTransaction() {

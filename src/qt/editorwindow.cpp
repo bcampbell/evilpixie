@@ -109,7 +109,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_StatusViewInfo(0)
 {
     // focus upon the first layer
-    Layer *firstLayer = FindLayer(proj->root);
+    Layer *firstLayer = FindLayer(proj->mRoot);
     assert(firstLayer); // TODO: support null focus layer?
     assert(!firstLayer->mFrames.empty());
     m_Focus = CalcPath(firstLayer);
@@ -126,7 +126,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         assert( MOUSESTYLE_NUM==2 );
     }
 
-    m_PaletteEditor = new PaletteEditor(this, *this, Focus());
+    m_PaletteEditor = new PaletteEditor(this, *this, m_Focus, m_Frame);
     m_PaletteEditor->hide();
 
     resize( 700,500 );
@@ -176,7 +176,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         layout->addWidget( m_ColourTab, 5,1 );
 
         {
-            m_PaletteWidget = new PaletteWidget(Proj().PaletteConst(Focus()));
+            m_PaletteWidget = new PaletteWidget(Proj().PaletteConst(m_Focus, m_Frame));
             connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
             connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
             m_ColourTab->addTab(m_PaletteWidget, "Palette");
@@ -190,8 +190,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         }
     }
 
-    LayersWidget* layersWidget = new LayersWidget(&Proj());
-    layout->addWidget( layersWidget, 6,1 );
+    //LayersWidget* layersWidget = new LayersWidget(&Proj());
+    //layout->addWidget( layersWidget, 6,1 );
 
 
     /* status bar */
@@ -411,12 +411,12 @@ void EditorWindow::OnPenChanged()
 
 // Begin ProjectListener implementation
 
-void EditorWindow::OnDamaged(NodePath const& target, Box const& dmg) {
+void EditorWindow::OnDamaged(NodePath const& target, int frame, Box const& dmg) {
 }
 
-void EditorWindow::OnPaletteChanged(NodePath const& owner, int index, Colour const& c)
+void EditorWindow::OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c)
 {
-    if (!Proj().IsSamePalette(Focus(), owner)) {
+    if (!Proj().IsSamePalette(Focus(), target)) {
         return;
     }
     // make sure the gui reflects any palette changes
@@ -431,12 +431,12 @@ void EditorWindow::OnPaletteChanged(NodePath const& owner, int index, Colour con
     }
 }
 
-void EditorWindow::OnPaletteReplaced(NodePath const& owner)
+void EditorWindow::OnPaletteReplaced(NodePath const& target, int frame)
 {
-    if (!Proj().IsSamePalette(Focus(), owner)) {
+    if (!Proj().IsSamePalette(Focus(), target)) {
         return;
     }
-    Palette const& pal = Proj().PaletteConst(owner);
+    Palette const& pal = Proj().PaletteConst(target, frame);
     m_PaletteWidget->SetPalette(pal);
 
     // Ensure pen validity.
@@ -457,17 +457,23 @@ void EditorWindow::OnModifiedFlagChanged(bool)
     RethinkWindowTitle();
 }
 
-void EditorWindow::OnFramesAdded(NodePath const& first, int count)
+void EditorWindow::OnFramesAdded(NodePath const& target, int first, int count)
 {
     RethinkWindowTitle();
 }
 
-void EditorWindow::OnFramesRemoved(NodePath const& first, int count)
+void EditorWindow::OnFramesRemoved(NodePath const& target, int first, int count)
 {
-    RethinkWindowTitle();
+    Layer const& l = Proj().ResolveLayer(target);
+    if (m_Frame >= l.mFrames.size()) {
+        // Make sure we're not left pointing at an invalid frame.
+        setFrame(l.mFrames.size() - 1);
+    } else {
+        RethinkWindowTitle();
+    }
 }
 
-void EditorWindow::OnFramesBlatted(NodePath const& first, int count)
+void EditorWindow::OnFramesBlatted(NodePath const& target, int first, int count)
 {
 }
 
@@ -562,20 +568,20 @@ void EditorWindow::brushclicked( QAbstractButton* b )
 
 void EditorWindow::fgColourPicked( int idx )
 {
-    Colour c = Proj().PaletteConst(Focus()).GetColour(idx);
+    Colour c = Proj().PaletteConst(m_Focus, m_Frame).GetColour(idx);
     SetFGPen( PenColour(c,idx) );
 }
 
 void EditorWindow::bgColourPicked( int idx )
 {
-    Colour c = Proj().PaletteConst(Focus()).GetColour(idx);
+    Colour c = Proj().PaletteConst(m_Focus, m_Frame).GetColour(idx);
     SetBGPen( PenColour(c,idx) );
 }
 
 
 void EditorWindow::fgColourPickedRGB( Colour c )
 {
-    Palette const& pal = Proj().PaletteConst(Focus());
+    Palette const& pal = Proj().PaletteConst(m_Focus, m_Frame);
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
     Layer& l = Proj().ResolveLayer(Focus());
@@ -587,7 +593,7 @@ void EditorWindow::fgColourPickedRGB( Colour c )
 
 void EditorWindow::bgColourPickedRGB( Colour c )
 {
-    Palette const& pal = Proj().PaletteConst(Focus());
+    Palette const& pal = Proj().PaletteConst(m_Focus, m_Frame);
     int idx = pal.Closest(c);
     // snap to palette colour on indexed images
     Layer& l = Proj().ResolveLayer(Focus());
@@ -627,7 +633,8 @@ void EditorWindow::update_menu_states()
 
     // int nframes= Proj().GetLayer(ActiveLayer()).NumFrames();
     // TODO: IMPLEMENT!
-    int nframes = 0;
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+    int nframes = l.mFrames.size();
     m_ActionZapFrame->setEnabled(nframes>1);
     m_ActionNextFrame->setEnabled(nframes>1);
     m_ActionPrevFrame->setEnabled(nframes>1);
@@ -736,7 +743,7 @@ void EditorWindow::do_usebrushpalette()
         return; // std brush - do nothing
 
     Palette const& pal = CurrentBrush().GetPalette();
-    Cmd* cmd = new Cmd_PaletteModify(Proj(), Focus(), 0, pal.NColours, pal.Colours);
+    Cmd* cmd = new Cmd_PaletteModify(Proj(), m_Focus, m_Frame, 0, pal.NColours, pal.Colours);
     AddCmd(cmd);
 }
 
@@ -800,35 +807,31 @@ void EditorWindow::do_addlayer()
 void EditorWindow::do_addframe()
 {
     assert(Focus().sel == NodePath::SEL_MAIN);
-    NodePath first = Focus();
-    first.frame++;
-    Cmd* c = new Cmd_InsertFrames(Proj(), first, 1);
+    Cmd* c = new Cmd_InsertFrames(Proj(), m_Focus, m_Frame+1, 1);
     AddCmd(c);
+    // update frame in OnFramesAdded
+
+    // go to newly-inserted frame
+    setFrame(m_Frame + 1);
 }
 
 void EditorWindow::do_zapframe()
 {
     assert(Focus().sel == NodePath::SEL_MAIN);
-    Cmd* c= new Cmd_DeleteFrames(Proj(), Focus(), 1);
+    Cmd* c= new Cmd_DeleteFrames(Proj(), m_Focus, m_Frame, 1);
     AddCmd(c);
+    // update frame in OnFramesRemoved
 }
 
 void EditorWindow::do_prevframe()
 {
-    Layer const& l = Proj().ResolveLayer(f);
+    Layer const& l = Proj().ResolveLayer(m_Focus);
     assert(m_Focus.sel == NodePath::SEL_MAIN);
     if (m_Frame > 0) {
-        --m_Frame;
+        setFrame(m_Frame - 1);
     } else {
-        m_Frame = l.mFrames.size() - 1; // wrap.
+        setFrame(l.mFrames.size() - 1); // Wrap.
     }
-
-    // TODO: if per-frame palette, need to update widgets
-    m_ViewWidget->SetFrame(m_Frame);
-    if (m_MagView) {
-        m_MagView->SetFrame(m_Frame);
-    }
-    RethinkWindowTitle();
 }
 
 void EditorWindow::do_nextframe()
@@ -836,10 +839,18 @@ void EditorWindow::do_nextframe()
     Layer const& l = Proj().ResolveLayer(m_Focus);
     assert(m_Focus.sel == NodePath::SEL_MAIN);
     if (m_Frame < l.mFrames.size() - 1) {
-        ++m_Frame;
+        setFrame(m_Frame + 1);
     } else {
-        m_Frame = 0;    // wrap.
+        setFrame(0);    // Wrap.
     }
+}
+
+void EditorWindow::setFrame(int frame)
+{
+    printf("EditorWindow::setFrame(%d->%d)\n", m_Frame, frame);
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+    assert(frame >= 0 && frame < l.mFrames.size());
+    m_Frame = frame;
     m_Time = l.FrameTime(m_Frame);
 
     // TODO: if per-frame palette, need to update widgets
@@ -849,8 +860,8 @@ void EditorWindow::do_nextframe()
         m_MagView->SetFrame(m_Frame);
     }
     RethinkWindowTitle();
+    printf("end EditorWindow::setFrame()\n");
 }
-
 
 void EditorWindow::do_tospritesheet()
 {
@@ -925,7 +936,7 @@ void EditorWindow::do_open()
 {
 //    if( !CheckZappingOK() )
 //        return;
-    QString loadfilters = "Image files (*.anim *.bmp *.gif *.iff *.ilbm *.lbm *.pbm *.pcx *.png *.jpg *.jpeg);;Any files (*)";
+    QString loadfilters = "Image files (*.anim *.bmp *.gif *.iff *.ilbm *.lbm *.pbm *.pcx *.png *.jpg *.jpeg *.tga);;Any files (*)";
 
     QString filename = QFileDialog::getOpenFileName(
                     this,
@@ -964,7 +975,10 @@ void EditorWindow::do_save()
 
     try
     {
-        Proj().Save( Proj().Filename());
+        // save focused layer
+        Layer const& l = Proj().ResolveLayer(m_Focus);
+        l.Save(Proj().mFilename);
+        Proj().SetModifiedFlag(false);
     }
     catch( Exception const& e )
     {
@@ -978,14 +992,13 @@ void EditorWindow::do_save()
 
 void EditorWindow::do_saveas()
 {
-    assert(false);
-#if 0
     QString savefilters;
   
-    if (Proj().NumFrames()>1) { 
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+    if (l.mFrames.size() > 1) {
         savefilters = "Animated GIF (*.gif);;Any files (*)";
     } else {
-        savefilters = "Image files (*.gif *.png);;Any files (*)";
+        savefilters = "Image files (*.bmp *.gif *.png);;Any files (*)";
     }
 
     QString filename = QFileDialog::getSaveFileName(
@@ -999,7 +1012,11 @@ void EditorWindow::do_saveas()
 
     try
     {
-        Proj().Save( filename.toStdString() );
+        // save focused layer
+        Layer const& l = Proj().ResolveLayer(m_Focus);
+        l.Save(filename.toStdString());
+        Proj().mFilename = filename.toStdString();
+        Proj().SetModifiedFlag(false);
     }
     catch( Exception const& e )
     {
@@ -1007,7 +1024,6 @@ void EditorWindow::do_saveas()
     }
 
     RethinkWindowTitle();
-#endif
 }
 
 
@@ -1188,16 +1204,15 @@ void EditorWindow::RethinkWindowTitle()
     if( name.empty() )
         name = "Untitled";
 
-    NodePath f = Focus();
-    Layer const& l = Proj().ResolveLayer(f);
-    Img const& img = *l.mFrames[f.frame]->mImg;
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+    Img const& img = *l.mFrames[m_Frame]->mImg;
     int w = img.W();
     int h = img.H();
 
     char dim[128];
-    sprintf( dim, " (%dx%d) frame %d/%d", w, h, f.frame+1, (int)l.mFrames.size());
+    sprintf( dim, " (%dx%d) frame %d/%d", w, h, m_Frame+1, (int)l.mFrames.size());
 
-    std::string title;
+    std::string title = "[*]";
     title += name;
     title += dim;
     switch (Mode().mode) {
@@ -1208,8 +1223,8 @@ void EditorWindow::RethinkWindowTitle()
     }
     title += " - EvilPixie";
 
-    setWindowModified( Proj().ModifiedFlag() );
-    setWindowTitle( QString::fromStdString( title ) );
+    setWindowModified(Proj().ModifiedFlag());
+    setWindowTitle(QString::fromStdString(title));
 }
 
 

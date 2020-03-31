@@ -24,7 +24,7 @@ Editor::Editor(Project* proj) :
 
     // assume we'll want pen colours from the first layer...
     // (probably kill this).
-    Layer *firstLayer = FindLayer(proj->root);
+    Layer *firstLayer = FindLayer(proj->mRoot);
     assert(firstLayer); // TODO: support null focus layer?
     NodePath focus = CalcPath(firstLayer);
     Palette const& pal = Proj().PaletteConst(focus, 0);

@@ -191,13 +191,13 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project* proj)
 
     int initialWidth = 4;
     m_NWide = new QSpinBox();
-    m_NWide->setRange(1,proj->GetImgConst(fook).W());
+    m_NWide->setRange(1,proj->GetImgConst(fook,0).W());
     m_NWide->setValue(initialWidth);
     QLabel* widelabel = new QLabel(tr("Across:"));
     widelabel->setBuddy(m_NWide);
 
     m_NHigh = new QSpinBox();
-    m_NHigh->setRange(1,proj->GetImgConst(fook).H());
+    m_NHigh->setRange(1,proj->GetImgConst(fook,0).H());
     m_NHigh->setValue(initialWidth);
     QLabel* highlabel = new QLabel(tr("High:"));
     highlabel->setBuddy(m_NHigh);
@@ -265,7 +265,7 @@ void FromSpritesheetDialog::rethinkPreview()
 //    assert(m_Proj->NumLayers()==1);
     NodePath fook;
 
-    Box srcBox = m_Proj->GetImgConst(fook).Bounds();
+    Box srcBox = m_Proj->GetImgConst(fook,0).Bounds();
 
 
     SplitSpritesheet(srcBox,getNWide(), getNHigh(), frames);

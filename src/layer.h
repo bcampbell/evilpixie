@@ -140,8 +140,8 @@ public:
     void SetPalette(Palette const& pal) { m_Palette=pal; }
     Palette const& GetPaletteConst() const { return m_Palette; }
 
-    void Load(const char* filename);
-    void Save(const char* filename);
+    void Load(std::string const& filename);
+    void Save(std::string const& filename) const;
 
 
     // Kill this.

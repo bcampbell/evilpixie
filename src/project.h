@@ -63,8 +63,6 @@ public:
     // replace palette, informing listeners. ownership is passed to proj.
     void ReplacePalette(Palette* newpalette);
 
-    void Save( std::string const& filename);
-
 #if 0
     // Layer access - 0 is bottom layer.
 
@@ -80,7 +78,7 @@ public:
 
     Layer& ResolveLayer(NodePath const& target) const {
         assert(target.sel == NodePath::SEL_MAIN);
-        BaseNode *n = root;
+        BaseNode *n = mRoot;
         for (auto i : target.path) {
             n = n->children[i];
         }
@@ -120,7 +118,7 @@ public:
 //    Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
 
     // return current filename of project (empty string if no name)
-    std::string const& Filename() const { return m_Filename; }
+    std::string const& Filename() const { return mFilename; }
 
     // --------------------------------------
     // Notifcation fns. To be called when project is fiddled with.
@@ -147,8 +145,10 @@ public:
     // --------------------------------------
 
     // The root stack of the project.
-    Stack* root;
+    Stack* mRoot;
 
+    // last known filename of project (empty string for none)
+    std::string mFilename;
 private:
     Project( Project const& );  // disallowed
 
@@ -161,8 +161,6 @@ private:
     // has project been modified?
     bool m_Modified;
 
-    // last known filename of project (empty string for none)
-    std::string m_Filename;
 };
 
 
