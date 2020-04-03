@@ -159,8 +159,14 @@ void PaletteEditor::OnFramesAdded(NodePath const& /*target*/, int /*first*/, int
 void PaletteEditor::OnFramesRemoved(NodePath const& /*target*/, int /*first*/, int /*count*/)
 {}
 
-void PaletteEditor::OnFramesBlatted(NodePath const& /*target*/, int /*first*/, int /*count*/)
-{}
+void PaletteEditor::OnFramesBlatted(NodePath const& target, int first, int count)
+{
+    // Don't worry about the image changes, but assume the palette
+    // has been replaced.
+    for (int i=first; i<count; ++i) {
+        OnPaletteReplaced(target, i);
+    }
+}
 
 
 // end of ProjectListener implementation

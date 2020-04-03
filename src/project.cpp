@@ -34,7 +34,7 @@ Project::Project() :
 
     Palette* tmp = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
     Layer *l = new Layer();
-    l->SetPalette(*tmp);
+    l->mPalette = *tmp;
     delete tmp;
     l->Append(new Img(FMT_I8,w,h));
     mRoot = new Stack();
@@ -52,7 +52,7 @@ Project::Project( PixelFormat fmt, int w, int h, Palette* palette, int num_frame
         palette = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
     }
     Layer *l = new Layer();
-    l->SetPalette(*palette);
+    l->mPalette = *palette;
     delete palette;
     int i;
     for(i = 0; i < num_frames; ++i) {

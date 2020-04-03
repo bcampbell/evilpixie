@@ -14,7 +14,7 @@ Layer* FindLayer(BaseNode* n)
     if (l) {
         return l;
     }
-    for (auto child : n->children) {
+    for (auto child : n->mChildren) {
         l = FindLayer(child);
         if (l) {
             return l;
@@ -26,20 +26,20 @@ Layer* FindLayer(BaseNode* n)
 NodePath CalcPath(BaseNode *n)
 {
     std::vector<int> trace;
-    while(n->parent) {
+    while(n->mParent) {
         int i;
-        for (i = 0; i < n->parent->children.size(); ++i) {
-            if (n == n->parent->children[i]) {
+        for (i = 0; i < n->mParent->mChildren.size(); ++i) {
+            if (n == n->mParent->mChildren[i]) {
                 break;
             }
         }
-        if (i >= n->parent->children.size()) {
+        if (i >= n->mParent->mChildren.size()) {
             // not found! should never get here.
             assert(false);
             return NodePath();
         }
         trace.push_back(i);
-        n = n->parent;
+        n = n->mParent;
     }
     std::reverse(trace.begin(), trace.end());
     NodePath out;
@@ -136,7 +136,7 @@ void Layer::Load(std::string const& filename)
         }
 
         Frame* frame = new Frame();
-        frame->mImg = from_im_img( srcimg, m_Palette);
+        frame->mImg = from_im_img(srcimg, mPalette);
         mFrames.push_back(frame);
     }
 

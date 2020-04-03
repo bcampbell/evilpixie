@@ -475,6 +475,11 @@ void EditorWindow::OnFramesRemoved(NodePath const& target, int first, int count)
 
 void EditorWindow::OnFramesBlatted(NodePath const& target, int first, int count)
 {
+    // Don't worry about the image changes, but assume the palette
+    // has been replaced.
+    for (int i=first; i<count; ++i) {
+        OnPaletteReplaced(target, i);
+    }
 }
 
 // End of ProjectListener implementation
@@ -697,20 +702,18 @@ void EditorWindow::do_resize()
 
 void EditorWindow::do_changefmt()
 {
-    assert(false);
-#if 0
-    int currColours = Proj().PaletteConst().NumColours();
+    int currColours = Proj().PaletteConst(m_Focus, m_Frame).NumColours();
+    Layer const& l = Proj().ResolveLayer(m_Focus);
 
-    ChangeFmtDialog dlg(this, Proj().Fmt(), currColours);
+    ChangeFmtDialog dlg(this, l.Fmt(), currColours);
     if( dlg.exec() == QDialog::Accepted ) {
         // ignore no-ops (eg rgba->rgba)
-        if (dlg.pixel_format != Proj().Fmt() ||
-            (Proj().Fmt() == FMT_I8 && dlg.num_colours != currColours)) {
-            Cmd* c = new Cmd_ChangeFmt(Proj(), ActiveLayer(), dlg.pixel_format, dlg.num_colours);
+        if (dlg.pixel_format != l.Fmt() ||
+            (l.Fmt() == FMT_I8 && dlg.num_colours != currColours)) {
+            Cmd* c = new Cmd_ChangeFmt(Proj(), m_Focus, dlg.pixel_format, dlg.num_colours);
             AddCmd(c);
         }
     }
-#endif
 }
 
 
@@ -847,7 +850,7 @@ void EditorWindow::do_nextframe()
 
 void EditorWindow::setFrame(int frame)
 {
-    printf("EditorWindow::setFrame(%d->%d)\n", m_Frame, frame);
+    //printf("EditorWindow::setFrame(%d->%d)\n", m_Frame, frame);
     Layer const& l = Proj().ResolveLayer(m_Focus);
     assert(frame >= 0 && frame < l.mFrames.size());
     m_Frame = frame;
@@ -860,7 +863,7 @@ void EditorWindow::setFrame(int frame)
         m_MagView->SetFrame(m_Frame);
     }
     RethinkWindowTitle();
-    printf("end EditorWindow::setFrame()\n");
+    //printf("end EditorWindow::setFrame()\n");
 }
 
 void EditorWindow::do_tospritesheet()

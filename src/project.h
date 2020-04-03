@@ -41,6 +41,8 @@ class Project
 {
 public:
     Project();
+
+    // palette ownership taken by project
 	Project( PixelFormat fmt, int w, int h, Palette* palette=0, int num_frames=1 );
     Project(std::string const& filename);
 	virtual ~Project();
@@ -80,7 +82,7 @@ public:
         assert(target.sel == NodePath::SEL_MAIN);
         BaseNode *n = mRoot;
         for (auto i : target.path) {
-            n = n->children[i];
+            n = n->mChildren[i];
         }
         Layer* l = n->ToLayer();
         assert(l);  // must be layer!

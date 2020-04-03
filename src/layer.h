@@ -49,19 +49,19 @@ struct NodePath {
 class BaseNode {
 public:
     // The data:
-    std::string name;
-    Point offset;
-    BaseNode* parent;  // root stack has null parent
-    std::vector<BaseNode*> children;
+    std::string mName;
+    Point mOffset;
+    BaseNode* mParent;  // root stack has null parent
+    std::vector<BaseNode*> mChildren;
     // opacity, visibility, composite-op?
 
-    BaseNode() : offset(0,0), parent(nullptr) {
+    BaseNode() : mOffset(0,0), mParent(nullptr) {
     }
 
     virtual ~BaseNode() {
-        assert(!parent);    // still attached!
-        for (auto child : children) {
-            child->parent = nullptr;
+        assert(!mParent);    // still attached!
+        for (auto child : mChildren) {
+            child->mParent = nullptr;
             delete child;
         }
     }
@@ -70,21 +70,36 @@ public:
     virtual Layer* ToLayer() {return nullptr;}
     virtual Stack* ToStack() {return nullptr;}
 
-    // transfers ownership
+    // transfers ownership - this node now owns n.
     void AddChild(BaseNode* n) {
-        assert(!n->parent);
-        n->parent = this;
-        children.push_back(n);
+        assert(!n->mParent);
+        n->mParent = this;
+        mChildren.push_back(n);
     }
 
-    // detach from parent
+    // detach from mParent
     void Detach() {
-        assert(parent);
-        auto it = std::find(parent->children.begin(), parent->children.end(), this);
-        assert(it != parent->children.end());
-        parent->children.erase(it);
-        parent = nullptr;
+        assert(mParent);
+        auto it = std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this);
+        assert(it != mParent->mChildren.end());
+        mParent->mChildren.erase(it);
+        mParent = nullptr;
     }
+
+    // Replace this node with another one.
+    // This node is detached and the parent takes ownership of other.
+    void Replace(BaseNode *other) {
+        assert(mParent);
+        if(other->mParent) {
+            other->Detach();
+        }
+        auto it = std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this);
+        assert(it != mParent->mChildren.end());
+        *it = other;
+        other->mParent = mParent;
+        mParent = nullptr;
+    }
+
 };
 
 // Starting at n, find the first layer.
@@ -136,9 +151,9 @@ public:
         return *mFrames[n]->mImg;
     }
     // TODO: account for frames...
-    Palette& GetPalette() { return m_Palette; }
-    void SetPalette(Palette const& pal) { m_Palette=pal; }
-    Palette const& GetPaletteConst() const { return m_Palette; }
+    Palette& GetPalette() { return mPalette; }
+//    void SetPalette(Palette const& pal) { mPalette=pal; }
+    Palette const& GetPaletteConst() const { return mPalette; }
 
     void Load(std::string const& filename);
     void Save(std::string const& filename) const;
@@ -179,7 +194,7 @@ public:
     std::vector<Frame*> mFrames;
 
     int mFPS;
-    Palette m_Palette;
+    Palette mPalette;
 };
 
 #endif // LAYER_H

@@ -83,12 +83,12 @@ void EditView::SetFocus(NodePath const& focus)
 
 void EditView::SetFrame(int frame)
 {
-    printf("EditView::SetFrame(%d->%d)\n", m_Frame, frame);
+    //printf("EditView::SetFrame(%d->%d)\n", m_Frame, frame);
     m_Frame = frame;
     ConfineView();
     DrawView(m_ViewBox);
     Redraw(m_ViewBox);
-    printf("end EditView::SetFrame()\n");
+    //printf("end EditView::SetFrame()\n");
 }
 
 

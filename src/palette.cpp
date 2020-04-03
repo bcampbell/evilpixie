@@ -7,6 +7,7 @@
 #include "exception.h"
 #include <string>
 #include <vector>
+#include <limits>
 
 
 static void LoadGimpPalette(FILE* fp, Palette& pal);
@@ -91,7 +92,7 @@ void Palette::LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 )
 // Returns -1 if palette is empty.
 int Palette::Closest(const Colour targ) const {
     int best = -1;
-    int bestdistsq = 255*255;
+    int bestdistsq = std::numeric_limits<int>::max();
     for (int i = 0; i < NColours; ++i) {
         int distsq = DistSq(targ, Colours[i]);
         if (distsq < bestdistsq) {
@@ -99,6 +100,8 @@ int Palette::Closest(const Colour targ) const {
             bestdistsq = distsq;
         }
     }
+    assert(best!=-1);
+    assert(best < NColours);
     return best;
 }
 
