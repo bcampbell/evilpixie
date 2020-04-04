@@ -206,6 +206,8 @@ struct RGBf
 
 struct HSVf
 {
+    // h,s are in range 0..1
+    // v is degrees (0..360)
     float h, s, v;
 
     HSVf(float hue, float sat, float var) :
