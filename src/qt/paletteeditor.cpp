@@ -191,9 +191,11 @@ void PaletteEditor::showColourInHSV(Colour const& c)
 void PaletteEditor::showColourInHex(Colour const& c)
 {
     char buf[10];
-//    if (c.a == 255) {
-//        snprintf(buf, sizeof(buf), "#%02x%02x%02x", c.r, c.g, c.b);
-    snprintf(buf, sizeof(buf), "#%02x%02x%02x%02x", c.r, c.g, c.b, c.a);
+    if (c.a == 255) {
+        snprintf(buf, sizeof(buf), "#%02x%02x%02x", c.r, c.g, c.b);
+    } else {
+        snprintf(buf, sizeof(buf), "#%02x%02x%02x%02x", c.r, c.g, c.b, c.a);
+    }
     m_HexEntry->setText(buf);
 }
 
