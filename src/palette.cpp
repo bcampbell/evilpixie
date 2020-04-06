@@ -107,12 +107,12 @@ int Palette::Closest(const Colour targ) const {
 }
 
 
-// return delta in range -180..180
-static float shortestDistDegrees(float start, float end) {
-    float da = fmodf((end - start), 360);
-    return fmodf(2.0f*da, 360) - da;
+// Helper for modular arithmatic.
+// https://stackoverflow.com/questions/1048945/getting-the-computer-to-realise-360-degrees-0-degrees-rotating-a-gun-turret/1052074#1052074
+// Return a, converted to within range -b/2 .. b/2.
+static float modNearestInt(float a, float b) {
+    return a - b * roundf(a / b);
 }
-
 
 void Palette::SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 )
 {
@@ -133,8 +133,8 @@ void Palette::SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 )
              (float)(c1.b)/255.0f,
              h1, s1, v1);
 
-    // h should take shortest distance around circle
-    float hdist = shortestDistDegrees(h0, h1);
+    // h should take shortest distance around circle (-180..180)
+    float hdist = modNearestInt(h1 - h0, 360.0f);
 
     int n;
     Colours[n0] = c0;
@@ -143,10 +143,13 @@ void Palette::SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 )
         float t = (float)(n-n0) / (float)(n1-n0);
         float inv = 1.0f-t;
         // hue can wrap around
-        float h = h0 + hdist * t;
+        float h = modNearestInt(h0 + hdist * t, 360.0f);
+        // result back into range 0..360
         if (h<0) {
             h += 360.0f;
         }
+        assert(h>=0);
+        assert(h<=360.0f);
         float s = s0*inv + s1*t;
         float v = v0*inv + v1*t;
         float a = a0*inv + a1*t;
