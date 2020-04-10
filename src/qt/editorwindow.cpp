@@ -12,6 +12,7 @@
 #include "editviewwidget.h"
 #include "griddialog.h"
 #include "palettewidget.h"
+#include "rangeswidget.h"
 #include "rgbpickerwidget.h"
 #include "paletteeditor.h"
 #include "changefmtdialog.h"
@@ -179,9 +180,15 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
             m_PaletteWidget = new PaletteWidget(Proj().PaletteConst(m_Focus, m_Frame));
             connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
             connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
-            m_ColourTab->addTab(m_PaletteWidget, "Palette");
+            m_ColourTab->addTab(m_PaletteWidget, "Plte");
         }
 
+        {
+            m_RangesWidget = new RangesWidget(this, Proj().PaletteConst(m_Focus, m_Frame));
+//            connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
+//            connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
+            m_ColourTab->addTab(m_RangesWidget, "Rng");
+        }
         {
             m_RGBPicker = new RGBPickerWidget();
             connect(m_RGBPicker, SIGNAL(pickedLeftButton(Colour)), this, SLOT( fgColourPickedRGB(Colour)));

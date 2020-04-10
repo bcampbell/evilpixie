@@ -15,6 +15,7 @@
 class EditViewWidget;
 class PaletteEditor;
 class PaletteWidget;
+class RangesWidget;
 class RGBPickerWidget;
 class HelpWindow;
 class AboutBox;
@@ -152,6 +153,7 @@ private:
     EditViewWidget* m_ViewWidget;   // main view
     EditViewWidget* m_MagView;      // magnified view (or null)
     PaletteWidget* m_PaletteWidget;
+    RangesWidget* m_RangesWidget;
     RGBPickerWidget* m_RGBPicker;
     CurrentColourWidget* m_CurrentColourWidget;
     QTabWidget* m_ColourTab;

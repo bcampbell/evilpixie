@@ -48,6 +48,7 @@ SOURCES += src/app.cpp \
     src/qt/miscwindows.cpp \
     src/qt/changefmtdialog.cpp \
     src/qt/newprojectdialog.cpp \
+    src/qt/rangeswidget.cpp \
     src/qt/rgbwidget.cpp \
     src/qt/rgbpickerwidget.cpp \
     src/qt/resizeprojectdialog.cpp \
@@ -87,6 +88,7 @@ HEADERS += src/app.h \
     src/qt/miscwindows.h \
     src/qt/changefmtdialog.h \
     src/qt/newprojectdialog.h \
+    src/qt/rangeswidget.h \
     src/qt/rgbwidget.h \
     src/qt/rgbpickerwidget.h \
     src/qt/resizeprojectdialog.h \
