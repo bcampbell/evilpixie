@@ -100,11 +100,16 @@ Layer* Project::DetachLayer(int pos)
 }
 #endif
 
-bool Project::IsSamePalette(NodePath const& a, NodePath const& b) const
+bool Project::SharesPalette(NodePath const& a, int frameA, NodePath const& b, int frameB) const
 {
-    // TODO: handle palette/layer policy when implemented!
     return a==b;
+    // TODO: handle palette/layer policy when implemented!
 }
+
+
+
+
+
 
 void Project::NotifyDamage(NodePath const& target, int frame, Box const& b )
 {

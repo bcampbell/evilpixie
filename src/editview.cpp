@@ -410,7 +410,7 @@ void EditView::OnPaletteChanged(NodePath const& target, int frame, int /*index*/
 
 void EditView::OnPaletteReplaced(NodePath const& target, int frame)
 {
-    if (!Proj().IsSamePalette(target, m_Focus)) {
+    if (!Proj().SharesPalette(target, frame, m_Focus, m_Frame)) {
         return;
     }
     // redraw the whole project (don't need to redraw padding)

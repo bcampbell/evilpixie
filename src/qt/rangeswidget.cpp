@@ -1,8 +1,7 @@
 #include "rangeswidget.h"
 #include "guistuff.h"
 
-//#include "../project.h"
-//#include "../colours.h"
+#include "../project.h"
 
 #include <algorithm>
 #include <cassert>
@@ -12,20 +11,18 @@
 #include <QMimeData>
 #include <QDrag>
 
-
-
-
-
-RangesWidget::RangesWidget(QWidget *parent, Palette const& palette) :
+RangesWidget::RangesWidget(QWidget *parent, Project& proj, NodePath const& target, int frame) :
     QWidget(parent),
-    m_Palette(palette),
+    m_Proj(proj),
+    m_Focus(target),
+    m_Frame(frame),
     m_Cols(4),
     m_Rows(8)
 {
     setMouseTracking(true);
     //setMinimumSize( Cols()*4, Rows()*4 );
     setAcceptDrops(true);
-
+/*
     Range r;
     r.x=2;
     r.y=0;
@@ -43,9 +40,36 @@ RangesWidget::RangesWidget(QWidget *parent, Palette const& palette) :
         r.pens.push_back(PenColour(palette.GetColour(idx), idx));
     }
     m_Ranges.push_back(r);
-
-
+*/
+    m_Proj.AddListener(this);
 }
+
+RangesWidget::~RangesWidget()
+{
+    m_Proj.RemoveListener(this);
+}
+
+
+void RangesWidget::SetFocus(NodePath const& target, int frame)
+{
+    m_Focus = target;
+    m_Frame = frame;
+    update();
+}
+
+
+// Map mouse coords to cell col&row.
+Point RangesWidget::PickCell(QPoint const& pos) const
+{
+   const int S = 4096;
+   int cw = size().width()*S / m_Cols;
+   int ch = size().height()*S / m_Rows;
+   Point cell;
+   cell.x = (S * pos.x()) / cw;
+   cell.y = (S * pos.y()) / ch;
+   return cell;
+}
+
 
 void RangesWidget::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -62,6 +86,20 @@ void RangesWidget::dropEvent(QDropEvent *event)
         emit colourDropped(m_Hover, Colour(c.red(), c.green(), c.blue(), c.alpha()));
     }
 #endif
+    const char* penMimeType = "application/x-evilpixie-pen";
+    const QMimeData* md = event->mimeData();
+    if (md->hasFormat(penMimeType)) {
+        QByteArray buf = md->data(penMimeType);
+        if (buf.size()>=5) {
+            Colour c;
+            c.r = (uint8_t)buf[0];
+            c.g = (uint8_t)buf[1];
+            c.b = (uint8_t)buf[2];
+            c.a = (uint8_t)buf[3];
+            int idx = (int)buf[4];
+            printf("PEN %d!\n", idx);
+        }
+    }
 }
 
 void RangesWidget::dragMoveEvent(QDragMoveEvent *event)
@@ -119,21 +157,17 @@ void RangesWidget::mousePressEvent(QMouseEvent *event)
 #endif
 
     // find range(s) and pen under the click.
-    for (Range const& rng : m_Ranges) {
-        const int S = 4096;
-        int cw = size().width()*S / m_Cols;
-        int ch = size().height()*S / m_Rows;
-        int col = (S * event->pos().x()) / cw;
-        int row = (S * event->pos().y()) / ch;
-
+    Point cell = PickCell(event->pos());
+    std::vector<Range>& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    for (Range const& rng : ranges) {
         int idx = -1;
         if (rng.horizontal) {
-            if (rng.y == row) {
-                idx = col - rng.x;
+            if (rng.y == cell.y) {
+                idx = cell.x - rng.x;
             }
         } else {
-            if (rng.x == col) {
-                idx = row - rng.y;
+            if (rng.x == cell.x) {
+                idx = cell.y - rng.y;
             }
         }
 
@@ -259,7 +293,8 @@ void RangesWidget::paintEvent(QPaintEvent *)
     painter.setBrush( *g_GUIStuff.checkerboard );
    	painter.drawRect( rect() );
 
-    for (Range const& range: m_Ranges) {
+    std::vector<Range>& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    for (Range const& range: ranges) {
         int x = range.x;
         int y = range.y;
         for (auto pen : range.pens) {
@@ -298,4 +333,26 @@ void RangesWidget::CalcCellRect(int col, int row, QRect& r) const
     r.setRect( x,y,w,h ); 
 }
 
+// ---------------------------
+// ProjectListener
+
+void RangesWidget::OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c)
+{
+    OnRangesBlatted(target, frame);
+}
+
+void RangesWidget::OnPaletteReplaced(NodePath const& target, int frame)
+{
+    OnRangesBlatted(target, frame);
+}
+
+void RangesWidget::OnRangesBlatted(NodePath const& target, int frame)
+{
+    if (!m_Proj.SharesPalette(target, frame, m_Focus, m_Frame)) {
+        return;
+    }
+
+    // just redraw everything.
+    update();
+}
 

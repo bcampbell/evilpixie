@@ -1,29 +1,29 @@
 #ifndef RANGESWIDGET_H
 #define RANGESWIDGET_H
 
-
 #include <QtWidgets/QWidget>
 
 #include <cstdio>
 
-#include "../palette.h"
+#include "../colours.h"
+#include "../layer.h"  // for NodePath
+#include "../point.h"
+#include "../projectlistener.h"
+#include "../range.h"
 
+class Project;
 
-
-struct Range {
-    std::vector<PenColour> pens;
-    // Cosmetic stuff. For editing ranges with pretty layout.
-    int x;
-    int y;
-    bool horizontal;
-};
-
-
-class RangesWidget : public QWidget
+// Widget for picking and editing colour ranges.
+class RangesWidget : public QWidget, ProjectListener
 {
     Q_OBJECT
 public:
-	RangesWidget(QWidget *parent, Palette const& palette);
+	RangesWidget(QWidget *parent, Project& proj, NodePath const& target, int frame);
+    ~RangesWidget();
+
+    // Reconfigure for another layer/frame.
+    // (doesn't emit any signals)
+    void SetFocus(NodePath const& target, int frame);
 
 signals:
     // upon sucessful drop
@@ -48,12 +48,19 @@ protected:
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
 
+    // ProjectListener implementation
+    // (we're only interested in palette-related stuff)
+    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c) override;
+    virtual void OnPaletteReplaced(NodePath const& target, int frame) override; 
+    virtual void OnRangesBlatted(NodePath const& target, int frame) override;
+
 private:
     RangesWidget();    // disallowed
+    Point PickCell(QPoint const& pos) const;
     void CalcCellRect(int col, int row, QRect& r) const;
-
-    Palette m_Palette;
-    std::vector<Range> m_Ranges;
+    Project& m_Proj;
+    NodePath m_Focus;
+    int m_Frame;
 
     int m_Rows;
     int m_Cols;

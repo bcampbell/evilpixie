@@ -77,7 +77,7 @@ PaletteEditor::PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus,
 
 PaletteEditor::~PaletteEditor()
 {
-    m_Proj.RemoveListener( this );
+    m_Proj.RemoveListener(this);
 }
 
 
@@ -115,7 +115,7 @@ void PaletteEditor::OnDamaged(NodePath const& /*target*/, int /* frame */, Box c
 
 void PaletteEditor::OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c )
 {
-    if (!m_Proj.IsSamePalette(target, m_Focus)) {
+    if (!m_Proj.SharesPalette(target, frame, m_Focus, m_Frame)) {
         return; // not interested.
     }
 
@@ -130,7 +130,7 @@ void PaletteEditor::OnPaletteChanged(NodePath const& target, int frame, int inde
 
 void PaletteEditor::OnPaletteReplaced(NodePath const& target, int frame)
 {
-    if (!m_Proj.IsSamePalette(target, m_Focus)) {
+    if (!m_Proj.SharesPalette(target, frame, m_Focus, m_Frame)) {
         return; // not interested.
     }
 

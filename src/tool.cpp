@@ -89,7 +89,7 @@ void DrawTransaction::BeginDamage(NodePath const& target, int frame)
 void DrawTransaction::AddDamage(Box const& affected)
 {
     assert(!m_Target.IsNull());
-    assert(!m_Frame != -1);
+    assert(m_Frame != -1);
     assert( m_Backup->Bounds().Contains(affected) );
     m_Proj.NotifyDamage(m_Target, m_Frame, affected);
     m_Affected.Merge(affected);

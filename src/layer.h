@@ -4,10 +4,12 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-#include "palette.h"
+
 #include "colours.h"
-#include "point.h"
 #include "img.h"
+#include "palette.h"
+#include "point.h"
+#include "range.h"
 
 struct Box;
 class Layer;
@@ -195,6 +197,7 @@ public:
 
     int mFPS;
     Palette mPalette;
+    std::vector<Range> mRanges;
 };
 
 #endif // LAYER_H

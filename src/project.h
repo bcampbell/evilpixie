@@ -7,12 +7,13 @@
 #include <vector>
 #include <string>
 
-#include "layer.h"
-#include "point.h"
-#include "colours.h"
-#include "palette.h"
 #include "box.h"
+#include "colours.h"
 #include "img.h"
+#include "layer.h"
+#include "palette.h"
+#include "point.h"
+#include "range.h"
 
 class Tool;
 class ProjectListener;
@@ -65,18 +66,6 @@ public:
     // replace palette, informing listeners. ownership is passed to proj.
     void ReplacePalette(Palette* newpalette);
 
-#if 0
-    // Layer access - 0 is bottom layer.
-
-    Layer& GetLayer(int i) { return *m_Layers[i]; }
-    Layer const& GetLayerConst(int i) const { return *m_Layers[i]; }
-    int NumLayers() const { return (int)m_Layers.size(); }
-    // Project takes ownership of layer.
-    void InsertLayer(Layer* layer, int pos);
-    Layer* DetachLayer(int pos);
-#endif
-    // TODO: figure this out
-//    int NumFrames() const { return 1;};
 
     Layer& ResolveLayer(NodePath const& target) const {
         assert(target.sel == NodePath::SEL_MAIN);
@@ -99,25 +88,21 @@ public:
     }
 
     Palette const& PaletteConst(NodePath const& target, int frame) const {
+        // TODO: implement shared-palette policy
         return ResolveLayer(target).GetPaletteConst();
     }
     Palette& GetPalette(NodePath const& target, int frame) const {
+        // TODO: implement shared-palette policy
         return ResolveLayer(target).GetPalette();
     }
 
-#if 0
-    Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
-    // TODO: KILL KILL KILL
-    PixelFormat Fmt() const { return m_Layers[0]->GetImgConst(0).Fmt(); }
-    // TODO: KILL KILL KILL
-    int NumFrames() const { return m_Layers[0]->NumFrames(); }
-#endif
+    std::vector<Range>& Ranges(NodePath const& target, int frame) const {
+        // TODO: implement shared-palette policy
+        return ResolveLayer(target).mRanges;
+    }
 
     PenColour PickUpPen(NodePath const& target, int frame, Point const& pt) const;
 
-    // TODO: KILL THESE
-//    Palette const& PaletteConst() const { return m_Layers[0]->GetPaletteConst(); }
-//    Colour GetColour(int n) const { return PaletteConst().GetColour(n);}
 
     // return current filename of project (empty string if no name)
     std::string const& Filename() const { return mFilename; }
@@ -136,11 +121,11 @@ public:
     void NotifyPaletteChange(NodePath const& target, int frame, int index, int count);
     void NotifyPaletteReplaced(NodePath const& target, int frame);
 
+    void NotifyRangesBlatted(NodePath const& target, int frame);
     void SetModifiedFlag( bool newmodifiedflag );
 
     // Return true if both paths share the same palette
-    // TODO: - frames?
-    bool IsSamePalette(NodePath const& a, NodePath const& b) const;
+    bool SharesPalette(NodePath const& a, int frameA, NodePath const& b, int frameB) const;
 
     // --------------------------------------
     // DATA

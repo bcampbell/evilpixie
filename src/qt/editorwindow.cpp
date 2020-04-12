@@ -184,7 +184,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         }
 
         {
-            m_RangesWidget = new RangesWidget(this, Proj().PaletteConst(m_Focus, m_Frame));
+            m_RangesWidget = new RangesWidget(this, Proj(), m_Focus, m_Frame);
 //            connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
 //            connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
             m_ColourTab->addTab(m_RangesWidget, "Rng");
@@ -423,7 +423,7 @@ void EditorWindow::OnDamaged(NodePath const& target, int frame, Box const& dmg) 
 
 void EditorWindow::OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c)
 {
-    if (!Proj().IsSamePalette(Focus(), target)) {
+    if (!Proj().SharesPalette(Focus(), m_Frame, target, frame)) {
         return;
     }
     // make sure the gui reflects any palette changes
@@ -440,7 +440,7 @@ void EditorWindow::OnPaletteChanged(NodePath const& target, int frame, int index
 
 void EditorWindow::OnPaletteReplaced(NodePath const& target, int frame)
 {
-    if (!Proj().IsSamePalette(Focus(), target)) {
+    if (!Proj().SharesPalette(Focus(), m_Frame, target, frame)) {
         return;
     }
     Palette const& pal = Proj().PaletteConst(target, frame);

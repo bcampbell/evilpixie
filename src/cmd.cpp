@@ -380,8 +380,7 @@ void Cmd_PaletteModify::Undo()
 // returns true if the merge occured, false if a new cmd is required.
 bool Cmd_PaletteModify::Merge(NodePath const& target, int frame, int idx, Colour const& newc)
 {
-    // TODO: take frame into account!
-    if (m_Cnt != 1 || m_First != idx || !Proj().IsSamePalette(target, m_Target)) {
+    if (m_Cnt != 1 || m_First != idx || !Proj().SharesPalette(target, frame, m_Target, m_Frame)) {
         return false;
     }
     // can only merge to already-applied ops.

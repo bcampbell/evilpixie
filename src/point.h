@@ -4,6 +4,7 @@
 class Point
 {
 public:
+    Point() : x(0), y(0) {}
 	Point( int xpos, int ypos ) : x(xpos), y(ypos ) {}
 	int x,y;
 
