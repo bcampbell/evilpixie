@@ -13,7 +13,7 @@
 #include "layer.h"
 #include "palette.h"
 #include "point.h"
-#include "range.h"
+#include "ranges.h"
 
 class Tool;
 class ProjectListener;
@@ -96,7 +96,7 @@ public:
         return ResolveLayer(target).GetPalette();
     }
 
-    std::vector<Range>& Ranges(NodePath const& target, int frame) const {
+    RangeGrid& Ranges(NodePath const& target, int frame) const {
         // TODO: implement shared-palette policy
         return ResolveLayer(target).mRanges;
     }

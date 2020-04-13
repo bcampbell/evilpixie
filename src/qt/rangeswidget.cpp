@@ -97,7 +97,17 @@ void RangesWidget::dropEvent(QDropEvent *event)
             c.b = (uint8_t)buf[2];
             c.a = (uint8_t)buf[3];
             int idx = (int)buf[4];
-            printf("PEN %d!\n", idx);
+            // TODO: no-index encoding!
+
+            RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+            PenColour pen(c, idx);
+            Point cell = PickCell(event->pos());
+            if (ranges.Bound().Contains(cell)) {
+                printf("PEN %d!\n", idx);
+                ranges.Set(cell, pen);
+
+                update();   // TODO: listener should handle
+            }
         }
     }
 }
@@ -158,27 +168,14 @@ void RangesWidget::mousePressEvent(QMouseEvent *event)
 
     // find range(s) and pen under the click.
     Point cell = PickCell(event->pos());
-    std::vector<Range>& ranges = m_Proj.Ranges(m_Focus, m_Frame);
-    for (Range const& rng : ranges) {
-        int idx = -1;
-        if (rng.horizontal) {
-            if (rng.y == cell.y) {
-                idx = cell.x - rng.x;
-            }
-        } else {
-            if (rng.x == cell.x) {
-                idx = cell.y - rng.y;
-            }
-        }
-
-        if (idx >=0 && idx < (int)rng.pens.size()) {
-            printf("PICK! %d\n", rng.pens[idx].idx());
-            if (event->button() == Qt::LeftButton) {
-                emit pickedFGPen(rng.pens[idx]);
-            } else if (event->button() == Qt::RightButton) {
-                emit pickedFGPen(rng.pens[idx]);
-            }
-            break;
+    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    PenColour pen;
+    if (ranges.Get(cell, pen)) {
+        printf("PICK! %d\n", pen.idx());
+        if (event->button() == Qt::LeftButton) {
+            emit pickedFGPen(pen);
+        } else if (event->button() == Qt::RightButton) {
+            emit pickedFGPen(pen);
         }
     }
 }
@@ -293,44 +290,41 @@ void RangesWidget::paintEvent(QPaintEvent *)
     painter.setBrush( *g_GUIStuff.checkerboard );
    	painter.drawRect( rect() );
 
-    std::vector<Range>& ranges = m_Proj.Ranges(m_Focus, m_Frame);
-    for (Range const& range: ranges) {
-        int x = range.x;
-        int y = range.y;
-        for (auto pen : range.pens) {
-            QRect cellrect;
-            CalcCellRect(x, y, cellrect );
-            Colour c(pen.rgb());
-
-            painter.setPen(Qt::NoPen);
-            painter.setBrush(QColor(c.r, c.g, c.b, c.a));
-            painter.drawRect( cellrect );
-            if (range.horizontal) {
-                ++x;
-            } else {
-                ++y;
+    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    Box bbox = ranges.Bound();
+    Point pos;
+    for (pos.y = bbox.YMin(); pos.y <= bbox.YMax(); ++pos.y) {
+        for (pos.x = bbox.XMin(); pos.x <= bbox.XMax(); ++pos.x) {
+            PenColour pen;
+            if (ranges.Get(pos, pen)) {
+                QRect cellrect;
+                CalcCellRect(pos, cellrect );
+                Colour c(pen.rgb());
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(QColor(c.r, c.g, c.b, c.a));
+                painter.drawRect( cellrect );
             }
         }
     }
 }
 
 
-void RangesWidget::CalcCellRect(int col, int row, QRect& r) const
+void RangesWidget::CalcCellRect(Point const& cell, QRect& r) const
 {
     // cell size is not uniform - use noddy fixedpoint to calculate it
     const int S = 4096;
     int cw = size().width()*S / m_Cols;
     int ch = size().height()*S / m_Rows;
 
-    int x = (col*cw)/S;
-    int xnext = ((col+1)*cw)/S;
-    int y = (row*ch)/S;
-    int ynext = ((row+1)*ch)/S;
+    int x = (cell.x*cw)/S;
+    int xnext = ((cell.x+1)*cw)/S;
+    int y = (cell.y*ch)/S;
+    int ynext = ((cell.y+1)*ch)/S;
 
     int w = xnext-x;
     int h = ynext-y;
 
-    r.setRect( x,y,w,h ); 
+    r.setRect( x, y, w, h ); 
 }
 
 // ---------------------------

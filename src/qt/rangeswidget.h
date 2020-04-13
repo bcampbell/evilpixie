@@ -9,7 +9,7 @@
 #include "../layer.h"  // for NodePath
 #include "../point.h"
 #include "../projectlistener.h"
-#include "../range.h"
+#include "../ranges.h"
 
 class Project;
 
@@ -57,7 +57,7 @@ protected:
 private:
     RangesWidget();    // disallowed
     Point PickCell(QPoint const& pos) const;
-    void CalcCellRect(int col, int row, QRect& r) const;
+    void CalcCellRect(Point const& cell, QRect& r) const;
     Project& m_Proj;
     NodePath m_Focus;
     int m_Frame;

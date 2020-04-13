@@ -9,7 +9,7 @@
 #include "img.h"
 #include "palette.h"
 #include "point.h"
-#include "range.h"
+#include "ranges.h"
 
 struct Box;
 class Layer;
@@ -197,7 +197,7 @@ public:
 
     int mFPS;
     Palette mPalette;
-    std::vector<Range> mRanges;
+    RangeGrid mRanges;
 };
 
 #endif // LAYER_H

@@ -50,7 +50,8 @@ NodePath CalcPath(BaseNode *n)
 
 
 Layer::Layer() :
-    mFPS(60)
+    mFPS(60),
+    mRanges(4,8)
 {
 }
 
