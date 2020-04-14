@@ -45,8 +45,8 @@ struct Box
 
 inline bool Box::Contains( Point const& pt ) const
 {
-    return pt.x>=XMin() && pt.x<XMax() &&
-        pt.y>=YMin() && pt.y<YMax();
+    return pt.x>=XMin() && pt.x<=XMax() &&
+        pt.y>=YMin() && pt.y<=YMax();
 }
 
 
