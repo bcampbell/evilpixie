@@ -22,25 +22,6 @@ RangesWidget::RangesWidget(QWidget *parent, Project& proj, NodePath const& targe
     setMouseTracking(true);
     //setMinimumSize( Cols()*4, Rows()*4 );
     setAcceptDrops(true);
-/*
-    Range r;
-    r.x=2;
-    r.y=0;
-    r.horizontal = false;
-    for (int idx : {1,2,3,4,5}) {
-        r.pens.push_back(PenColour(palette.GetColour(idx), idx));
-    }
-    m_Ranges.push_back(r);
-
-    r.x=1;
-    r.y=2;
-    r.horizontal = true;
-    r.pens = {};
-    for (int idx : {31,3,14,15}) {
-        r.pens.push_back(PenColour(palette.GetColour(idx), idx));
-    }
-    m_Ranges.push_back(r);
-*/
     m_Proj.AddListener(this);
 }
 
