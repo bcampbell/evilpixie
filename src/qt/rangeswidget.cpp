@@ -311,22 +311,11 @@ void RangesWidget::CalcCellRect(Point const& cell, QRect& r) const
 // ---------------------------
 // ProjectListener
 
-void RangesWidget::OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c)
-{
-    OnRangesBlatted(target, frame);
-}
-
-void RangesWidget::OnPaletteReplaced(NodePath const& target, int frame)
-{
-    OnRangesBlatted(target, frame);
-}
-
 void RangesWidget::OnRangesBlatted(NodePath const& target, int frame)
 {
     if (!m_Proj.SharesPalette(target, frame, m_Focus, m_Frame)) {
         return;
     }
-
     // just redraw everything.
     update();
 }

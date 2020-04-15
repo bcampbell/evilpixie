@@ -33,6 +33,7 @@ SOURCES += src/app.cpp \
     src/palette.cpp \
     src/project.cpp \
     src/quantise.cpp \
+    src/ranges.cpp \
     src/scale2x.cpp \
     src/sheet.cpp \
     src/tool.cpp \
@@ -74,6 +75,7 @@ HEADERS += src/app.h \
     src/point.h \
     src/project.h \
     src/quantise.h \
+    src/ranges.h \
     src/scale2x.h \
     src/sheet.h \
     src/tool.h \

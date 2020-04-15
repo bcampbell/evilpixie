@@ -163,6 +163,13 @@ void Project::NotifyPaletteReplaced(NodePath const& target, int frame)
     }
 }
 
+void Project::NotifyRangesBlatted(NodePath const& target, int frame)
+{
+    for (auto l: m_Listeners) {
+        l->OnRangesBlatted(target, frame);
+    }
+}
+
 
 
 

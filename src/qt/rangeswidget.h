@@ -49,9 +49,7 @@ protected:
     void dropEvent(QDropEvent *event);
 
     // ProjectListener implementation
-    // (we're only interested in palette-related stuff)
-    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c) override;
-    virtual void OnPaletteReplaced(NodePath const& target, int frame) override; 
+    // (we're only interested in range-related stuff)
     virtual void OnRangesBlatted(NodePath const& target, int frame) override;
 
 private:

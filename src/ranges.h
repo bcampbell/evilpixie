@@ -1,7 +1,9 @@
 #pragma once
 
+#include "box.h"
 #include "colours.h"
 #include "point.h"
+
 #include <vector>
 
 struct Range {
@@ -22,6 +24,11 @@ public:
     void Set(Point const& pos, PenColour const& pen);
     void Clear(Point const& pos);
     Box const& Bound() const { return m_Bound; }
+
+    // Update the rgb of any pens that might be using idx.
+    // Returns number of pens updated.
+    int UpdatePen(int idx, Colour const& c);
+
 private:
     Box m_Bound;
     std::vector<bool> m_Valid;

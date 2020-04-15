@@ -351,15 +351,23 @@ Cmd_PaletteModify::~Cmd_PaletteModify()
 void Cmd_PaletteModify::swap()
 {
     Palette& pal = Proj().GetPalette(m_Target, m_Frame);
+    RangeGrid& ranges = Proj().Ranges(m_Target, m_Frame);
+    int rangeChanges = 0;
     int i;
     for (i=0; i<m_Cnt; ++i)
     {
-        Colour tmp = pal.GetColour(m_First+i);
-        pal.SetColour(m_First+i, m_Colours[i]);
+        Colour tmp = pal.GetColour(m_First + i);
+        pal.SetColour(m_First + i, m_Colours[i]);
+        // update any range entries that might be referencing changed colours.
+        rangeChanges += ranges.UpdatePen(m_First + i, m_Colours[i]);
+
         m_Colours[i] = tmp;
     }
 
     Proj().NotifyPaletteChange(m_Target, m_Frame, m_First, m_Cnt);
+    if (rangeChanges > 0) {
+        Proj().NotifyRangesBlatted(m_Target, m_Frame);
+    }
 }
 
 void Cmd_PaletteModify::Do()
@@ -388,8 +396,12 @@ bool Cmd_PaletteModify::Merge(NodePath const& target, int frame, int idx, Colour
         return false;
 
     Palette& pal = Proj().GetPalette(m_Target, m_Frame);
+    RangeGrid& ranges = Proj().Ranges(m_Target, m_Frame);
     pal.SetColour(m_First, newc);
     Proj().NotifyPaletteChange(m_Target, m_Frame, m_First, m_Cnt);
+    if (ranges.UpdatePen(idx, newc) > 0) {
+        Proj().NotifyRangesBlatted(target, frame);
+    }
     return true;
 }
 
