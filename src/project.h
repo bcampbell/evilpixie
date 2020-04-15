@@ -87,16 +87,16 @@ public:
         return ResolveLayer(target).GetImgConst(frame);
     }
 
-    Palette const& PaletteConst(NodePath const& target, int frame) const {
+    Palette const& PaletteConst(NodePath const& target, int /*frame*/) const {
         // TODO: implement shared-palette policy
         return ResolveLayer(target).GetPaletteConst();
     }
-    Palette& GetPalette(NodePath const& target, int frame) const {
+    Palette& GetPalette(NodePath const& target, int /*frame*/) const {
         // TODO: implement shared-palette policy
         return ResolveLayer(target).GetPalette();
     }
 
-    RangeGrid& Ranges(NodePath const& target, int frame) const {
+    RangeGrid& Ranges(NodePath const& target, int /*frame*/) const {
         // TODO: implement shared-palette policy
         return ResolveLayer(target).mRanges;
     }

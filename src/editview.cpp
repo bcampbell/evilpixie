@@ -424,7 +424,7 @@ void EditView::OnModifiedFlagChanged(bool /*changed*/)
 {
 }
 
-void EditView::OnFramesAdded(NodePath const& target, int first, int count)
+void EditView::OnFramesAdded(NodePath const& target, int /*first*/, int /*count*/)
 {
     if (m_Focus.sel != target.sel) {
         return;
@@ -438,7 +438,7 @@ void EditView::OnFramesAdded(NodePath const& target, int first, int count)
     Redraw(affected);
 }
 
-void EditView::OnFramesRemoved(NodePath const& target, int first, int count)
+void EditView::OnFramesRemoved(NodePath const& target, int /*first*/, int /*count*/)
 {
     if (m_Focus.sel != target.sel) {
         return;
@@ -447,8 +447,8 @@ void EditView::OnFramesRemoved(NodePath const& target, int first, int count)
     // TODO: ignore changes on non-visible layers.
 
     // make sure we're still pointing at a valid frame.
-    if (m_Frame >= l.mFrames.size()) {
-        m_Frame = l.mFrames.size()-1;
+    if (m_Frame >= (int)l.mFrames.size()) {
+        m_Frame = (int)l.mFrames.size()-1;
     }
 
     // redraw the whole view (including padding)

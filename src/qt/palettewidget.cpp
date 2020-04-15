@@ -155,7 +155,8 @@ void PaletteWidget::mouseMoveEvent(QMouseEvent *event)
         mimeData->setColorData(qc);
 
         // rgba + palette index
-        uint8_t buf[5] = {c.r, c.g, c.b, c.a, cell};
+        // TODO: encode index validity.
+        uint8_t buf[5] = {c.r, c.g, c.b, c.a, (uint8_t)cell};
         mimeData->setData("application/x-evilpixie-pen", QByteArray((const char*)buf,5));
 
         drag->setMimeData(mimeData);

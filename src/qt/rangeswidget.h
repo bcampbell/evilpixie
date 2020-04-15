@@ -60,8 +60,8 @@ private:
     NodePath m_Focus;
     int m_Frame;
 
-    int m_Rows;
     int m_Cols;
+    int m_Rows;
 
     PenColour m_FGPen;
     PenColour m_BGPen;

@@ -519,8 +519,6 @@ void BrushPickupTool::OnMove( EditView&, Point const& p)
 
 void BrushPickupTool::OnUp( EditView& view, Point const& p, Button )
 {
-    Project& proj = view.Proj();
-
     if( m_DownButton == NONE )
         return;
     m_DragPoint = p;

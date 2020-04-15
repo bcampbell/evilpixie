@@ -26,13 +26,13 @@ public:
 	virtual ~EditView();
 
     // ProjectListener Implementation
-	virtual void OnDamaged(NodePath const& target, int frame, Box const& dmg);
-    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c);
-    virtual void OnPaletteReplaced(NodePath const& target, int frame);
-    virtual void OnModifiedFlagChanged(bool changed);
-    virtual void OnFramesAdded(NodePath const& target, int first, int count);
-    virtual void OnFramesRemoved(NodePath const& target, int first, int count);
-    virtual void OnFramesBlatted(NodePath const& target, int first, int count);
+	virtual void OnDamaged(NodePath const& target, int frame, Box const& dmg) override;
+    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c) override;
+    virtual void OnPaletteReplaced(NodePath const& target, int frame) override;
+    virtual void OnModifiedFlagChanged(bool changed) override;
+    virtual void OnFramesAdded(NodePath const& target, int first, int count) override;
+    virtual void OnFramesRemoved(NodePath const& target, int first, int count) override;
+    virtual void OnFramesBlatted(NodePath const& target, int first, int count) override;
 
 	// these will all cause listener RedrawAll request
 	void Resize( int w, int h );

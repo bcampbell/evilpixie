@@ -418,8 +418,6 @@ void EditorWindow::OnPenChanged()
 
 // Begin ProjectListener implementation
 
-void EditorWindow::OnDamaged(NodePath const& target, int frame, Box const& dmg) {
-}
 
 void EditorWindow::OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c)
 {
@@ -464,17 +462,17 @@ void EditorWindow::OnModifiedFlagChanged(bool)
     RethinkWindowTitle();
 }
 
-void EditorWindow::OnFramesAdded(NodePath const& target, int first, int count)
+void EditorWindow::OnFramesAdded(NodePath const& /*target*/, int /*first*/, int /*count*/)
 {
     RethinkWindowTitle();
 }
 
-void EditorWindow::OnFramesRemoved(NodePath const& target, int first, int count)
+void EditorWindow::OnFramesRemoved(NodePath const& target, int /*first*/, int /*count*/)
 {
     Layer const& l = Proj().ResolveLayer(target);
-    if (m_Frame >= l.mFrames.size()) {
+    if (m_Frame >= (int)l.mFrames.size()) {
         // Make sure we're not left pointing at an invalid frame.
-        setFrame(l.mFrames.size() - 1);
+        setFrame((int)l.mFrames.size() - 1);
     } else {
         RethinkWindowTitle();
     }
@@ -693,7 +691,6 @@ void EditorWindow::do_drawmodeChanged( QAction* act )
 // resize the currently-focused layer
 void EditorWindow::do_resize()
 {
-    Layer& l = Proj().ResolveLayer(Focus());
     // use the currently-focused frame to populate the resize dialog.
     Box b = m_ViewWidget->FocusedImgConst().Bounds();
     ResizeProjectDialog dlg(this,QRect(b.x,b.y,b.w,b.h));
@@ -848,7 +845,7 @@ void EditorWindow::do_nextframe()
 {
     Layer const& l = Proj().ResolveLayer(m_Focus);
     assert(m_Focus.sel == NodePath::SEL_MAIN);
-    if (m_Frame < l.mFrames.size() - 1) {
+    if (m_Frame < (int)l.mFrames.size() - 1) {
         setFrame(m_Frame + 1);
     } else {
         setFrame(0);    // Wrap.
@@ -859,7 +856,7 @@ void EditorWindow::setFrame(int frame)
 {
     //printf("EditorWindow::setFrame(%d->%d)\n", m_Frame, frame);
     Layer const& l = Proj().ResolveLayer(m_Focus);
-    assert(frame >= 0 && frame < l.mFrames.size());
+    assert(frame >= 0 && frame < (int)l.mFrames.size());
     m_Frame = frame;
     m_Time = l.FrameTime(m_Frame);
 
@@ -921,9 +918,9 @@ void EditorWindow::do_loadpalette()
 
     try
     {
-        Palette* p = Palette::Load(filename.toStdString().c_str());
     assert(false);  //TODO: implement
 #if 0
+        Palette* p = Palette::Load(filename.toStdString().c_str());
         Proj().ReplacePalette(p);
 #endif
     }

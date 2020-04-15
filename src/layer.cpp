@@ -28,12 +28,12 @@ NodePath CalcPath(BaseNode *n)
     std::vector<int> trace;
     while(n->mParent) {
         int i;
-        for (i = 0; i < n->mParent->mChildren.size(); ++i) {
+        for (i = 0; i < (int)n->mParent->mChildren.size(); ++i) {
             if (n == n->mParent->mChildren[i]) {
                 break;
             }
         }
-        if (i >= n->mParent->mChildren.size()) {
+        if (i >= (int)n->mParent->mChildren.size()) {
             // not found! should never get here.
             assert(false);
             return NodePath();
@@ -94,9 +94,9 @@ void Layer::Dump() const
 PixelFormat Layer::Fmt() const
     { return mFrames.front()->mImg->Fmt(); }
 
-void Layer::CalcBounds(Box& bound, int first, int last) const
+void Layer::CalcBounds(Box& bound, int /*first*/, int /*last*/) const
 {
-    int n;
+    //TODO: constrain to first..last!
     for (auto f : mFrames) {
         bound.Merge(f->mImg->Bounds());
     }
@@ -393,7 +393,7 @@ int Layer::FrameIndexClipped(uint64_t t) const
 
 uint64_t Layer::FrameTime(int frame) const
 {
-    assert(frame < mFrames.size());
+    assert(frame < (int)mFrames.size());
     uint64_t t = 0;
     for (int i=0; i<frame; ++i) {
         t += mFrames[i]->mDuration;

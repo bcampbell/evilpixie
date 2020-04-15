@@ -107,13 +107,6 @@ public:
 
     // projectlistener implementation:
     // Not used by Editor itself, but GUI overrides some.
-	virtual void OnDamaged(NodePath const& target, Box const& dmg) {}
-    virtual void OnPaletteChanged(NodePath const& owner, int index, Colour const& c) {}
-    virtual void OnPaletteReplaced(NodePath const&) {}
-    virtual void OnModifiedFlagChanged(bool) {}
-    virtual void OnFramesAdded(NodePath const& first, int count) {}
-    virtual void OnFramesRemoved(NodePath const& first, int count) {}
-    virtual void OnFramesBlatted(NodePath const& first, int count) {}
 
 protected:
     // stuff to notify the gui...

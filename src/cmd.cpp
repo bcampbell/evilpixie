@@ -188,7 +188,7 @@ void Cmd_DeleteFrames::Do()
 
 void Cmd_DeleteFrames::Undo()
 {
-    assert(m_FrameSwap.size() == m_NumFrames);
+    assert((int)m_FrameSwap.size() == m_NumFrames);
     Layer& l = Proj().ResolveLayer(m_Target);
     l.mFrames.insert( l.mFrames.begin() + m_Pos,
         m_FrameSwap.begin(), m_FrameSwap.end());

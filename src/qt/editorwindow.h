@@ -89,13 +89,12 @@ public:
     virtual void OnUndoRedoChanged() { update_menu_states(); }
 
     // projectlistener stuff
-	virtual void OnDamaged(NodePath const& target, int frame, Box const& dmg);
-    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c);
-    virtual void OnPaletteReplaced(NodePath const& target, int frame);
-    virtual void OnModifiedFlagChanged(bool);
-    virtual void OnFramesAdded(NodePath const& target, int first, int count);
-    virtual void OnFramesRemoved(NodePath const& target, int first, int count);
-    virtual void OnFramesBlatted(NodePath const& target, int first, int count);
+    virtual void OnPaletteChanged(NodePath const& target, int frame, int index, Colour const& c) override;
+    virtual void OnPaletteReplaced(NodePath const& target, int frame) override;
+    virtual void OnModifiedFlagChanged(bool) override;
+    virtual void OnFramesAdded(NodePath const& target, int first, int count) override;
+    virtual void OnFramesRemoved(NodePath const& target, int first, int count) override;
+    virtual void OnFramesBlatted(NodePath const& target, int first, int count) override;
 
     // Qt widget overrides
     virtual void closeEvent(QCloseEvent *event);

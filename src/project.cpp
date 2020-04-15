@@ -84,31 +84,11 @@ void Project::SetModifiedFlag( bool newmodifiedflag )
 }
 
 
-#if 0
-void Project::InsertLayer(Layer* layer, int pos)
-{
-    assert(pos >= 0 && pos <= (int)m_Layers.size());
-    m_Layers.insert(m_Layers.begin() + pos, layer);
-}
-
-Layer* Project::DetachLayer(int pos)
-{
-    assert(pos >= 0 && pos < (int)m_Layers.size());
-    Layer* l = m_Layers[pos];
-    m_Layers.erase(m_Layers.begin() + pos);
-    return l;
-}
-#endif
-
-bool Project::SharesPalette(NodePath const& a, int frameA, NodePath const& b, int frameB) const
+bool Project::SharesPalette(NodePath const& a, int /*frameA*/, NodePath const& b, int /*frameB*/) const
 {
     return a==b;
     // TODO: handle palette/layer policy when implemented!
 }
-
-
-
-
 
 
 void Project::NotifyDamage(NodePath const& target, int frame, Box const& b )
