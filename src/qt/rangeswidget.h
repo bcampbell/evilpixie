@@ -25,6 +25,9 @@ public:
     // (doesn't emit any signals)
     void SetFocus(NodePath const& target, int frame);
 
+    void SetFGPen(PenColour const& pen) {m_FGPen = pen; update();}
+    void SetBGPen(PenColour const& pen) {m_BGPen = pen; update();}
+
 signals:
     // upon sucessful drop
     void colourDropped(int idx, Colour const& c);

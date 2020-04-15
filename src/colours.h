@@ -180,6 +180,15 @@ public:
     int idx() const {assert(IdxValid()); return m_idx;}
 
     bool IdxValid() const {return m_idx >= 0;}
+
+    bool operator==(PenColour const& other) const {
+        if (IdxValid() && other.IdxValid()) {
+            if (m_idx == other.m_idx) {
+                return true;
+            }
+        }
+        return (m_rgb == other.m_rgb);
+    }
 private:
     Colour m_rgb;
     int m_idx; // -1 = invalid

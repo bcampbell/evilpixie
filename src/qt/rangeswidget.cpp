@@ -84,7 +84,6 @@ void RangesWidget::dropEvent(QDropEvent *event)
             PenColour pen(c, idx);
             Point cell = PickCell(event->pos());
             if (ranges.Bound().Contains(cell)) {
-                printf("PEN %d!\n", idx);
                 ranges.Set(cell, pen);
 
                 update();   // TODO: listener should handle
@@ -152,11 +151,10 @@ void RangesWidget::mousePressEvent(QMouseEvent *event)
     RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
     PenColour pen;
     if (ranges.Get(cell, pen)) {
-        printf("PICK! %d\n", pen.idx());
         if (event->button() == Qt::LeftButton) {
             emit pickedFGPen(pen);
         } else if (event->button() == Qt::RightButton) {
-            emit pickedFGPen(pen);
+            emit pickedBGPen(pen);
         }
     }
 }
@@ -263,6 +261,32 @@ void RangesWidget::resizeEvent(QResizeEvent *)
 }
 
 
+static void drawCell(QPainter& painter, QRect const& r, Colour const& c, bool fg, bool bg) {
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(c.r, c.g, c.b, c.a));
+    painter.drawRect(r);
+    const int k = 8;
+    if (fg) {
+        QPoint q0 = r.topLeft();
+        QPoint q1 = q0 + QPoint(k, 0);
+        QPoint q2 = q0 + QPoint(0, k);
+
+        painter.setBrush(QColor(255,255,255,255));
+        painter.setPen(QColor(0,0,0,255));
+        painter.drawConvexPolygon(QPolygon({q0,q1,q2}));
+    }
+    if (bg) {
+        QPoint q0 = r.bottomRight();
+        QPoint q1 = q0 + QPoint(-k, 0);
+        QPoint q2 = q0 + QPoint(0, -k);
+
+        painter.setBrush(QColor(0,0,0,255));
+        painter.setPen(QColor(255,255,255,255));
+        painter.drawConvexPolygon(QPolygon({q0,q1,q2}));
+    }
+}
+
+
 void RangesWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
@@ -280,10 +304,9 @@ void RangesWidget::paintEvent(QPaintEvent *)
             if (ranges.Get(pos, pen)) {
                 QRect cellrect;
                 CalcCellRect(pos, cellrect );
-                Colour c(pen.rgb());
-                painter.setPen(Qt::NoPen);
-                painter.setBrush(QColor(c.r, c.g, c.b, c.a));
-                painter.drawRect( cellrect );
+                bool isFG = (m_FGPen == pen);
+                bool isBG = (m_BGPen == pen);
+                drawCell(painter, cellrect, pen.rgb(), isFG, isBG);
             }
         }
     }

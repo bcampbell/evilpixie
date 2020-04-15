@@ -185,8 +185,8 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
 
         {
             m_RangesWidget = new RangesWidget(this, Proj(), m_Focus, m_Frame);
-//            connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
-//            connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
+            connect(m_RangesWidget, SIGNAL(pickedFGPen(PenColour)), this, SLOT( fgPenPicked(PenColour const&)));
+            connect(m_RangesWidget, SIGNAL(pickedBGPen(PenColour)), this, SLOT( bgPenPicked(PenColour const&)));
             m_ColourTab->addTab(m_RangesWidget, "Rng");
         }
         {
@@ -413,6 +413,9 @@ void EditorWindow::OnPenChanged()
         }
         if(BGPen().IdxValid())
             m_PaletteWidget->SetLeftSelected( BGPen().idx() );
+
+        m_RangesWidget->SetFGPen(FGPen());
+        m_RangesWidget->SetBGPen(BGPen());
     }
 }
 
