@@ -66,10 +66,8 @@ private:
     Palette m_Palette;
 	int m_Hover;
 
-    void CalcCellRect( int n, QRect& r ) const;
     QRect CellRect( int n ) const;
 
-	void DrawCell( QPainter& painter, int n );
     void DrawOverlays( QPainter& painter );
     void DrawRangeOverlay( QPainter& painter, int from, int to, bool strong );
 	int PickCell( int x, int y );

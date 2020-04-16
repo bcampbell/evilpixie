@@ -228,13 +228,15 @@ void PaletteWidget::paintEvent(QPaintEvent *)
     int n;
     for( n=0; n<m_Palette.NumColours(); ++n )
     {
-        DrawCell( painter, n );
+        bool isFG = m_LeftSelected == n;
+        bool isBG = m_RightSelected == n;
+        RenderCell(painter, CellRect(n), m_Palette.GetColour(n), isFG, isBG);
     }
     DrawOverlays( painter );
 }
 
 
-void PaletteWidget::CalcCellRect( int n, QRect& r ) const
+QRect PaletteWidget::CellRect(int n) const
 {
     int row = n%Rows();
     int col = n/Rows();
@@ -252,34 +254,8 @@ void PaletteWidget::CalcCellRect( int n, QRect& r ) const
     int w = xnext-x;
     int h = ynext-y;
 
-    r.setRect( x,y,w,h ); 
+    return QRect(x, y, w, h);
 }
-
-QRect PaletteWidget::CellRect( int n ) const
-{
-    QRect r;
-    CalcCellRect( n,r);
-    return r;
-}
-
-
-
-void PaletteWidget::DrawCell( QPainter& painter, int n )
-{
-    QRect cellrect;
-    CalcCellRect( n, cellrect );
-
-    //cellrect.adjust(0,0,-1,-1);
-
-    Colour c(m_Palette.GetColour(n));
-
-    painter.setPen(Qt::NoPen);
-
-    painter.setBrush(QColor(c.r, c.g, c.b, c.a));
-    painter.drawRect( cellrect );
-
-}
-
 
 int PaletteWidget::Cols() const
 {
@@ -351,6 +327,7 @@ void PaletteWidget::DrawOverlays( QPainter& painter )
         painter.drawRect(r);
     }
 
+#if 0
     if( m_LeftSelected != -1 )
     {
         QRect r = CellRect( m_LeftSelected );
@@ -399,6 +376,7 @@ void PaletteWidget::DrawOverlays( QPainter& painter )
         painter.drawRect(r);
 
     }
+#endif
 }
 
 

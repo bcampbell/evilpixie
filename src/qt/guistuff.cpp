@@ -1,7 +1,10 @@
 #include "guistuff.h"
 
+#include "../colours.h"
+
 #include <QPainter>
 #include <QPixmap>
+
 
 GUIStuff g_GUIStuff = {0};
 
@@ -27,4 +30,30 @@ void freeGUIStuff()
     delete g_GUIStuff.checkerboard;
 }
 
+
+void RenderCell(QPainter& painter, QRect const& r, Colour const& c, bool fg, bool bg)
+{
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(c.r, c.g, c.b, c.a));
+    painter.drawRect(r);
+    const int k = 8;
+    if (fg) {
+        QPoint q0 = r.topLeft();
+        QPoint q1 = q0 + QPoint(k, 0);
+        QPoint q2 = q0 + QPoint(0, k);
+
+        painter.setBrush(QColor(255,255,255,255));
+        painter.setPen(QColor(0,0,0,255));
+        painter.drawConvexPolygon(QPolygon({q0,q1,q2}));
+    }
+    if (bg) {
+        QPoint q0 = r.bottomRight();
+        QPoint q1 = q0 + QPoint(-k, 0);
+        QPoint q2 = q0 + QPoint(0, -k);
+
+        painter.setBrush(QColor(0,0,0,255));
+        painter.setPen(QColor(255,255,255,255));
+        painter.drawConvexPolygon(QPolygon({q0,q1,q2}));
+    }
+}
 

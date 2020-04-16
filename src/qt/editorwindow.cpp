@@ -405,14 +405,14 @@ void EditorWindow::OnPenChanged()
         m_CurrentColourWidget->setBGColour( QColor( bg.r, bg.g, bg.b, bg.a ) );
 
         //assert(Proj().GetAnimConst().Fmt()==FMT_I8);
-        if(FGPen().IdxValid())
-        {
+        if(FGPen().IdxValid()) {
             m_PaletteWidget->SetLeftSelected( FGPen().idx() );
-        //    if( m_PaletteEditor )
-        //        m_PaletteEditor->SetSelected(FGPen().idx());
+            if( m_PaletteEditor )
+                m_PaletteEditor->SetSelected(FGPen().idx());
         }
-        if(BGPen().IdxValid())
-            m_PaletteWidget->SetLeftSelected( BGPen().idx() );
+        if(BGPen().IdxValid()) {
+            m_PaletteWidget->SetRightSelected( BGPen().idx() );
+        }
 
         m_RangesWidget->SetFGPen(FGPen());
         m_RangesWidget->SetBGPen(BGPen());
