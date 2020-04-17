@@ -20,7 +20,11 @@ class RangeGrid {
 public:
     RangeGrid(int w, int h);
 
+    // Points outside grid are considered unset.
     bool Get(Point const& pos, PenColour& out) const;
+    bool IsSet(Point const& pos) const;
+
+    // Set/Clear will assert if pos is outside grid.
     void Set(Point const& pos, PenColour const& pen);
     void Clear(Point const& pos);
     Box const& Bound() const { return m_Bound; }
@@ -28,6 +32,8 @@ public:
     // Update the rgb of any pens that might be using idx.
     // Returns number of pens updated.
     int UpdatePen(int idx, Colour const& c);
+
+    Box PickRange(Point const& pos) const;
 
 private:
     Box m_Bound;
@@ -54,6 +60,16 @@ inline bool RangeGrid::Get(Point const& pos, PenColour& out) const
     out = m_Pens[idx];
     return true;
 }
+
+inline bool RangeGrid::IsSet(Point const& pos) const
+{
+    if (!m_Bound.Contains(pos)) {
+        return false;
+    }
+    size_t idx = ((pos.y-m_Bound.y) * m_Bound.w) + (pos.x - m_Bound.x);
+    return m_Valid[idx];
+}
+
 
 inline void RangeGrid::Set(Point const& pos, PenColour const& pen)
 {

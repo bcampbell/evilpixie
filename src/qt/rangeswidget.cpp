@@ -17,7 +17,8 @@ RangesWidget::RangesWidget(QWidget *parent, Project& proj, NodePath const& targe
     m_Focus(target),
     m_Frame(frame),
     m_Cols(4),
-    m_Rows(8)
+    m_Rows(8),
+    m_CurrRange(0, 0, 0, 0)
 {
     setMouseTracking(true);
     //setMinimumSize( Cols()*4, Rows()*4 );
@@ -123,28 +124,6 @@ QSize RangesWidget::minimumSizeHint () const
 
 void RangesWidget::mousePressEvent(QMouseEvent *event)
 {
-#if 0
-    if (event->button() == Qt::LeftButton) {
-        if (event->modifiers() & Qt::ShiftModifier) {
-            // shift-click: select range
-            int cell = PickCell(event->pos().x(),event->pos().y());
-            if( cell != -1 && m_LeftSelected != -1 ) {
-                m_RangeFirst = std::min(m_LeftSelected, cell);
-                m_RangeLast = std::max(m_LeftSelected, cell);
-                emit rangeAltered();
-                update();
-            }
-        } else {
-            m_Anchor = event->pos();
-            if (m_RangeFirst >= 0 || m_RangeLast >= 0) {
-                m_RangeFirst = -1;
-                m_RangeLast = -1;
-                emit rangeAltered();
-                update();
-            }
-        }
-    }
-#endif
 
     // find range(s) and pen under the click.
     Point cell = PickCell(event->pos());
@@ -155,6 +134,14 @@ void RangesWidget::mousePressEvent(QMouseEvent *event)
             emit pickedFGPen(pen);
         } else if (event->button() == Qt::RightButton) {
             emit pickedBGPen(pen);
+        }
+    }
+
+    // update range selection
+    if (event->button() == Qt::LeftButton) {
+        // prefer to keep existing range
+        if (!m_CurrRange.Contains(cell)) {
+            m_CurrRange = ranges.PickRange(cell); 
         }
     }
 }
@@ -277,34 +264,52 @@ void RangesWidget::paintEvent(QPaintEvent *)
         for (pos.x = bbox.XMin(); pos.x <= bbox.XMax(); ++pos.x) {
             PenColour pen;
             if (ranges.Get(pos, pen)) {
-                QRect cellrect;
-                CalcCellRect(pos, cellrect );
+                QRect cellrect = CalcRect(Box(pos.x, pos.y, 1, 1));
                 bool isFG = (m_FGPen == pen);
                 bool isBG = (m_BGPen == pen);
                 RenderCell(painter, cellrect, pen.rgb(), isFG, isBG);
             }
         }
     }
+
+
+    if (!m_CurrRange.Empty()) {
+        QRect r = CalcRect(m_CurrRange);
+
+        QPen blackpen( Qt::SolidLine );
+        blackpen.setColor( QColor(0, 0, 0, 255) );
+
+        QPen whitepen( Qt::SolidLine );
+        whitepen.setColor( QColor(255, 255, 255, 255) );
+
+        painter.setBrush(Qt::NoBrush);
+        painter.setPen(blackpen);
+        painter.drawRect(r);
+
+        r.adjust(1, 1, -1, -1);
+        painter.setPen(whitepen);
+        painter.drawRect(r);
+    }
 }
 
 
-void RangesWidget::CalcCellRect(Point const& cell, QRect& r) const
+// Map a box in cell coords to the drawing area.
+QRect RangesWidget::CalcRect(Box const& box) const
 {
     // cell size is not uniform - use noddy fixedpoint to calculate it
     const int S = 4096;
-    int cw = size().width()*S / m_Cols;
-    int ch = size().height()*S / m_Rows;
+    int cw = (size().width() * S) / m_Cols;
+    int ch = (size().height() * S) / m_Rows;
 
-    int x = (cell.x*cw)/S;
-    int xnext = ((cell.x+1)*cw)/S;
-    int y = (cell.y*ch)/S;
-    int ynext = ((cell.y+1)*ch)/S;
+    int x = (box.x * cw) / S;
+    int y = (box.y * ch) / S;
 
-    int w = xnext-x;
-    int h = ynext-y;
+    int w = (box.w * cw) / S;
+    int h = (box.h * ch) / S;
 
-    r.setRect( x, y, w, h ); 
+    return QRect(x, y, w, h);
 }
+
 
 // ---------------------------
 // ProjectListener

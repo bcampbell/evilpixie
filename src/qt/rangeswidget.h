@@ -34,6 +34,8 @@ signals:
 
     void pickedFGPen(PenColour fg);
     void pickedBGPen(PenColour bg);
+
+    void pickedRange(Box const& range);
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -58,7 +60,7 @@ protected:
 private:
     RangesWidget();    // disallowed
     Point PickCell(QPoint const& pos) const;
-    void CalcCellRect(Point const& cell, QRect& r) const;
+    QRect CalcRect(Box const& box) const;
     Project& m_Proj;
     NodePath m_Focus;
     int m_Frame;
@@ -68,6 +70,9 @@ private:
 
     PenColour m_FGPen;
     PenColour m_BGPen;
+
+    // Currently-selected range (can be empty)
+    Box m_CurrRange;
 };
 
 #endif // RANGESWIDGET_H

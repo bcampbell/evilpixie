@@ -10,8 +10,6 @@ Box::Box( Point const& p1, Point const& p2 ) :
 {
 }
 
-
-
 void Box::SetEmpty()
 {
     x=y=w=h=0;

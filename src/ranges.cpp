@@ -16,3 +16,45 @@ int RangeGrid::UpdatePen(int idx, Colour const& c)
     }
     return cnt;
 }
+
+
+
+Box RangeGrid::PickRange(Point const& pos) const
+{
+    if (!IsSet(pos)) {
+        return Box(0, 0, 0, 0);
+    }
+
+    Box vert(pos.x, pos.y, 1, 1);
+    // scan upward to find start
+    while (IsSet(Point(vert.x, vert.YMin() - 1))) {
+        --vert.y;
+        ++vert.h;
+    }
+    // scan for bottom
+    while (IsSet(Point(vert.x, vert.YMax() + 1))) {
+        ++vert.h;
+    }
+    if (vert.h > 1 ) {
+        return vert;
+    }
+
+    // no vertical range found. try horizontal.
+    Box horiz(pos.x, pos.y, 1, 1);
+    // scan left to find start
+    while (IsSet(Point(horiz.XMin()-1, horiz.y))) {
+        --horiz.x;
+        ++horiz.w;
+    }
+    // scan for right
+    while (IsSet(Point(horiz.XMax()+1, horiz.y))) {
+        ++horiz.w;
+    }
+
+    if (horiz.w > 1 ) {
+        return horiz;
+    }
+
+    return Box(0, 0, 0, 0);
+}
+

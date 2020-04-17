@@ -25,7 +25,7 @@ struct Box
     int W() const { return w; }
     int H() const { return h; }
 
-    Point TopLeft() const { return Point( x,y ); }
+    Point TopLeft() const {return Point(x, y); }
 
     Box& operator+=( Point const& delta )
         { x+=delta.x; y+=delta.y; return *this; }
