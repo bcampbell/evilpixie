@@ -1,4 +1,5 @@
 #include "sheet.h"
+#include "blit.h"
 #include "draw.h"
 #include "img.h"
 #include "layer.h"

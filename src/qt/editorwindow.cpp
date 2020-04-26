@@ -1153,6 +1153,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addAction( m_ActionDrawmodeColour);
         // TODO: REPLACE mode not yet working
         //m->addAction( m_ActionDrawmodeReplace);
+        m->addAction( m_ActionDrawmodeRangeShift);
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 
@@ -1183,25 +1184,28 @@ void EditorWindow::CreateActions()
     a = m_ActionDrawmodeNormal = new QAction("&Normal", this);
     a->setData(DrawMode::DM_NORMAL);
     a->setCheckable(true);
-    //a->setShortcuts(QKeySequence::New);
     a->setStatusTip("Normal drawing");
 
     a = m_ActionDrawmodeColour = new QAction("&Colour", this);
     a->setData(DrawMode::DM_COLOUR);
     a->setCheckable(true);
-    //a->setShortcuts(QKeySequence::New);
     a->setStatusTip("Draw with current colour");
 
     a = m_ActionDrawmodeReplace = new QAction("&Replace", this);
     a->setData(DrawMode::DM_REPLACE);
     a->setCheckable(true);
-    //a->setShortcuts(QKeySequence::New);
     a->setStatusTip("Ignore transparency");
+
+    a = m_ActionDrawmodeRangeShift = new QAction("Range&Shift", this);
+    a->setData(DrawMode::DM_RANGE);
+    a->setCheckable(true);
+    a->setStatusTip("Inc/dec according to range");
 
     QActionGroup* grp = new QActionGroup(this);
     grp->addAction(m_ActionDrawmodeNormal);
     grp->addAction(m_ActionDrawmodeColour);
     grp->addAction(m_ActionDrawmodeReplace);
+    grp->addAction(m_ActionDrawmodeRangeShift);
     m_ActionDrawmodeNormal->setChecked(true);
     connect(grp, SIGNAL(triggered(QAction*)), this, SLOT(do_drawmodeChanged(QAction*)));
 

@@ -192,6 +192,7 @@ private:
     QAction* m_ActionDrawmodeNormal;
     QAction* m_ActionDrawmodeColour;
     QAction* m_ActionDrawmodeReplace;
+    QAction* m_ActionDrawmodeRangeShift;
  
     // status bar items
     QLabel* m_StatusViewInfo;

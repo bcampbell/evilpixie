@@ -1,5 +1,6 @@
 #include "cmd.h"
 #include "layer.h"
+#include "blit.h"
 #include "draw.h"
 #include "sheet.h"
 #include "project.h"

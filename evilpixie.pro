@@ -17,14 +17,16 @@ mac {
 }
 
 SOURCES += src/app.cpp \
+    src/blit.cpp \
+    src/blit_keyed.cpp \
+    src/blit_matte.cpp \
+    src/blit_zoom.cpp \
     src/box.cpp \
     src/brush.cpp \
     src/cmd.cpp \
     src/cmd_changefmt.cpp \
     src/colours.cpp \
     src/draw.cpp \
-    src/draw_blit.cpp \
-    src/draw_blitzoom.cpp \
     src/editor.cpp \
     src/editview.cpp \
     src/img.cpp \
@@ -59,6 +61,10 @@ SOURCES += src/app.cpp \
     src/qt/main.cpp
 
 HEADERS += src/app.h \
+    src/blit.h \
+    src/blit_keyed.h \
+    src/blit_matte.h \
+    src/blit_zoom.h \
     src/box.h \
     src/brush.h \
     src/cmd.h \

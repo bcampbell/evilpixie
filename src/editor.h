@@ -19,6 +19,7 @@ struct DrawMode {
         DM_NORMAL=0, // use brush colour and transparency rules
         DM_COLOUR,  // use normal transparency rules, but replace colour with constant
         DM_REPLACE,  // replace wholesale (ignore transparency).
+        DM_RANGE,   // increment/decrement according to current range.
         DM_NUM_MODES
     };
     Mode mode;

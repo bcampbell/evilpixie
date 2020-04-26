@@ -1,6 +1,11 @@
 #include "tool.h"
 #include "app.h"
 #include "draw.h"
+#include "blit.h"
+#include "blit_keyed.h"
+#include "blit_matte.h"
+#include "blit_zoom.h"
+#include "draw.h"
 #include "project.h"
 #include "editor.h"
 #include "editview.h"
@@ -171,6 +176,7 @@ static void PlonkBrushToViewFG( EditView& view, Point const& pos, Box& viewdmg )
                 b.TransparentColour());
             break;
         case DrawMode::DM_COLOUR:
+        case DrawMode::DM_RANGE:
             BlitZoomMatteKeyed( b, b.Bounds(),
                 view.Canvas(), viewdmg,
                 view.XZoom(),
@@ -256,6 +262,14 @@ static void PlonkBrushToProj(EditView& view, Point const& pos, Box& projdmg, But
             BlitMatte( brush, brush.Bounds(),
                 target, dmg,
                 brush.TransparentColour(), pen );
+            break;
+        case DrawMode::DM_RANGE:
+            /*
+            BlitRangeShift(brush, brush.Bounds(),
+                target, dmg,
+                brush.TransparentColour(),
+                (button == DRAW) ? 1 : -1);
+            */
             break;
         default:
             break;

@@ -1,6 +1,7 @@
 #include "img.h"
 #include "palette.h"
-#include "draw.h"
+//#include "draw.h"
+#include "blit.h"
 
 #include <cstring>
 #include <cstdio>

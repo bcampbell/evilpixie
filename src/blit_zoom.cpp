@@ -1,4 +1,5 @@
-#include "draw.h"
+#include "blit_zoom.h"
+#include "blit.h"
 #include "img.h"
 #include "palette.h"
 
