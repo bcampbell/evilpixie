@@ -179,6 +179,13 @@ void EditView::CenterView()
     m_Offset.y = -(v.h - p.h) / 2;
 }
 
+void EditView::FocusedRange(std::vector<PenColour>& out) const
+{
+    Box b = Ed().CurrentRange();
+    RangeGrid const& grid = Proj().Ranges(Focus(), Frame());
+    grid.FetchPens(b, out);
+}
+
 // TODO: maybe editview shouldn't deal with mousemovements:
 // - Have a "default" tool which handles panning etc...
 // - tools to handle their own grid snapping.

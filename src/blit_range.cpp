@@ -10,8 +10,7 @@ static void scan_rangeinc_I8_I8_keyed(I8 const* src, I8* dest, int w, I8 transpa
 {
     assert(!range.empty());
     int x;
-    for( x=0; x<w; ++x )
-    {
+    for( x=0; x<w; ++x ) {
         I8 c = *src++;
         if( c != transparent) {
             I8 pix = *dest;
@@ -30,8 +29,7 @@ static void scan_rangedec_I8_I8_keyed(I8 const* src, I8* dest, int w, I8 transpa
 {
     assert(!range.empty());
     int x;
-    for( x=0; x<w; ++x )
-    {
+    for( x=0; x<w; ++x ) {
         I8 c = *src++;
         if( c != transparent) {
             I8 pix = *dest;
@@ -45,6 +43,7 @@ static void scan_rangedec_I8_I8_keyed(I8 const* src, I8* dest, int w, I8 transpa
         ++dest;
     }
 }
+
 
 
 // Uses the srcimg as a mask, incrementing or decrementing pixels on destimg
@@ -101,4 +100,77 @@ void BlitRangeShiftI8Keyed(Img const& srcimg, Box const& srcbox,
     }
 }
 
+
+static void scan_rangeinc_I8_I8(I8* dest, int w, std::vector<PenColour> const& range)
+{
+    assert(!range.empty());
+    int x;
+    for( x=0; x<w; ++x ) {
+        I8 pix = *dest;
+        auto it = std::find_if(range.begin(), range.end(),
+            [pix](PenColour const& pen) -> bool { return pen.idx() == pix;});
+        if (it < range.end()-1) {
+            *dest = (it+1)->idx();
+        }
+        ++dest;
+    }
+}
+
+static void scan_rangedec_I8_I8(I8* dest, int w, std::vector<PenColour> const& range)
+{
+    assert(!range.empty());
+    int x;
+    for( x=0; x<w; ++x ) {
+        I8 pix = *dest;
+        auto it = std::find_if(range.begin(), range.end(),
+            [pix](PenColour const& pen) -> bool { return pen.idx() == pix;});
+
+        if (it != range.end() && it > range.begin()) {
+            *dest = (it-1)->idx();
+        }
+        ++dest;
+    }
+}
+
+
+void DrawRectRangeShift(Img& destimg, Box& rect, std::vector<PenColour> const& range, int direction)
+{
+    rect.ClipAgainst(destimg.Bounds());
+    assert(destimg.Fmt() == FMT_I8);
+
+    const int w = rect.w;
+    int y;
+    for (y = 0; y < rect.h; ++y)
+    {
+        I8* dest = destimg.Ptr_I8(rect.x + 0,rect.y + y);
+        if (direction > 0) {
+            // Increment along range.
+            switch(destimg.Fmt())
+            {
+                case FMT_I8:
+                    scan_rangeinc_I8_I8(dest, w, range);
+                    break;
+                case FMT_RGBX8:
+                case FMT_RGBA8:
+                default:
+                    assert(false);
+                    break;
+            }
+        } else {
+            // Decrement along range.
+            switch(destimg.Fmt())
+            {
+                case FMT_I8:
+                    scan_rangedec_I8_I8(dest, w, range);
+                    break;
+                case FMT_RGBX8:
+                case FMT_RGBA8:
+                default:
+                    assert(false);
+                    break;
+            }
+        }
+    }
+
+}
 

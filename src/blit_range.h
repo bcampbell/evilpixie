@@ -16,5 +16,8 @@ void BlitRangeShiftI8Keyed(Img const& srcimg, Box const& srcbox,
     std::vector<PenColour> const& range,
     int direction);
 
+// rect will be clipped to destimg
+void DrawRectRangeShift(Img& destimg, Box& rect, std::vector<PenColour> const& range, int direction);
+
 #endif // BLIT_RANGE_H_INCLUDED
 

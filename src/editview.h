@@ -69,6 +69,9 @@ public:
     Img const& FocusedImgConst() const {return Proj().GetImgConst(m_Focus, m_Frame);}
     Palette const& FocusedPaletteConst() const {return Proj().PaletteConst(m_Focus, m_Frame);}
 
+    // helper to get the currently-focused range (might be empty)
+    void FocusedRange(std::vector<PenColour>& out) const;
+
 	// For tools...
     // TODO: not enough to overlay brushes upon the view canvas.
     // need to integrate into view composition logic (eg, showing an

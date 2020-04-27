@@ -23,6 +23,11 @@ RangesWidget::RangesWidget(QWidget *parent, Project& proj, NodePath const& targe
     setMouseTracking(true);
     //setMinimumSize( Cols()*4, Rows()*4 );
     setAcceptDrops(true);
+
+    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    m_Cols = ranges.Bound().w;
+    m_Rows = ranges.Bound().h;
+
     m_Proj.AddListener(this);
 }
 
@@ -36,6 +41,9 @@ void RangesWidget::SetFocus(NodePath const& target, int frame)
 {
     m_Focus = target;
     m_Frame = frame;
+    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    m_Cols = ranges.Bound().w;
+    m_Rows = ranges.Bound().h;
     update();
 }
 

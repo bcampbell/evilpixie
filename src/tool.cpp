@@ -266,11 +266,8 @@ static void PlonkBrushToProj(EditView& view, Point const& pos, Box& projdmg, But
             break;
         case DrawMode::DM_RANGE:
             {
-                Box b = view.Ed().CurrentRange();
-                RangeGrid const& grid = view.Proj().Ranges(view.Focus(), view.Frame());
                 std::vector<PenColour> range;
-                grid.FetchPens(b, range);
-                
+                view.FocusedRange(range);
                 BlitRangeShiftI8Keyed(brush, brush.Bounds(),
                     target, dmg,
                     brush.TransparentColour(),
@@ -884,10 +881,25 @@ void FilledRectTool::OnUp( EditView& view, Point const& p, Button b )
 
     DrawTransaction tx(view.Proj());
     tx.BeginDamage(view.Focus(), view.Frame());
-    if( m_DownButton == DRAW )
-        img.FillBox( Owner().FGPen(),r );
-    else    //if( m_DownButton == ERASE )
-        img.FillBox( Owner().BGPen(),r );
+
+    DrawMode dm = view.Ed().Mode();
+    switch (dm.mode) {
+        case DrawMode::DM_RANGE:
+            {
+                std::vector<PenColour> range;
+                view.FocusedRange(range);
+                DrawRectRangeShift(img, r, range, (m_DownButton == DRAW) ? 1 : -1);
+            }
+            break;
+        default:
+            {
+                if( m_DownButton == DRAW )
+                    img.FillBox( Owner().FGPen(),r );
+                else    //if( m_DownButton == ERASE )
+                    img.FillBox( Owner().BGPen(),r );
+            }
+            break;
+    }
 
     tx.AddDamage(r);    
     tx.EndDamage();
@@ -1109,8 +1121,6 @@ void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
         view.FocusedImg().FillBox(that->Owner().BGPen(),b);
     that->m_Tx->AddDamage(b);
 }
-
-
 
 void FilledCircleTool::DrawCursor( EditView& view )
 {
