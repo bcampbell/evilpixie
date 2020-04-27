@@ -4,6 +4,7 @@
 #include "blit.h"
 #include "blit_keyed.h"
 #include "blit_matte.h"
+#include "blit_range.h"
 #include "blit_zoom.h"
 #include "draw.h"
 #include "project.h"
@@ -264,12 +265,18 @@ static void PlonkBrushToProj(EditView& view, Point const& pos, Box& projdmg, But
                 brush.TransparentColour(), pen );
             break;
         case DrawMode::DM_RANGE:
-            /*
-            BlitRangeShift(brush, brush.Bounds(),
-                target, dmg,
-                brush.TransparentColour(),
-                (button == DRAW) ? 1 : -1);
-            */
+            {
+                Box b = view.Ed().CurrentRange();
+                RangeGrid const& grid = view.Proj().Ranges(view.Focus(), view.Frame());
+                std::vector<PenColour> range;
+                grid.FetchPens(b, range);
+                
+                BlitRangeShiftI8Keyed(brush, brush.Bounds(),
+                    target, dmg,
+                    brush.TransparentColour(),
+                    range,
+                    (button == DRAW) ? 1 : -1);
+            }
             break;
         default:
             break;

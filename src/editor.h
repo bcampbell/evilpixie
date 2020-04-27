@@ -61,6 +61,10 @@ public:
     void NextFGPen();
     void PrevFGPen();
 
+    // TODO: notifications?
+	void SetCurrentRange(Box const& range) {m_CurrRange = range;}
+    Box CurrentRange() {return m_CurrRange;}
+
     // -1 for custom brush, 0-3 for stdbrush
     void SetBrush( int n );
     int GetBrush() const { return m_Brush; }
@@ -137,6 +141,8 @@ private:
 
     PenColour m_FGPen;
     PenColour m_BGPen;
+
+    Box m_CurrRange;
 
     // undo/redo stuff
 	std::list< Cmd* > m_UndoStack;

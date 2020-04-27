@@ -142,6 +142,7 @@ void RangesWidget::mousePressEvent(QMouseEvent *event)
         // prefer to keep existing range
         if (!m_CurrRange.Contains(cell)) {
             m_CurrRange = ranges.PickRange(cell); 
+            emit pickedRange();
         }
     }
 }

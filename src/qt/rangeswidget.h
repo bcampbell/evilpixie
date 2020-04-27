@@ -28,6 +28,7 @@ public:
     void SetFGPen(PenColour const& pen) {m_FGPen = pen; update();}
     void SetBGPen(PenColour const& pen) {m_BGPen = pen; update();}
 
+    Box CurrentRange() const {return m_CurrRange;}
 signals:
     // upon sucessful drop
     void colourDropped(int idx, Colour const& c);
@@ -35,7 +36,7 @@ signals:
     void pickedFGPen(PenColour fg);
     void pickedBGPen(PenColour bg);
 
-    void pickedRange(Box const& range);
+    void pickedRange();
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);

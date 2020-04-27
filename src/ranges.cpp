@@ -58,3 +58,31 @@ Box RangeGrid::PickRange(Point const& pos) const
     return Box(0, 0, 0, 0);
 }
 
+void RangeGrid::FetchPens(Box const& range, std::vector<PenColour>& out) const
+{
+    out.clear();
+
+    if (range.h == 1) {
+        // horizontal
+        Point pos = range.TopLeft();
+        for (int x = 0; x < range.w; ++x) {
+            PenColour pen;
+            bool isSet = Get(pos, pen);
+            assert(isSet);
+            out.push_back(pen);
+            ++pos.x;
+        }
+    } else if (range.w == 1) {
+        // vertical
+        Point pos = range.TopLeft();
+        for (int y = 0; y < range.h; ++y) {
+            PenColour pen;
+            bool isSet = Get(pos, pen);
+            assert(isSet);
+            out.push_back(pen);
+            ++pos.y;
+        }
+    }
+}
+
+

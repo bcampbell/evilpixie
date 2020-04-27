@@ -20,6 +20,7 @@ SOURCES += src/app.cpp \
     src/blit.cpp \
     src/blit_keyed.cpp \
     src/blit_matte.cpp \
+    src/blit_range.cpp \
     src/blit_zoom.cpp \
     src/box.cpp \
     src/brush.cpp \
@@ -64,6 +65,7 @@ HEADERS += src/app.h \
     src/blit.h \
     src/blit_keyed.h \
     src/blit_matte.h \
+    src/blit_range.h \
     src/blit_zoom.h \
     src/box.h \
     src/brush.h \

@@ -4,7 +4,6 @@
 #include "palette.h"
 
 #include <algorithm>
-#include <vector>
 
 // clips a blit against the destination boundary.
 // assumes srcbox is already valid.

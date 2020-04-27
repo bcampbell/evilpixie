@@ -17,7 +17,8 @@ Editor::Editor(Project* proj) :
     m_Mode(DrawMode::DM_NORMAL),
     m_Brush(0),
     m_GridActive(false),
-    m_Grid(0,0,8,8)
+    m_Grid(0,0,8,8),
+    m_CurrRange(0,0,0,0)
 {
     m_Tool = new PencilTool(*this);
     m_Project->AddListener(this);

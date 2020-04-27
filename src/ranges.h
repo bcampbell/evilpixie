@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#if 0
 struct Range {
     std::vector<PenColour> pens;
     // Cosmetic stuff. For editing ranges with pretty layout.
@@ -13,9 +14,13 @@ struct Range {
     bool horizontal;
 
 };
+#endif
 
 
-
+// Free-form colour ranges. A grid, in which pens can be placed.
+// Ranges are any continuous run of two or more entries on the grid,
+// either horizontal or vertical.
+// So two runs can share a position, crossword-style.
 class RangeGrid {
 public:
     RangeGrid(int w, int h);
@@ -30,10 +35,19 @@ public:
     Box const& Bound() const { return m_Bound; }
 
     // Update the rgb of any pens that might be using idx.
+    // (so we can update the rgb values for pens when the palette is modified)
     // Returns number of pens updated.
     int UpdatePen(int idx, Colour const& c);
 
+    // Return the first range found which passes through pos.
+    // (there might be both vertical and horizontal. Undefined which one will
+    // be returned). Returned box will be either w=1 (vertical range),
+    // h=1 (horizontal range) or empty (no range).
     Box PickRange(Point const& pos) const;
+
+    // Read out the pens in the given range.
+    // (ok if range is empty - out will be empty).
+    void FetchPens(Box const& range, std::vector<PenColour>& out) const;
 
 private:
     Box m_Bound;

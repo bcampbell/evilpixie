@@ -187,6 +187,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
             m_RangesWidget = new RangesWidget(this, Proj(), m_Focus, m_Frame);
             connect(m_RangesWidget, SIGNAL(pickedFGPen(PenColour)), this, SLOT( fgPenPicked(PenColour const&)));
             connect(m_RangesWidget, SIGNAL(pickedBGPen(PenColour)), this, SLOT( bgPenPicked(PenColour const&)));
+            connect(m_RangesWidget, SIGNAL(pickedRange()), this, SLOT(rangePicked()));
             m_ColourTab->addTab(m_RangesWidget, "Rng");
         }
         {
@@ -614,6 +615,12 @@ void EditorWindow::bgColourPickedRGB( Colour c )
         c = pal.Colours[idx];
     }
     SetBGPen(PenColour(c, idx));
+}
+
+void EditorWindow::rangePicked()
+{
+    Box picked = m_RangesWidget->CurrentRange();
+    SetCurrentRange(picked);
 }
 
 void EditorWindow::togglepaletteeditor()

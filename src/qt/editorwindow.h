@@ -110,6 +110,7 @@ public slots:
     void bgColourPickedRGB( Colour c );
     void fgPenPicked(PenColour const& pen) { SetFGPen(pen); }
     void bgPenPicked(PenColour const& pen) { SetBGPen(pen); }
+    void rangePicked();
     void togglepaletteeditor();
     void useeyedroppertool();
     void nextColour();
