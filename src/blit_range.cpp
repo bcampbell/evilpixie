@@ -57,12 +57,15 @@ void BlitRangeShiftI8Keyed(Img const& srcimg, Box const& srcbox,
     assert(srcimg.Fmt() == FMT_I8);
     assert(transparentPen.IdxValid());
 
+    if (range.empty()) {
+        destbox.w = 0;
+        destbox.h = 0;
+        return;
+    }
+
     Box srcclipped(srcbox);
     clip_blit(srcimg.Bounds(), srcclipped, destimg.Bounds(), destbox);
 
-    if (range.empty()) {
-        return;
-    }
 
     const int w = destbox.w;
     int y;
@@ -135,6 +138,12 @@ static void scan_rangedec_I8_I8(I8* dest, int w, std::vector<PenColour> const& r
 
 void DrawRectRangeShift(Img& destimg, Box& rect, std::vector<PenColour> const& range, int direction)
 {
+    if (range.empty()) {
+        rect.w = 0;
+        rect.h = 0;
+        return;
+    }
+
     rect.ClipAgainst(destimg.Bounds());
     assert(destimg.Fmt() == FMT_I8);
 

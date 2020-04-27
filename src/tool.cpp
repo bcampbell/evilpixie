@@ -96,7 +96,10 @@ void DrawTransaction::AddDamage(Box const& affected)
 {
     assert(!m_Target.IsNull());
     assert(m_Frame != -1);
-    assert( m_Backup->Bounds().Contains(affected) );
+    if (affected.Empty()) {
+        return;
+    }
+    assert(m_Backup->Bounds().Contains(affected));
     m_Proj.NotifyDamage(m_Target, m_Frame, affected);
     m_Affected.Merge(affected);
 }
@@ -1051,9 +1054,9 @@ void CircleTool::PlotCursor_cb( int x, int y, void* user )
 
 
 FilledCircleTool::FilledCircleTool( Editor& owner ) :
-    Tool( owner ),
-    m_From(0,0),
-    m_To(0,0),
+    Tool(owner),
+    m_From(0, 0),
+    m_To(0, 0),
     m_DownButton(NONE),
     m_View(0),
     m_Tx(0)
@@ -1091,6 +1094,7 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
     if( m_DownButton != b )
         return;
 
+    // Draw it!
     m_To = p;
 
     DrawTransaction tx(view.Proj());
@@ -1098,7 +1102,18 @@ void FilledCircleTool::OnUp( EditView& view, Point const& p, Button b )
     int rx = std::abs( m_To.x - m_From.x );
     int ry = std::abs( m_To.y - m_From.y );
     tx.BeginDamage(view.Focus(), view.Frame());
-    WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
+
+    DrawMode dm = view.Ed().Mode();
+    switch (dm.mode) {
+        case DrawMode::DM_RANGE:
+            view.FocusedRange(m_Range);
+            WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_range_cb, this );
+            break;
+        default:
+            WalkFilledEllipse( m_From.x, m_From.y, rx, ry, Draw_hline_cb, this );
+            break;
+    }
+
     tx.EndDamage();
     Cmd* c = tx.Commit();
     m_Tx = 0;
@@ -1121,6 +1136,21 @@ void FilledCircleTool::Draw_hline_cb( int x0, int x1, int y, void* user )
         view.FocusedImg().FillBox(that->Owner().BGPen(),b);
     that->m_Tx->AddDamage(b);
 }
+
+//static
+void FilledCircleTool::Draw_hline_range_cb( int x0, int x1, int y, void* user )
+{
+    FilledCircleTool* that = (FilledCircleTool*)user;
+    EditView& view = *that->m_View;
+    Img& destImg = view.FocusedImg();
+    Box b(x0, y, x1 - x0, 1);
+    if( that->m_DownButton == DRAW )
+       DrawRectRangeShift(destImg, b, that->m_Range, 1);
+    else if( that->m_DownButton == ERASE )
+       DrawRectRangeShift(destImg, b, that->m_Range, -1);
+    that->m_Tx->AddDamage(b);
+}
+
 
 void FilledCircleTool::DrawCursor( EditView& view )
 {

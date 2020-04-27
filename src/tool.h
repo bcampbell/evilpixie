@@ -1,10 +1,12 @@
 #ifndef TOOL_H
 #define TOOL_H
 
+#include "colours.h"
 #include "point.h"
 #include "box.h"
 #include "global.h" // for Button
 
+#include <vector>
 
 enum ToolType
 {
@@ -195,6 +197,7 @@ public:
     virtual void DrawCursor( EditView& view );
 private:
     static void Draw_hline_cb( int x0, int x1, int y, void* user );
+    static void Draw_hline_range_cb( int x0, int x1, int y, void* user );
     static void Cursor_hline_cb( int x0, int x1, int y, void* user );
     Point m_From;
     Point m_To;
@@ -202,6 +205,9 @@ private:
     EditView* m_View;
     Box m_CursorDamage;
     DrawTransaction *m_Tx;
+
+    // state for DM_RANGE drawing callback:
+    std::vector<PenColour> m_Range;
 };
 
 
