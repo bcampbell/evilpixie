@@ -177,6 +177,8 @@ public:
     }
 
     Colour rgb() const {return m_rgb; }
+    RGBX8 toRGBX8() const {return m_rgb; }
+    RGBA8 toRGBA8() const {return m_rgb; }
     int idx() const {assert(IdxValid()); return m_idx;}
 
     bool IdxValid() const {return m_idx >= 0;}
