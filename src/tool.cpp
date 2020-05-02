@@ -271,7 +271,7 @@ static void PlonkBrushToProj(EditView& view, Point const& pos, Box& projdmg, But
             {
                 std::vector<PenColour> range;
                 view.FocusedRange(range);
-                BlitRangeShiftI8Keyed(brush, brush.Bounds(),
+                BlitRangeShiftKeyed(brush, brush.Bounds(),
                     target, dmg,
                     brush.TransparentColour(),
                     range,

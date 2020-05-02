@@ -9,8 +9,8 @@ struct Box;
 class Point;
 struct Palette;
 
-
-void BlitRangeShiftI8Keyed(Img const& srcimg, Box const& srcbox,
+// use srcimg as a mask to shift pixels in destimg up or down a colour range.
+void BlitRangeShiftKeyed(Img const& srcimg, Box const& srcbox,
     Img& destimg, Box& destbox,
     PenColour const& transparentcolour,
     std::vector<PenColour> const& range,
