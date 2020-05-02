@@ -1,59 +1,28 @@
-next release:
-
-x BUG: tool.cpp:57 assert triggers if painting while changing frames.
-x OSX - load data from bundle
-x OSX - bundling, icon
-bump up version number
-figure out how to force qmake to do a release build from commandline
-changelog
-update website
-
-Later:
-
-BUG: titlebar doesn't update upon to/from spritesheet
-better colour picking in rgba mode
-show image type in titlebar/statusbar
-add palette edits to the undo/redo stack
-
-
-misc:
-
-- brush rotate (by 90 degrees)
-- (FIXED) BUG: XFLip/YFlip assert if used on rgb image?
-- (FIXED) BUG: crap error messages on bad file load
-- circle tools
-    - modifier key for 1:1 ratio? or separate ellipse/circle tools?
-- status bar - show zoom, mousepos, tool info (eg rectangle dimensions)
-- grid config tool
-- brush pickup, rect tool - should exclude right and bottom edge if grid on
-  (optional)
-- BUG: palette spread not 100% correct (off-by-one-error somewhere?)
-- BUG: "use brush palette" asserts if dest image has less colours
-
-- paletteeditor
-    - hold ctrl to copy colours?
-    - hsv controls (something with brightness control at least)
-    - curve-based spread tool
-    - ad-hoc layout (and save in custom PNG chunk)
-    - textboxes for each component
-    - support restricted colour palettes (eg 12bit colour, 555, 565)
-    - hex/dec
-    - html colour box
-    - method to pick colours from image or current pen (on rgb images,
-       pen isn't necessarily from the palette)
-- brush flip (X and Y)
-- palette animation (colour cycling)
-- fileformat save options (eg png transparent colour)
-- animation
-  - preview view
-  - anim control
-  - onionskinning
-- file formats
-  - pixen
-  - palettes (jasc, ms, gimp...)
-  - mng
-  - graphicsgale
-  - ds formats?
-- layers
-
-
+range editor window
+spare page (j)
+layers
+brush rotate (by 90 degrees)
+arbitrary brush rotate (rotsprite?)
+arbitrary brush resize
+better error messages for load/save!!!
+onionskinning
+pixel-perfect drawing (remove ugly double-pixels)
+support 1:1 ratio on ellipse/circle tools (key modifier?)
+resizeable built-in brushes
+built-in palettes
+retromodes (c64, spectrum etc)
+curve tool
+anim slider widget
+anim preview window
+outline tool (with smart sharp-edge! see https://www.youtube.com/watch?v=gW1G_FLsuEs)
+brighten/darken drawmode
+brush bank (persist on disk?)
+animbrushes
+animpainting (hold down modifier to advance frame while painting)
+selection/masking?
+tile editing (add simple map editor?)
+file formats: use openraster (.ora) as native format? (also, .kra? .xcf? others?)
+perspective line guides
+x palette quantise/remap
+x split window with different zooms
+x brush scale2x (PD code: https://github.com/rwohleb/imageresampler)
