@@ -10,12 +10,18 @@ be familiar :-)
 
 ## Requirements
 
-depends upon:
+Depends upon:
 
 - qt5
 - [libimpy](http://github.com/bcampbell/impy)
 - libpng
 - giflib (version 5)
+- libjpeg
+
+For Debian/Unbuntu, this means something like:
+```
+$ sudo apt install qt5-default libjpeg-dev libpng-dev libgif-dev
+```
 
 ## Building from source
 
