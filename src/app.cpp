@@ -1,8 +1,6 @@
+#include "config.h"
 #include "app.h"
-//#include "editor.h"
-//#include "tool.h"
 #include "brush.h"
-//#include "project.h"
 
 #if __APPLE__
 #include "exception.h"

@@ -1,0 +1,8 @@
+#pragma once
+// generated from config.h.in
+
+// The directory in which evilpixie finds icons, palettes etc...
+// On windows, this'll just be "./data", but under Linux it'll
+// be $PREFIX/share/evilpixie or something.
+#define EVILPIXIE_DATA_DIR "@evilpixie_data_dir@"
+

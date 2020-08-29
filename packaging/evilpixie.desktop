@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=0.3
+Name=Evilpixie
+Comment=Pixelart-oriented drawing and animation app.
+Exec=evilpixie
+Icon=evilpixie
+Terminal=false
+Categories=Graphics,2DGraphics;
