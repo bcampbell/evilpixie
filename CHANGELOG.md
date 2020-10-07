@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- New panel to define colour ranges
+- New drawmode: range
+- Switch build system from cmake to meson
+    - add icons/.desktop files to linux install
 - Change image format (with colour quantisation if needed)
 - Brush scale2x (TODO: check usage in RGB/RGBA)
 - Option to change grid settings.
