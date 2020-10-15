@@ -4,6 +4,7 @@
 
 - New panel to define colour ranges
 - New drawmode: range
+- Palette: show little black/white triangles on currently-selected colours.
 - Switch build system from cmake to meson
     - add icons/.desktop files to linux install
 - Change image format (with colour quantisation if needed)
