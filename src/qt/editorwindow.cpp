@@ -180,7 +180,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
             m_PaletteWidget = new PaletteWidget(Proj().PaletteConst(m_Focus, m_Frame));
             connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT( fgColourPicked(int)));
             connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT( bgColourPicked(int)));
-            m_ColourTab->addTab(m_PaletteWidget, "Plte");
+            m_ColourTab->addTab(m_PaletteWidget, "Palette");
         }
 
         {
@@ -188,14 +188,16 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
             connect(m_RangesWidget, SIGNAL(pickedFGPen(PenColour)), this, SLOT( fgPenPicked(PenColour const&)));
             connect(m_RangesWidget, SIGNAL(pickedBGPen(PenColour)), this, SLOT( bgPenPicked(PenColour const&)));
             connect(m_RangesWidget, SIGNAL(pickedRange()), this, SLOT(rangePicked()));
-            m_ColourTab->addTab(m_RangesWidget, "Rng");
+            m_ColourTab->addTab(m_RangesWidget, "Range");
         }
+#if 0
         {
             m_RGBPicker = new RGBPickerWidget();
             connect(m_RGBPicker, SIGNAL(pickedLeftButton(Colour)), this, SLOT( fgColourPickedRGB(Colour)));
             connect(m_RGBPicker, SIGNAL(pickedRightButton(Colour)), this, SLOT( bgColourPickedRGB(Colour)));
             m_ColourTab->addTab(m_RGBPicker, "RGB");
         }
+#endif
     }
 
     //LayersWidget* layersWidget = new LayersWidget(&Proj());
