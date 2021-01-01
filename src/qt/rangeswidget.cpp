@@ -1,7 +1,9 @@
 #include "rangeswidget.h"
 #include "guistuff.h"
 
+#include "../cmd.h"
 #include "../project.h"
+#include "../editor.h"
 
 #include <algorithm>
 #include <cassert>
@@ -10,10 +12,11 @@
 #include <QMouseEvent>
 #include <QMimeData>
 #include <QDrag>
+#include <QShortcut>
 
-RangesWidget::RangesWidget(QWidget *parent, Project& proj, NodePath const& target, int frame) :
+RangesWidget::RangesWidget(QWidget *parent, Editor& ed, NodePath const& target, int frame) :
     QWidget(parent),
-    m_Proj(proj),
+    m_Ed(ed),
     m_Focus(target),
     m_Frame(frame),
     m_Cols(4),
@@ -24,16 +27,20 @@ RangesWidget::RangesWidget(QWidget *parent, Project& proj, NodePath const& targe
     //setMinimumSize( Cols()*4, Rows()*4 );
     setAcceptDrops(true);
 
-    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    RangeGrid& ranges = m_Ed.Proj().Ranges(m_Focus, m_Frame);
     m_Cols = ranges.Bound().w;
     m_Rows = ranges.Bound().h;
 
-    m_Proj.AddListener(this);
+    m_Ed.Proj().AddListener(this);
+
+    QShortcut* sht = new QShortcut(QKeySequence::Delete, this);
+    connect(sht, &QShortcut::activated, this, &RangesWidget::delSelected);
+
 }
 
 RangesWidget::~RangesWidget()
 {
-    m_Proj.RemoveListener(this);
+    m_Ed.Proj().RemoveListener(this);
 }
 
 
@@ -41,7 +48,7 @@ void RangesWidget::SetFocus(NodePath const& target, int frame)
 {
     m_Focus = target;
     m_Frame = frame;
-    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    RangeGrid& ranges = m_Ed.Proj().Ranges(m_Focus, m_Frame);
     m_Cols = ranges.Bound().w;
     m_Rows = ranges.Bound().h;
     update();
@@ -60,6 +67,31 @@ Point RangesWidget::PickCell(QPoint const& pos) const
    return cell;
 }
 
+void RangesWidget::delSelected() {
+    if (m_CurrRange.Empty()) {
+        return;
+    }
+
+    int n = m_CurrRange.W() * m_CurrRange.H();
+    std::vector<bool> existData(n);     // all false
+    std::vector<PenColour> penData(n);  // default pens
+
+    // don't erase any slots which are shared by another range
+    RangeGrid& ranges = m_Ed.Proj().Ranges(m_Focus, m_Frame);
+    int i=0;
+    for (int cy = m_CurrRange.YMin(); cy<=m_CurrRange.YMax(); ++cy) {
+        for (int cx = m_CurrRange.XMin(); cx<=m_CurrRange.XMax(); ++cx) {
+            Point cell(cx,cy);
+            if (ranges.IsShared(cell)) {
+                existData[i] = ranges.Get(cell, penData[i]);
+            }
+            ++i;
+        }
+    }
+
+    Cmd* cmd = new Cmd_RangeEdit(m_Ed.Proj(), m_Focus, m_Frame, m_CurrRange, existData, penData);
+    m_Ed.AddCmd(cmd);
+}
 
 void RangesWidget::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -89,13 +121,15 @@ void RangesWidget::dropEvent(QDropEvent *event)
             int idx = (int)buf[4];
             // TODO: no-index encoding!
 
-            RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+            RangeGrid& ranges = m_Ed.Proj().Ranges(m_Focus, m_Frame);
             PenColour pen(c, idx);
             Point cell = PickCell(event->pos());
             if (ranges.Bound().Contains(cell)) {
-                ranges.Set(cell, pen);
-
-                update();   // TODO: listener should handle
+                std::vector<bool> existData = {true};
+                std::vector<PenColour> penData = {pen};
+                Cmd* cmd = new Cmd_RangeEdit(m_Ed.Proj(), m_Focus, m_Frame,
+                        Box(cell, 1, 1), existData, penData);
+                m_Ed.AddCmd(cmd);
             }
         }
     }
@@ -122,6 +156,7 @@ void RangesWidget::dragMoveEvent(QDragMoveEvent *event)
 }
 
 
+
 /*
 QSize RangesWidget::sizeHint () const
     { return QSize( Cols()*10, Rows()*12 ); }
@@ -135,7 +170,7 @@ void RangesWidget::mousePressEvent(QMouseEvent *event)
 
     // find range(s) and pen under the click.
     Point cell = PickCell(event->pos());
-    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    RangeGrid& ranges = m_Ed.Proj().Ranges(m_Focus, m_Frame);
     PenColour pen;
     if (ranges.Get(cell, pen)) {
         if (event->button() == Qt::LeftButton) {
@@ -266,7 +301,7 @@ void RangesWidget::paintEvent(QPaintEvent *)
     painter.setBrush( *g_GUIStuff.checkerboard );
    	painter.drawRect( rect() );
 
-    RangeGrid& ranges = m_Proj.Ranges(m_Focus, m_Frame);
+    RangeGrid& ranges = m_Ed.Proj().Ranges(m_Focus, m_Frame);
     Box bbox = ranges.Bound();
     Point pos;
     for (pos.y = bbox.YMin(); pos.y <= bbox.YMax(); ++pos.y) {
@@ -325,9 +360,13 @@ QRect RangesWidget::CalcRect(Box const& box) const
 
 void RangesWidget::OnRangesBlatted(NodePath const& target, int frame)
 {
-    if (!m_Proj.SharesPalette(target, frame, m_Focus, m_Frame)) {
+    if (!m_Ed.Proj().SharesPalette(target, frame, m_Focus, m_Frame)) {
         return;
     }
+
+    m_CurrRange.SetEmpty();
+    emit pickedRange();
+
     // just redraw everything.
     update();
 }

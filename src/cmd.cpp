@@ -490,3 +490,58 @@ void Cmd_NewLayer::Undo()
 }
 
 
+
+//-----------
+Cmd_RangeEdit::Cmd_RangeEdit( Project& proj, NodePath const& target,
+    int frame, Box const& extent, std::vector<bool> const& existData,
+    std::vector<PenColour> const& penData) :
+    Cmd(proj, NOT_DONE),
+    m_Target(target),
+    m_Frame(frame),
+    m_Extent(extent),
+    m_ExistData(existData),
+    m_PenData(penData)
+{
+    assert(m_Extent.W() * m_Extent.H() == (int)existData.size());
+    assert(m_Extent.W() * m_Extent.H() == (int)penData.size());
+}
+
+void Cmd_RangeEdit::Do()
+{
+    swap();
+    SetState(DONE);
+}
+
+void Cmd_RangeEdit::Undo()
+{
+    swap();
+    SetState(NOT_DONE);
+}
+
+void Cmd_RangeEdit::swap()
+{
+    RangeGrid& ranges = Proj().Ranges(m_Target, m_Frame);
+
+    int i = 0;
+    for (int cy = m_Extent.YMin(); cy<=m_Extent.YMax(); ++cy) {
+        for (int cx = m_Extent.XMin(); cx<=m_Extent.XMax(); ++cx) {
+            Point pt(cx,cy);
+            if (!ranges.Bound().Contains(pt)) {
+                continue;
+            }
+            PenColour pen;
+            bool isSet = ranges.Get(pt, pen);
+            if (m_ExistData[i]) {
+               ranges.Set(pt, m_PenData[i]); 
+            } else {
+               ranges.Clear(pt); 
+            }
+            m_ExistData[i] = isSet;
+            m_PenData[i] = pen;
+            ++i;
+        }
+    }
+    Proj().NotifyRangesBlatted(m_Target, m_Frame);
+}
+
+

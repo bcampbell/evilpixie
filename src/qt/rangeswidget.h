@@ -11,14 +11,14 @@
 #include "../projectlistener.h"
 #include "../ranges.h"
 
-class Project;
+class Editor;
 
 // Widget for picking and editing colour ranges.
 class RangesWidget : public QWidget, ProjectListener
 {
     Q_OBJECT
 public:
-	RangesWidget(QWidget *parent, Project& proj, NodePath const& target, int frame);
+	RangesWidget(QWidget *parent, Editor& ed, NodePath const& target, int frame);
     ~RangesWidget();
 
     // Reconfigure for another layer/frame.
@@ -62,7 +62,8 @@ private:
     RangesWidget();    // disallowed
     Point PickCell(QPoint const& pos) const;
     QRect CalcRect(Box const& box) const;
-    Project& m_Proj;
+    void delSelected();
+    Editor& m_Ed;
     NodePath m_Focus;
     int m_Frame;
 
@@ -74,6 +75,7 @@ private:
 
     // Currently-selected range (can be empty)
     Box m_CurrRange;
+
 };
 
 #endif // RANGESWIDGET_H

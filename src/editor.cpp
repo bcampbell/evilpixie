@@ -199,7 +199,7 @@ void Editor::PrevFGPen()
 }
 
 
-
+// TODO: move undo stack onto Project!
 // Adds a command to the undo stack, and calls its Do() fn
 void Editor::AddCmd( Cmd* cmd )
 {

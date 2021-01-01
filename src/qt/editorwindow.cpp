@@ -184,7 +184,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         }
 
         {
-            m_RangesWidget = new RangesWidget(this, Proj(), m_Focus, m_Frame);
+            m_RangesWidget = new RangesWidget(this, *this, m_Focus, m_Frame);
             connect(m_RangesWidget, SIGNAL(pickedFGPen(PenColour)), this, SLOT( fgPenPicked(PenColour const&)));
             connect(m_RangesWidget, SIGNAL(pickedBGPen(PenColour)), this, SLOT( bgPenPicked(PenColour const&)));
             connect(m_RangesWidget, SIGNAL(pickedRange()), this, SLOT(rangePicked()));

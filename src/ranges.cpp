@@ -55,8 +55,21 @@ Box RangeGrid::PickRange(Point const& pos) const
         return horiz;
     }
 
-    return Box(0, 0, 0, 0);
+    // single pen
+    return Box(pos, 1, 1);
 }
+
+bool RangeGrid::IsShared(Point const& pos) const
+{
+    if (!IsSet(pos)) {
+        return false;
+    }
+    bool horiz = IsSet(Point(pos.x - 1, pos.y)) ||  IsSet(Point(pos.x + 1, pos.y));
+    bool vert = IsSet(Point(pos.x, pos.y - 1)) ||  IsSet(Point(pos.x, pos.y + 1));
+
+    return horiz && vert;
+}
+
 
 void RangeGrid::FetchPens(Box const& range, std::vector<PenColour>& out) const
 {

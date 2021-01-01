@@ -45,6 +45,10 @@ public:
     // h=1 (horizontal range) or empty (no range).
     Box PickRange(Point const& pos) const;
 
+    // Return true if the point is shared by more than one range.
+    // (eg intersection of horizontal and vertical ranges)
+    bool IsShared(Point const& pos) const;
+
     // Read out the pens in the given range.
     // (ok if range is empty - out will be empty).
     void FetchPens(Box const& range, std::vector<PenColour>& out) const;

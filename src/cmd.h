@@ -183,5 +183,22 @@ private:
 };
 
 
+// A modification to a range.
+class Cmd_RangeEdit : public Cmd
+{
+public:
+    Cmd_RangeEdit( Project& proj, NodePath const& target, int frame, Box const& extent, std::vector<bool> const& existData, std::vector<PenColour> const& penData);
+    virtual void Do();
+    virtual void Undo();
+private:
+    void swap();
+    NodePath m_Target;
+    int m_Frame;
+
+    Box m_Extent;
+    std::vector<bool> m_ExistData;
+    std::vector<PenColour> m_PenData;
+};
+
 #endif // CMD_H
 
