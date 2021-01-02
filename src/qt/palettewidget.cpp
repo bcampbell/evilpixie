@@ -8,6 +8,7 @@
 #include <cassert>
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QMouseEvent>
 #include <QMimeData>
 #include <QDrag>
