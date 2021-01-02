@@ -63,10 +63,6 @@ public:
     // deleted without care (eg if user loads another project)
     bool Expendable() const { return m_Expendable; }
 
-    // replace palette, informing listeners. ownership is passed to proj.
-    void ReplacePalette(Palette* newpalette);
-
-
     Layer& ResolveLayer(NodePath const& target) const {
         assert(target.sel == NodePath::SEL_MAIN);
         BaseNode *n = mRoot;

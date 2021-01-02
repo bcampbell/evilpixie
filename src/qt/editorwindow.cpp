@@ -22,6 +22,7 @@
 #include "miscwindows.h"
 #include "layerswidget.h"
 
+#include <algorithm>
 #include <cassert>
 #ifdef WIN32
 #include <unistd.h> // for getcwd()
@@ -50,10 +51,6 @@
 
 #include <QCloseEvent>
 #include <QCursor>
-
-
-#include <unistd.h>
-
 
 
 
@@ -762,7 +759,9 @@ void EditorWindow::do_usebrushpalette()
         return; // std brush - do nothing
 
     Palette const& pal = CurrentBrush().GetPalette();
-    Cmd* cmd = new Cmd_PaletteModify(Proj(), m_Focus, m_Frame, 0, pal.NColours, pal.Colours);
+    Palette& target = Proj().GetPalette(m_Focus, m_Frame);
+    int cnt = std::min(target.NColours, pal.NColours);
+    Cmd* cmd = new Cmd_PaletteModify(Proj(), m_Focus, m_Frame, 0, cnt, pal.Colours);
     AddCmd(cmd);
 }
 
@@ -930,11 +929,12 @@ void EditorWindow::do_loadpalette()
 
     try
     {
-    assert(false);  //TODO: implement
-#if 0
-        Palette* p = Palette::Load(filename.toStdString().c_str());
-        Proj().ReplacePalette(p);
-#endif
+        Palette* pal = Palette::Load(filename.toStdString().c_str());
+        Palette& target = Proj().GetPalette(m_Focus, m_Frame);
+        int cnt = std::min(target.NColours, pal->NColours);
+        Cmd* cmd = new Cmd_PaletteModify(Proj(), m_Focus, m_Frame, 0, cnt, pal->Colours);
+        delete pal;
+        AddCmd(cmd);
     }
     catch( Exception const& e )
     {
