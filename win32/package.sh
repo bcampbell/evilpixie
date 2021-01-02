@@ -8,5 +8,5 @@ set -e
 
 
 candle -arch x64 main.wxs data.wxs
-light main.wixobj data.wixobj -b evilpixie -o evilpixie-0.2.msi
+light main.wixobj data.wixobj -b evilpixie -o evilpixie-0.2.1.msi
 
