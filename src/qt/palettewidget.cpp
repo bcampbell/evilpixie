@@ -7,6 +7,7 @@
 #include <cassert>
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QMouseEvent>
 
 
