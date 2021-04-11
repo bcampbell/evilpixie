@@ -12,7 +12,8 @@ class QLabel;
 class HSVWidget : public QWidget
 {
     Q_OBJECT
-//    Q_PROPERTY( QColor colour READ colour WRITE setColour)
+    // changing is true if any of the component sliders are being modified.
+    Q_PROPERTY(bool changing READ isChanging)
 public:
     HSVWidget( QWidget* parent=0 );
 
@@ -20,12 +21,12 @@ public:
     void getHSVA(float& h, float& s, float& v, float& a) const;
     void setHSVA(float h, float s, float v, float a);
 
+    bool isChanging();
 signals:
     void colourChanged();
 
 private:
     QSlider* m_Sliders[4];
-//    QLabel* m_Labels[4];
 
 private slots:
     void hChanged(int);

@@ -179,6 +179,10 @@ void PaletteEditor::showColourInRGB(Colour const& c)
 
 void PaletteEditor::showColourInHSV(Colour const& c)
 {
+    if (m_HSVWidget->isChanging()) {
+        return;
+    }
+
     float r = ((float)c.r)/255.0f;
     float g = ((float)c.g)/255.0f;
     float b = ((float)c.b)/255.0f;

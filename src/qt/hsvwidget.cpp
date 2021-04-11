@@ -110,3 +110,14 @@ void HSVWidget::aChanged(int)
 }
 
 
+// Return true if any of the component sliders are pressed.
+bool HSVWidget::isChanging()
+{
+    for (int i=0; i<4; ++i) {
+        if (m_Sliders[i]->isSliderDown()) {
+            return true;
+        }
+    }
+    return false;
+}
+
