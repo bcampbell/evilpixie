@@ -406,6 +406,42 @@ bool Cmd_PaletteModify::Merge(NodePath const& target, int frame, int idx, Colour
     return true;
 }
 
+// ----------
+
+Cmd_PaletteReplace::Cmd_PaletteReplace(Project& proj, NodePath const& target, int frame, Palette const& newPalette) :
+    Cmd(proj,NOT_DONE),
+    mTarget(target),
+    mFrame(frame),
+    mPalette(newPalette)
+{
+}
+
+Cmd_PaletteReplace::~Cmd_PaletteReplace()
+{
+}
+
+
+void Cmd_PaletteReplace::swap()
+{
+    Palette tmp = mPalette;
+    Palette& pal = Proj().GetPalette(mTarget, mFrame);
+    mPalette = pal;
+    pal = tmp;
+    // TODO: need to update ranges!
+    Proj().NotifyPaletteReplaced(mTarget, mFrame);
+}
+
+void Cmd_PaletteReplace::Do()
+{
+    swap();
+    SetState( DONE );
+}
+
+void Cmd_PaletteReplace::Undo()
+{
+    swap();
+    SetState( NOT_DONE );
+}
 
 //-----------
 //

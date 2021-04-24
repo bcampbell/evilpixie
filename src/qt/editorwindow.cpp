@@ -6,6 +6,7 @@
 #include "../exception.h"
 #include "../cmd.h"
 #include "../cmd_changefmt.h"
+#include "../cmd_remap.h"
 #include "../sheet.h"
 #include "guistuff.h"
 #include "editorwindow.h"
@@ -723,6 +724,12 @@ void EditorWindow::do_changefmt()
         // ignore no-ops (eg rgba->rgba)
         if (dlg.pixel_format != l.Fmt() ||
             (l.Fmt() == FMT_I8 && dlg.num_colours != currColours)) {
+            // TODO:
+            // - don't remap if increasing palette size
+            // - if decreasing palette size, give option to calculate new palette
+            //   or to just remap using existing.
+            // - give option of using brush palette or loading a palette?
+            // TODO: use Cmd_Remap here?
             Cmd* c = new Cmd_ChangeFmt(Proj(), m_Focus, dlg.pixel_format, dlg.num_colours);
             AddCmd(c);
         }
@@ -758,11 +765,36 @@ void EditorWindow::do_usebrushpalette()
     if( GetBrush() != -1 )
         return; // std brush - do nothing
 
-    Palette const& pal = CurrentBrush().GetPalette();
-    Palette& target = Proj().GetPalette(m_Focus, m_Frame);
-    int cnt = std::min(target.NColours, pal.NColours);
-    Cmd* cmd = new Cmd_PaletteModify(Proj(), m_Focus, m_Frame, 0, cnt, pal.Colours);
-    AddCmd(cmd);
+    Palette const& brushPalette = CurrentBrush().GetPalette();
+
+    // Ask the user if they want to remap to this new palette.
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setText("Use brush palette");
+    msgBox.setInformativeText("Do you want the image remapped?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+    int ret = msgBox.exec();
+    switch (ret) {
+        case QMessageBox::Yes:
+            {
+                // Remap it.
+                Layer& l = Proj().ResolveLayer(m_Focus);
+                // keep the same pixelformat
+                Cmd* cmd = new Cmd_Remap(Proj(), m_Focus, l.Fmt(), brushPalette);
+                AddCmd(cmd);
+            }
+            break;
+        case QMessageBox::No:
+            {
+                Cmd* cmd = new Cmd_PaletteReplace(Proj(), m_Focus, m_Frame, brushPalette);
+                AddCmd(cmd);
+            }
+            break;
+        case QMessageBox::Cancel:
+        default:
+            break;      // do nothing.
+    }
 }
 
 void EditorWindow::do_xflipbrush()
@@ -932,6 +964,7 @@ void EditorWindow::do_loadpalette()
         Palette* pal = Palette::Load(filename.toStdString().c_str());
         Palette& target = Proj().GetPalette(m_Focus, m_Frame);
         int cnt = std::min(target.NColours, pal->NColours);
+        // TODO: offer user the option to remap
         Cmd* cmd = new Cmd_PaletteModify(Proj(), m_Focus, m_Frame, 0, cnt, pal->Colours);
         delete pal;
         AddCmd(cmd);
@@ -1117,7 +1150,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addSeparator();
 
         a = m->addAction( "Edit palette...", this, SLOT(togglepaletteeditor()));
-        m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette", this, SLOT(do_usebrushpalette()) );
+        m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette...", this, SLOT(do_usebrushpalette()) );
         a = m->addAction( "&Load Palette...", this, SLOT( do_loadpalette()) );
         m->addSeparator();
         m->addAction( "X-Flip Brush", this, SLOT(do_xflipbrush()),QKeySequence("x") );

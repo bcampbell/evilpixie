@@ -154,6 +154,22 @@ private:
     Colour* m_Colours;
 };
 
+// replace palette with a different one
+class Cmd_PaletteReplace : public Cmd
+{
+public:
+    Cmd_PaletteReplace(Project& proj, NodePath const& target, int frame, Palette const& newPalette);
+    virtual ~Cmd_PaletteReplace();
+    virtual void Do();
+    virtual void Undo();
+
+private:
+    void swap();
+    NodePath mTarget;
+    int mFrame;
+    Palette mPalette;
+};
+
 
 class Cmd_Batch : public Cmd
 {
