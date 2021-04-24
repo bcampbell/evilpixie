@@ -16,8 +16,16 @@ public:
     Palette& operator=( const Palette& other );
 
     int NumColours() const {return NColours;}
-    Colour const& GetColour( int n ) const { assert(n<NColours); return Colours[n]; }
-    void SetColour( int n, Colour const& c ) { Colours[n]=c; }
+
+    // Return the colour at index n, or black if beyond end of palette.
+    Colour GetColour(int n) const {
+        assert(n >= 0);
+        return (n<NColours) ? Colours[n] : Colour(0, 0, 0);
+    }
+    void SetColour( int n, Colour const& c ) {
+        assert(n >= 0 && n < NColours);
+        Colours[n] = c;
+    }
 
     int Closest(const Colour targ) const;
     void LerpRange( int n0, Colour const& c0, int n1, Colour const& c1 );
