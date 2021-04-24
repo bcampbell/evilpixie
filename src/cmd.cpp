@@ -412,8 +412,10 @@ Cmd_PaletteReplace::Cmd_PaletteReplace(Project& proj, NodePath const& target, in
     Cmd(proj,NOT_DONE),
     mTarget(target),
     mFrame(frame),
-    mPalette(newPalette)
+    mPalette(newPalette),
+    mRanges(proj.Ranges(target, frame))
 {
+    mRanges.UpdateAll(newPalette);
 }
 
 Cmd_PaletteReplace::~Cmd_PaletteReplace()
@@ -423,12 +425,19 @@ Cmd_PaletteReplace::~Cmd_PaletteReplace()
 
 void Cmd_PaletteReplace::swap()
 {
-    Palette tmp = mPalette;
+
+    Palette ptmp = mPalette;
     Palette& pal = Proj().GetPalette(mTarget, mFrame);
     mPalette = pal;
-    pal = tmp;
-    // TODO: need to update ranges!
+    pal = ptmp;
+
+    RangeGrid rtmp = mRanges;
+    RangeGrid& ranges = Proj().Ranges(mTarget, mFrame);
+    mRanges = ranges;
+    ranges = rtmp;
+
     Proj().NotifyPaletteReplaced(mTarget, mFrame);
+    Proj().NotifyRangesBlatted(mTarget, mFrame);
 }
 
 void Cmd_PaletteReplace::Do()

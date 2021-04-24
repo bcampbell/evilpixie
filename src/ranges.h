@@ -6,16 +6,8 @@
 
 #include <vector>
 
-#if 0
-struct Range {
-    std::vector<PenColour> pens;
-    // Cosmetic stuff. For editing ranges with pretty layout.
-    Point pos;
-    bool horizontal;
 
-};
-#endif
-
+class Palette;
 
 // Free-form colour ranges. A grid, in which pens can be placed.
 // Ranges are any continuous run of two or more entries on the grid,
@@ -38,6 +30,16 @@ public:
     // (so we can update the rgb values for pens when the palette is modified)
     // Returns number of pens updated.
     int UpdatePen(int idx, Colour const& c);
+
+    // Update all ranges to cope with a new palette.
+    // Just updates the rgb values of in-range pens, and invalidate any
+    // which are now off the end of the new palette.
+    // Returns the number of entries affected.
+    int UpdateAll(Palette const& newPalette);
+
+    // Remap ranges to new palette.
+    // Returns the number of entries affected.
+    int Remap(Palette const& newPalette);
 
     // Return the first range found which passes through pos.
     // (there might be both vertical and horizontal. Undefined which one will

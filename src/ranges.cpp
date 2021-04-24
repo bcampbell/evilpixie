@@ -1,5 +1,5 @@
 #include "ranges.h"
-
+#include "palette.h"
 
 int RangeGrid::UpdatePen(int idx, Colour const& c)
 {
@@ -11,6 +11,54 @@ int RangeGrid::UpdatePen(int idx, Colour const& c)
         PenColour& pen = m_Pens[i];
         if (pen.IdxValid() && pen.idx() == idx) {
             pen = PenColour(c, idx);
+            ++cnt;
+        }
+    }
+    return cnt;
+}
+
+
+int RangeGrid::UpdateAll(Palette const& newPalette)
+{
+    int cnt = 0;
+    for (size_t i=0; i<m_Valid.size(); ++i) {
+        if (!m_Valid[i]) {
+            continue;
+        }
+        PenColour& pen = m_Pens[i];
+        if (!pen.IdxValid()) {
+            continue;
+        }
+ 
+        int idx = pen.idx();
+        if (idx < newPalette.NColours) {
+            // Update the rgb value
+            pen = PenColour(newPalette.Colours[idx], idx);
+        } else {
+            // Invalidate out-of-range entries.
+            m_Valid[i] = false;
+            ++cnt;
+        }
+    }
+    return cnt;
+}
+
+int RangeGrid::Remap(Palette const& newPalette)
+{
+    int cnt = 0;
+    for (size_t i=0; i<m_Valid.size(); ++i) {
+        if (!m_Valid[i]) {
+            continue;
+        }
+        PenColour& pen = m_Pens[i];
+        if (!pen.IdxValid()) {
+            continue;   // leave rgb-only pens as is.
+        }
+ 
+        int newIdx = newPalette.Closest(pen.rgb());
+        Colour newRGB = newPalette.Colours[newIdx];
+        if (newIdx != pen.idx() && newRGB != pen.rgb()) {
+            pen = PenColour(newRGB, newIdx);
             ++cnt;
         }
     }

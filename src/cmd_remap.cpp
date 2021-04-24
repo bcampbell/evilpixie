@@ -15,6 +15,8 @@ Cmd_Remap::Cmd_Remap(Project& proj, NodePath const& target, PixelFormat newFmt, 
     m_Other->mFPS = srcLayer.mFPS;
     // TODO: handle palette policies.
     m_Other->mPalette = destPalette;
+    m_Other->mRanges = srcLayer.mRanges;
+    m_Other->mRanges.Remap(m_Other->mPalette);
 
     // populate frameswap with the converted frames
     for (auto srcFrame : srcLayer.mFrames) {

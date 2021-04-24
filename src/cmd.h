@@ -168,6 +168,7 @@ private:
     NodePath mTarget;
     int mFrame;
     Palette mPalette;
+    RangeGrid mRanges;
 };
 
 
