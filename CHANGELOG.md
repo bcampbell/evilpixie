@@ -16,6 +16,7 @@
     - Improved "spread" function using HSV
     - drag & drop colours (internally, and between other apps)
 - Magnify view (M to split screen)
+- "Use brush palette"/"load palette" now offer to remap image to new colours.
 
 ## v0.2 (March 2017)
 

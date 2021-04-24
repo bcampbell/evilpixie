@@ -24,6 +24,7 @@
 #include "layerswidget.h"
 
 #include <algorithm>
+#include <memory>
 #include <cassert>
 #ifdef WIN32
 #include <unistd.h> // for getcwd()
@@ -961,13 +962,36 @@ void EditorWindow::do_loadpalette()
 
     try
     {
-        Palette* pal = Palette::Load(filename.toStdString().c_str());
-        Palette& target = Proj().GetPalette(m_Focus, m_Frame);
-        int cnt = std::min(target.NColours, pal->NColours);
-        // TODO: offer user the option to remap
-        Cmd* cmd = new Cmd_PaletteModify(Proj(), m_Focus, m_Frame, 0, cnt, pal->Colours);
-        delete pal;
-        AddCmd(cmd);
+        std::unique_ptr<const Palette> newPalette(Palette::Load(filename.toStdString().c_str()));
+
+        // Ask the user if they want to remap to this new palette.
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText("Load new palette");
+        msgBox.setInformativeText("Do you want the image remapped?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Yes);
+        int ret = msgBox.exec();
+        switch (ret) {
+            case QMessageBox::Yes:
+                {
+                    // Remap it.
+                    Layer& l = Proj().ResolveLayer(m_Focus);
+                    // keep the same pixelformat
+                    Cmd* cmd = new Cmd_Remap(Proj(), m_Focus, l.Fmt(), *newPalette);
+                    AddCmd(cmd);
+                }
+                break;
+            case QMessageBox::No:
+                {
+                    Cmd* cmd = new Cmd_PaletteReplace(Proj(), m_Focus, m_Frame, *newPalette);
+                    AddCmd(cmd);
+                }
+                break;
+            case QMessageBox::Cancel:
+            default:
+                break;      // do nothing.
+        }
     }
     catch( Exception const& e )
     {
