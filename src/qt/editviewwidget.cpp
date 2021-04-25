@@ -72,18 +72,16 @@ void EditViewWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void EditViewWidget::wheelEvent(QWheelEvent *event)
 {
-    Point viewpos( event->pos().x(), event->pos().y() );
-    Point projpos = ViewToProj( viewpos );
+    auto const wpos(event->position());
+    Point viewpos((int)wpos.x(), (int)wpos.y());
+    Point projpos = ViewToProj(viewpos);
 
-	int dy = event->delta()/120;
+	int dy = ((int)event->angleDelta().y()) / 120;
 	int z = Zoom();
 	z += dy;
 	SetZoom(z);
-	AlignView( viewpos, projpos );
+	AlignView(viewpos, projpos);
 }
-
-
-
 
 void EditViewWidget::paintEvent(QPaintEvent * /* event */)
 {
