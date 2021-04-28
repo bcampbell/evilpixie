@@ -5,8 +5,6 @@
 - New panel to define colour ranges
 - New drawmode: range
 - Palette: show little black/white triangles on currently-selected colours.
-- Switch build system from cmake to meson
-    - add icons/.desktop files to linux install
 - Change image format (with colour quantisation if needed)
 - Brush scale2x (TODO: check usage in RGB/RGBA)
 - Option to change grid settings.
@@ -18,14 +16,27 @@
 - Magnify view (M to split screen)
 - "Use brush palette"/"load palette" now offer to remap image to new colours.
 - Bugfix: don't crash when using brushes with different palette size.
+- Switch build system from cmake to meson
+    - add icons/.desktop files to linux install
+
+## v0.2.1 (Jan 2021)
+
+- Fix build error with Qt 5.15+
 
 ## v0.2 (March 2017)
 
-- RGB and RGBA support.
-- Convert anims to/from spritesheet
-- Add drawmodes (normal, colour)
-- Palette changes now undoable
-- Open file by dragging from file manager
+- Support for 24 bit images and alpha (RGB and RGBA)
+- Can now undo drawing which spans multiple animation frames
+- Palette modifications are now undoable
+- Convert anim to/from spritesheet
+- Palette colours can now have transparency
+- Add "colour" drawmode - brush paints with current pen
+- Update from Qt4 to Qt5 (thanks, caiwan!)
+- Add support for loading IFF anim5 animations
+- Allow dragging files onto window to open them
+- File dialogs now default to user home directory
+- Reduced file format support (just png,bmp,gif,pcx,iff for now).
+- Mac and Windows builds (App bundle & .msi respectively)
 
 
 ## v0.1 (May 2011)
