@@ -40,26 +40,33 @@ Cmd_ChangeFmt::Cmd_ChangeFmt(Project& proj, NodePath const& target, PixelFormat 
         Palette const& destPalette = m_Other->mPalette;
         switch (srcImg.Fmt()) {
         case FMT_I8:
-            if (newFmt == FMT_RGBX8) {
+            if (newFmt == FMT_I8) {
+                destImg = new Img(srcImg);
+                RemapI8(*destImg, srcPalette, destPalette);
+            } else if (newFmt == FMT_RGBX8) {
                 destImg = ConvertI8toRGBX8(srcImg, srcPalette);
             } else if (newFmt == FMT_RGBA8) {
                 destImg = ConvertI8toRGBA8(srcImg, srcPalette);
-            } else if (newFmt == FMT_I8) {
-                destImg = ConvertI8toI8(srcImg, srcPalette, destPalette);
             }
             break;
         case FMT_RGBX8:
-            if (newFmt == FMT_RGBA8) {
-                destImg = ConvertRGBX8toRGBA8(srcImg);
-            } else if(newFmt == FMT_I8) {
+            if(newFmt == FMT_I8) {
                 destImg = ConvertRGBX8toI8(srcImg, destPalette);
+            } else if (newFmt == FMT_RGBX8) {
+                destImg = new Img(srcImg);
+                RemapRGBX8(*destImg, destPalette);
+            } else if (newFmt == FMT_RGBA8) {
+                destImg = ConvertRGBX8toRGBA8(srcImg);
             }
             break;
         case FMT_RGBA8:
-            if (newFmt == FMT_RGBX8) {
-                destImg = ConvertRGBA8toRGBX8(srcImg);
-            } else if(newFmt == FMT_I8) {
+            if(newFmt == FMT_I8) {
                 destImg = ConvertRGBA8toI8(srcImg, destPalette);
+            } else if (newFmt == FMT_RGBX8) {
+                destImg = ConvertRGBA8toRGBX8(srcImg);
+            } else if (newFmt == FMT_RGBA8) {
+                destImg = new Img(srcImg);
+                RemapRGBA8(*destImg, destPalette);
             }
             break;
         }

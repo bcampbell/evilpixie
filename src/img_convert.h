@@ -20,8 +20,14 @@ Img* ConvertRGBX8toRGBA8(Img const& srcImg);
 // this one trashes the alpha channel
 Img* ConvertRGBA8toRGBX8(Img const& srcImg);
 
-// remaps indexed image to another palette
-Img* ConvertI8toI8(Img const& srcImg, Palette const& srcPalette, Palette const& destPalette);
+// Remap I8 to destPalette.
+void RemapI8(Img& img, Palette const& srcPalette, Palette const& destPalette);
+
+// Remap an RGBX8 to destPalette (picks the closest colours in destPalette).
+void RemapRGBX8(Img& img, Palette const& destPalette);
+
+// Remap an RGBA8 to destPalette (picks the closest colours in destPalette).
+void RemapRGBA8(Img& img, Palette const& destPalette);
 
 #endif // IMG_CONVERT_H
 

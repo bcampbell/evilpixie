@@ -114,4 +114,43 @@ Img* ConvertI8toI8(Img const& srcImg, Palette const& srcPalette, Palette const& 
 }
 
 
+void RemapI8(Img& img, Palette const& srcPalette, Palette const& destPalette)
+{
+    assert(img.Fmt() == FMT_I8);
+    for (int y = 0; y < img.H(); ++y) {
+        I8* p = img.Ptr_I8(0, y);
+        for (int x = 0; x < img.W(); ++x) {
+            Colour c = srcPalette.GetColour((int)*p);
+            *p = (I8)destPalette.Closest(c);
+            ++p;
+        }
+    }
+}
+
+void RemapRGBX8(Img& img, Palette const& destPalette)
+{
+    assert(img.Fmt() == FMT_RGBX8);
+    for (int y = 0; y < img.H(); ++y) {
+        RGBX8 *p = img.Ptr_RGBX8(0, y);
+        for (int x=0; x < img.W(); ++x) {
+            I8 best = (I8)destPalette.Closest(Colour(*p));
+            *p = destPalette.GetColour((int)best);
+            ++p;
+        }
+    }
+}
+
+
+void RemapRGBA8(Img& img, Palette const& destPalette)
+{
+    assert(img.Fmt() == FMT_RGBA8);
+    for (int y = 0; y < img.H(); ++y) {
+        RGBA8 *p = img.Ptr_RGBA8(0, y);
+        for (int x=0; x < img.W(); ++x) {
+            I8 best = (I8)destPalette.Closest(Colour(*p));
+            *p = destPalette.GetColour((int)best);
+            ++p;
+        }
+    }
+}
 

@@ -34,7 +34,7 @@ Img::Img( Img const& other ) :
     Box b(m_Bounds);
     Blit(other, other.Bounds(), *this, b);
 }
-    
+
 Img::Img( Img const& other, Box const& otherarea ) :
     m_Format(other.m_Format),
     m_BytesPerPixel(0),
