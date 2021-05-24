@@ -113,8 +113,6 @@ public slots:
     void rangePicked();
     void togglepaletteeditor();
     void useeyedroppertool();
-    void nextColour();
-    void prevColour();
     void showHelp();
     void showAbout();
 

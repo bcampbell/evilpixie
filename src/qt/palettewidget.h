@@ -43,7 +43,9 @@ signals:
     void rangeAltered();    
     // upon sucessful drop
     void colourDropped(int idx, Colour const& c);
-
+public slots:
+    void nextPen();
+    void prevPen();
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);

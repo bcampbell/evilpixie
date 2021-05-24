@@ -163,40 +163,6 @@ void Editor::SetBGPen( PenColour const& pen )
     OnPenChanged();
 }
 
-// advance the FG pen to the next palette index (if sane)
-void Editor::NextFGPen()
-{
-    if (!m_FGPen.IdxValid()) {
-        return;
-    }
-    assert(false);
-#if 0
-    NodePath fook;   // TODO!!!
-    Palette const& pal = Proj().PaletteConst(fook);
-    int idx = m_FGPen.idx()+1;
-    if (idx<pal.NumColours()) {
-        SetFGPen( PenColour( pal.GetColour(idx), idx) );
-    }
-#endif
-}
-
-// move the FG pen back a palette index (if sane)
-void Editor::PrevFGPen()
-{
-    if (!m_FGPen.IdxValid()) {
-        return;
-    }
-    assert(false);
-#if 0
-    NodePath fook;   // TODO!!!
-    fook.path.push_back(0);
-    Palette const& pal = Proj().PaletteConst(fook);
-    int idx = m_FGPen.idx()-1;
-    if (idx>=0) {
-        SetFGPen( PenColour( pal.GetColour(idx), idx) );
-    }
-#endif
-}
 
 
 // TODO: move undo stack onto Project!

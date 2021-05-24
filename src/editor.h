@@ -58,9 +58,6 @@ public:
 	void SetFGPen( PenColour const& pen );
 	void SetBGPen( PenColour const& pen );
 
-    void NextFGPen();
-    void PrevFGPen();
-
     // TODO: notifications?
 	void SetCurrentRange(Box const& range) {m_CurrRange = range;}
     Box CurrentRange() {return m_CurrRange;}

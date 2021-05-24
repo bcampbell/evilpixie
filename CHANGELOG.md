@@ -18,6 +18,7 @@
 - Bugfix: don't crash when using brushes with different palette size.
 - Switch build system from cmake to meson
     - add icons/.desktop files to linux install
+- Fix next/prev pen shortcut keys ('[' and ']').
 
 ## v0.2.1 (Jan 2021)
 

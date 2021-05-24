@@ -12,6 +12,7 @@
 #include <QMouseEvent>
 #include <QMimeData>
 #include <QDrag>
+#include <QtWidgets/QShortcut>
 
 PaletteWidget::PaletteWidget(Palette const& src) :
     m_Palette(src),
@@ -26,6 +27,39 @@ PaletteWidget::PaletteWidget(Palette const& src) :
 {
     setMouseTracking(true);
     setMinimumSize( Cols()*4, Rows()*4 );
+    {
+        QShortcut* s;
+        s = new QShortcut( QKeySequence( "]" ), this );
+        connect(s, SIGNAL(activated()), this, SLOT(nextPen()));
+        s = new QShortcut( QKeySequence( "[" ), this );
+        connect(s, SIGNAL(activated()), this, SLOT(prevPen()));
+    }
+}
+
+void PaletteWidget::nextPen() {
+    int sel = m_LeftSelected;
+    if (sel == -1 || m_Palette.NColours == 0) {
+        return;
+    }
+    ++sel;
+    if (sel >= m_Palette.NColours) {
+        sel = 0;
+    }
+    SetLeftSelected(sel);
+    emit pickedLeftButton(m_LeftSelected);
+}
+
+void PaletteWidget::prevPen() {
+    int sel = m_LeftSelected;
+    if (sel == -1 || m_Palette.NColours == 0) {
+        return;
+    }
+    --sel;
+    if (sel < 0) {
+        sel = m_Palette.NColours - 1;
+    }
+    SetLeftSelected(sel);
+    emit pickedLeftButton(m_LeftSelected);
 }
 
 void PaletteWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -327,57 +361,6 @@ void PaletteWidget::DrawOverlays( QPainter& painter )
         painter.setBrush( Qt::NoBrush );
         painter.drawRect(r);
     }
-
-#if 0
-    if( m_LeftSelected != -1 )
-    {
-        QRect r = CellRect( m_LeftSelected );
-        r.adjust(0,0,-1,-1);
-
-        QPen blackpen( Qt::SolidLine );
-        blackpen.setWidth(3);
-        blackpen.setColor( QColor(0,0,0,128) );
-        blackpen.setJoinStyle( Qt::RoundJoin );
-        blackpen.setCapStyle( Qt::RoundCap );
-
-        QPen pen( Qt::SolidLine );
-        pen.setWidth(1);
-        pen.setColor( QColor(255,255,255) );
-
-        painter.setPen( blackpen );
-        painter.setBrush( Qt::NoBrush );
-        painter.drawRect(r);
-
-        painter.setPen( pen );
-        painter.setBrush( Qt::NoBrush );
-        painter.drawRect(r);
-
-    }
-    if( m_RightSelected != -1 )
-    {
-        QRect r = CellRect( m_RightSelected );
-        r.adjust(0,0,-1,-1);
-
-        QPen blackpen( Qt::SolidLine );
-        blackpen.setWidth(3);
-        blackpen.setColor( QColor(0,0,0,128) );
-        blackpen.setJoinStyle( Qt::RoundJoin );
-        blackpen.setCapStyle( Qt::RoundCap );
-
-        QPen whitepen( Qt::SolidLine );
-        whitepen.setWidth(1);
-        whitepen.setColor( QColor(128,128,128 ) );
-
-        painter.setPen( blackpen );
-        painter.setBrush( Qt::NoBrush );
-        painter.drawRect(r);
-
-        painter.setPen( whitepen );
-        painter.setBrush( Qt::NoBrush );
-        painter.drawRect(r);
-
-    }
-#endif
 }
 
 
@@ -422,10 +405,11 @@ void PaletteWidget::DrawRangeOverlay( QPainter& painter, int from, int to, bool 
     whitepen.setWidth(1);
     whitepen.setColor( QColor(255,255,255) );
 
-    if( strong )
+    if( strong ) {
         painter.setBrush( Qt::NoBrush );
-    else
+    } else {
         painter.setBrush( QBrush( QColor( 255,255,255,32 ) ) );
+    }
     painter.setPen(blackpen);
     painter.drawPath( p );
 

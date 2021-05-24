@@ -48,7 +48,6 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QAction>
-#include <QtWidgets/QShortcut>
 #include <QtWidgets/QTextEdit>
 
 #include <QCloseEvent>
@@ -212,18 +211,6 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
         statusbar->addWidget( m_StatusViewInfo );
 //        statusbar->showMessage( "blah blah blah" );
         layout->addWidget( statusbar, 7,0,1,2 );
-    }
-
-    // some misc keyboard shortcuts
-    {
-        QShortcut* s;
-
-        s = new QShortcut( QKeySequence( "]" ), this );
-        connect(s, SIGNAL( activated()), this, SLOT( nextColour()));
-
-        s = new QShortcut( QKeySequence( "[" ), this );
-        connect(s, SIGNAL( activated()), this, SLOT( prevColour()));
-
     }
 
     layout->setRowStretch( 1,0 );   // brushes
@@ -633,12 +620,6 @@ void EditorWindow::useeyedroppertool()
 {
     UseTool( TOOL_EYEDROPPER );
 }
-
-void EditorWindow::nextColour()
-    { NextFGPen(); }
-
-void EditorWindow::prevColour()
-    { PrevFGPen(); }
 
 void EditorWindow::update_menu_states()
 {
