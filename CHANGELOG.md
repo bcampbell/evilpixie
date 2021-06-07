@@ -15,6 +15,7 @@
     - drag & drop colours (internally, and between other apps)
 - Magnify view (M to split screen)
 - "Use brush palette"/"load palette" now offer to remap image to new colours.
+- Add "Remap Brush", to remap brush into current image palette.
 - Bugfix: don't crash when using brushes with different palette size.
 - Switch build system from cmake to meson
     - add icons/.desktop files to linux install

@@ -8,6 +8,7 @@
 #include "../cmd_changefmt.h"
 #include "../cmd_remap.h"
 #include "../sheet.h"
+#include "../img_convert.h"
 #include "guistuff.h"
 #include "editorwindow.h"
 #include "editviewwidget.h"
@@ -633,6 +634,12 @@ void EditorWindow::update_menu_states()
     m_ActionScale2xBrush->setEnabled(
         GetBrush() == -1 && CurrentBrush().Fmt() == FMT_I8);
 
+    {
+        // custom brush, and focus has a palette?
+        Palette const& pal = Proj().PaletteConst(m_Focus, m_Frame);
+        m_ActionScale2xBrush->setEnabled(GetBrush() == -1 && pal.NColours >0);
+    }
+
     // int nframes= Proj().GetLayer(ActiveLayer()).NumFrames();
     // TODO: IMPLEMENT!
     Layer const& l = Proj().ResolveLayer(m_Focus);
@@ -822,6 +829,98 @@ void EditorWindow::do_scale2xbrush()
     delete tmpImg;
     ShowToolCursor();
 }
+
+
+void EditorWindow::do_remapbrush()
+{
+    // Convert the custom brush into the focus pixelformat and palette.
+    if(GetBrush() != -1 )
+        return; // std brush - do nothing
+
+    // Create new image with the same format as the project target.
+    Img const& focusImg = Proj().GetImgConst(m_Focus, m_Frame);
+    // Get the palette we're remapping to.
+    Palette const& destPalette = Proj().PaletteConst(m_Focus, m_Frame);
+    Brush const& brush = CurrentBrush();
+
+    if(destPalette.NColours == 0) {
+        return; // no dest palette - do nothing.
+    }
+
+
+    HideToolCursor();
+    Img* newImg = nullptr;
+    switch(focusImg.Fmt()) {
+        case FMT_I8:
+            switch(brush.Fmt()) {
+                case FMT_I8:    // I8 -> I8
+                    newImg = new Img(brush);
+                    RemapI8(*newImg, brush.GetPalette(), destPalette);  // Clone
+                    break;
+                case FMT_RGBX8:    // RGBX8 -> I8
+                    newImg = ConvertRGBX8toI8(brush, destPalette);
+                    break;
+                case FMT_RGBA8:    // RGBA8 -> I8
+                    newImg = ConvertRGBA8toI8(brush, destPalette);
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+            break;
+        case FMT_RGBX8:
+            switch(brush.Fmt()) {
+                case FMT_I8:    // I8 -> RGBX8
+                    newImg = ConvertI8toRGBX8(brush, brush.GetPalette());
+                    RemapRGBX8(*newImg, destPalette);
+                    break;
+                case FMT_RGBX8:    // RGBX8 -> RGBX8
+                    newImg = new Img(brush);    // Clone
+                    RemapRGBX8(*newImg, destPalette);
+                    break;
+                case FMT_RGBA8:    // RGBA8 -> RGBX8
+                    newImg = ConvertRGBA8toRGBX8(brush);
+                    RemapRGBX8(*newImg, destPalette);
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+            break;
+        case FMT_RGBA8:
+            switch(brush.Fmt()) {
+                case FMT_I8:    // I8 -> RGBA8
+                    newImg = ConvertI8toRGBX8(brush, brush.GetPalette());
+                    RemapRGBA8(*newImg, destPalette);
+                    break;
+                case FMT_RGBX8:    // RGBX8 -> RGBA8
+                    newImg = ConvertRGBX8toRGBA8(brush);
+                    RemapRGBA8(*newImg, destPalette);
+                    break;
+                case FMT_RGBA8:    // RGBA8 -> RGBA8
+                    newImg = new Img(brush);    // Clone
+                    RemapRGBA8(*newImg, destPalette);
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+            break;
+    }
+
+    // map across the transparent pen
+    assert(destPalette.NColours > 0);
+    int idx = destPalette.Closest(brush.TransparentColour().rgb());
+    PenColour transparent(brush.TransparentColour().rgb(), idx);
+
+    Brush* newBrush = new Brush(brush.Style(), *newImg, newImg->Bounds(), transparent);
+    newBrush->SetPalette(destPalette);
+    newBrush->SetHandle(brush.Handle());
+    g_App->SetCustomBrush(newBrush);
+
+    ShowToolCursor();
+}
+
 
 void EditorWindow::do_addlayer()
 {
@@ -1161,6 +1260,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addAction( "X-Flip Brush", this, SLOT(do_xflipbrush()),QKeySequence("x") );
         m->addAction( "Y-Flip Brush", this, SLOT(do_yflipbrush()),QKeySequence("y") );
         m_ActionScale2xBrush = m->addAction( "Scale2x Brush", this, SLOT(do_scale2xbrush()));
+        m_ActionRemapBrush = m->addAction( "Remap Brush", this, SLOT(do_remapbrush()));
         m->addSeparator();
 
 

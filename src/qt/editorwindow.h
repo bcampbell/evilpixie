@@ -132,6 +132,7 @@ public slots:
     void do_xflipbrush();
     void do_yflipbrush();
     void do_scale2xbrush();
+    void do_remapbrush();
     void do_drawmodeChanged(QAction* act);
 
     void do_tospritesheet();
@@ -181,6 +182,7 @@ private:
     QAction* m_ActionGridConfig;
     QAction* m_ActionUseBrushPalette;
     QAction* m_ActionScale2xBrush;
+    QAction* m_ActionRemapBrush;
     QAction* m_ActionZapFrame;
     QAction* m_ActionPrevFrame;
     QAction* m_ActionNextFrame;
