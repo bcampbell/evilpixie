@@ -66,7 +66,8 @@ PaletteEditor::PaletteEditor(QWidget* parent, Editor& ed, NodePath const& focus,
     connect(m_HexEntry, &QLineEdit::editingFinished, this, &PaletteEditor::hexChanged);
 //    connect(m_HexEntry, SIGNAL(textEdited(const QString &text)), this, SLOT(hexChanged(const QString &text)));
     connect(m_PaletteWidget, SIGNAL(rangeAltered()), this, SLOT(paletteRangeAltered()));
-    connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT(colourPicked(int)));
+    connect(m_PaletteWidget, SIGNAL(pickedLeftButton(int)), this, SLOT(fgColourPicked(int)));
+    connect(m_PaletteWidget, SIGNAL(pickedRightButton(int)), this, SLOT(bgColourPicked(int)));
     connect(m_PaletteWidget, SIGNAL(colourDropped(int, Colour const&)), this, SLOT(colourDropped(int, Colour const&)));
     connect(m_SpreadButton, SIGNAL(clicked()), this, SLOT(spreadColours()));
 
@@ -81,12 +82,33 @@ PaletteEditor::~PaletteEditor()
 }
 
 
-void PaletteEditor::colourPicked(int idx)
+void PaletteEditor::fgColourPicked(int idx)
 {
-    m_Selected = idx;
+    SetSelectedColour(PEN_FG, idx);
     Colour c(m_Proj.PaletteConst(m_Focus, m_Frame).GetColour(idx));
-    showColour(c);
+    m_Ed.SetFGPen(PenColour(c, idx));
 }
+
+void PaletteEditor::bgColourPicked(int idx)
+{
+    SetSelectedColour(PEN_BG, idx);
+    Colour c(m_Proj.PaletteConst(m_Focus, m_Frame).GetColour(idx));
+    m_Ed.SetBGPen(PenColour(c, idx));
+}
+
+void PaletteEditor::SetSelectedColour(PenID penID, int idx)
+{
+    if (penID == PEN_FG) {
+        m_Selected = idx;
+        m_PaletteWidget->SetLeftSelected(idx);
+        Colour c(m_Proj.PaletteConst(m_Focus, m_Frame).GetColour(idx));
+        showColour(c);
+    }
+    if (penID == PEN_BG) {
+        m_PaletteWidget->SetRightSelected(idx);
+    }
+}
+
 
 // a colour has been dropped into a cell on the palette widget.
 void PaletteEditor::colourDropped(int idx, Colour const& c)
@@ -97,14 +119,6 @@ void PaletteEditor::colourDropped(int idx, Colour const& c)
     // We'll hear about the change via OnPaletteChanged()
 }
 
-
-void PaletteEditor::SetSelected(int idx)
-{
-    m_Selected = idx;
-    m_PaletteWidget->SetLeftSelected(idx);
-    Colour c(m_Proj.PaletteConst(m_Focus, m_Frame).GetColour(idx));
-    showColour(c);
-}
 
 // ProjectListener implementation
 
@@ -139,7 +153,7 @@ void PaletteEditor::OnPaletteReplaced(NodePath const& target, int frame)
 
     // make sure we've got something valid selected.
     if (m_Selected>=pal.NColours) {
-        SetSelected(pal.NColours-1);
+        fgColourPicked(pal.NColours-1);
     }
 
     if (m_Applying) {

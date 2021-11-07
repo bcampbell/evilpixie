@@ -33,10 +33,12 @@ public:
     // TODO
 //    void SetFocus(NodePath const& targ);
 
-public slots:
-    void colourPicked(int idx);
+    void SetSelectedColour(PenID slot, int idx);
+
+private slots:
+    void fgColourPicked(int idx);
+    void bgColourPicked(int idx);
     void colourDropped(int idx, Colour const& c);
-    void SetSelected(int idx);
 private:
     Editor& m_Ed;
     Project& m_Proj;

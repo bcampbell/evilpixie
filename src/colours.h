@@ -12,6 +12,11 @@ enum PixelFormat {
     FMT_RGBA8,
 };
 
+enum PenID {
+    PEN_FG=0,
+    PEN_BG=1,
+};
+
 class RGBA8;
 
 // Colour, 8 bits/channel

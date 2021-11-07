@@ -20,6 +20,7 @@
 - Switch build system from cmake to meson
     - add icons/.desktop files to linux install
 - Fix next/prev pen shortcut keys ('[' and ']').
+- Sync colour picking between palette editor and main editor window.
 
 ## v0.2.1 (Jan 2021)
 
