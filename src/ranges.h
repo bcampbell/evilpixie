@@ -4,6 +4,7 @@
 #include "colours.h"
 #include "point.h"
 
+#include <cstddef>  // for size_t
 #include <vector>
 
 
