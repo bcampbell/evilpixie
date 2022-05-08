@@ -47,7 +47,7 @@ static Button translatebutton( QMouseEvent* event )
     }
     if (qtmb == Qt::RightButton)
         return ERASE;
-    if (qtmb == Qt::MidButton)
+    if (qtmb == Qt::MiddleButton)
         return PAN;
     return NONE;
 }
