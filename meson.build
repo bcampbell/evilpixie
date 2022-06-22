@@ -5,10 +5,6 @@ qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
 
 cxx = meson.get_compiler('cpp')
 impy_dep = [ cxx.find_library('impy') ]
-gif_dep = [ cxx.find_library('gif') ]
-jpeg_dep = [ cxx.find_library('jpeg') ]
-
-png_dep = dependency('libpng')
 
 incdirs = include_directories('src')
 
@@ -73,8 +69,6 @@ ep_sources = ['src/app.cpp',
 	'src/sheet.cpp',
 	'src/tool.cpp',
 	'src/util.cpp']
-    #'src/pngsupport.cpp'
-    #'src/xpmsupport.cpp'
 
 ep_qt_headers = [
 	'src/qt/changefmtdialog.h',
@@ -132,7 +126,7 @@ configure_file(input : 'src/config.h.in',
 executable('evilpixie',
   sources: [ep_sources, ep_qt_sources, moc_files],
   include_directories: incdirs,
-  dependencies : [qt5_dep, impy_dep, png_dep, gif_dep, jpeg_dep],
+  dependencies : [qt5_dep, impy_dep], #, png_dep, gif_dep, jpeg_dep],
   install : true)
 
 install_subdir('data', install_dir : 'share/evilpixie', strip_directory : true)
