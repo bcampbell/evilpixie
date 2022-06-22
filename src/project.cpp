@@ -5,6 +5,7 @@
 #include "colours.h"
 #include "util.h"
 #include "exception.h"
+#include "file_load.h"
 #include "global.h"
 
 #include <assert.h>
@@ -17,8 +18,7 @@ Project::Project( std::string const& filename ) :
     m_Modified( false )
 {
     mFilename = filename;
-    Layer *l = new Layer();
-    l->Load(filename.c_str());
+    Layer* l = LoadLayer(filename.c_str());
     mRoot = new Stack();
     mRoot->AddChild(l);
 }

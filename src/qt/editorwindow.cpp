@@ -4,6 +4,7 @@
 #include "../scale2x.h"
 #include "../util.h"
 #include "../exception.h"
+#include "../file_save.h"
 #include "../cmd.h"
 #include "../cmd_changefmt.h"
 #include "../cmd_remap.h"
@@ -1137,7 +1138,7 @@ void EditorWindow::do_save()
     {
         // save focused layer
         Layer const& l = Proj().ResolveLayer(m_Focus);
-        l.Save(Proj().mFilename);
+        SaveLayer(l, Proj().mFilename);
         Proj().SetModifiedFlag(false);
     }
     catch( Exception const& e )
@@ -1173,8 +1174,7 @@ void EditorWindow::do_saveas()
     try
     {
         // save focused layer
-        Layer const& l = Proj().ResolveLayer(m_Focus);
-        l.Save(filename.toStdString());
+        SaveLayer(l, filename.toStdString());
         Proj().mFilename = filename.toStdString();
         Proj().SetModifiedFlag(false);
     }

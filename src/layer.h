@@ -157,10 +157,6 @@ public:
 //    void SetPalette(Palette const& pal) { mPalette=pal; }
     Palette const& GetPaletteConst() const { return mPalette; }
 
-    void Load(std::string const& filename);
-    void Save(std::string const& filename) const;
-
-
     // Kill this.
     void Append(Img* img) {
         Frame* f = new Frame();
