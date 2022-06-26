@@ -1,4 +1,4 @@
-project('evilpixie', 'cpp') #, default_options : ['cpp_std=c++11', 'warning_level=3'])
+project('evilpixie', 'cpp', default_options: ['cpp_std=c++20']) #, default_options : ['cpp_std=c++11', 'warning_level=3'])
 
 qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
@@ -27,6 +27,7 @@ ep_headers = [
 	'src/exception.h',
     'src/file_load.h',
     'src/file_save.h',
+    'src/file_type.h',
 	'src/global.h',
 	'src/img_convert.h',
 	'src/img.h',
@@ -61,6 +62,7 @@ ep_sources = ['src/app.cpp',
 	'src/exception.cpp',
     'src/file_load.cpp',
     'src/file_save.cpp',
+    'src/file_type.cpp',
 	'src/img_convert.cpp',
 	'src/img.cpp',
 	'src/layer.cpp',

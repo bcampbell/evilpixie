@@ -78,19 +78,16 @@ QSize SheetPreviewWidget::minimumSizeHint () const
 
 //---------------------------------------------------------
 
-ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Project* proj)
+ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Layer const* layer)
     : QDialog(parent),
-    m_Proj(proj)
+    m_Layer(layer)
 {
-    m_Proj->AddListener(this);
-
-    int initialWidth = 4;
+    int initialWidth = 1;
     m_Width = new QSpinBox();
-    assert(false);  // TODO: sort it out
-    //m_Width->setRange( 1,m_Proj->NumFrames() );
+    m_Width->setRange(1, layer->mFrames.size());
     m_Width->setValue(initialWidth);
 
-    QLabel* widthlabel = new QLabel(tr("Frames across:"));
+    QLabel* widthlabel = new QLabel(tr("Columns:"));
     widthlabel->setBuddy(m_Width);
 
     connect( m_Width, SIGNAL( valueChanged(int) ), this, SLOT(widthChanged(int) ) );
@@ -126,47 +123,22 @@ ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Project* proj)
 
 ToSpritesheetDialog::~ToSpritesheetDialog()
 {
-    m_Proj->RemoveListener(this);
 }
 
 
-int ToSpritesheetDialog::NumAcross()
+int ToSpritesheetDialog::Columns() const
 {
     return m_Width->value();
-}
-
-
-// projectlistener implementation
-void ToSpritesheetDialog::OnFramesAdded(int /*first*/, int /*last*/)
-{
-    rethinkPreview();
-}
-
-void ToSpritesheetDialog::OnFramesRemoved(int /*first*/, int /*last*/)
-{
-    rethinkPreview();
 }
 
 void ToSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
-    //TODO: implement this!
-    assert(false);
-    NodePath fook;
-    Layer const& layer0 = m_Proj->ResolveLayer(fook);
-
-    Box extent = LayoutSpritesheet(layer0, NumAcross(), frames);
-    /*
-    printf("extent: %d,%d %dx%d\n",
-            extent.x,
-            extent.y,
-            extent.w,
-            extent.h);
-    */
+    Box extent = LayoutSpritesheet(*m_Layer, Columns(), frames);
     m_Preview->setFrames(frames,extent);
 
     char buf[64];
-    ::snprintf(buf, sizeof(buf), "resultant sheet: %dx%d:", extent.w, extent.h);
+    ::snprintf(buf, sizeof(buf), "Resultant sheet is %dx%d:", extent.w, extent.h);
     m_Info->setText(QString::fromUtf8(buf));
 }
 
@@ -184,12 +156,9 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project* proj)
 {
     m_Proj->AddListener(this);
 
-    // TODO: multilayer support
-//    assert(m_Proj->NumLayers()==1);
-    assert(false);
     NodePath fook;
 
-    int initialWidth = 4;
+    int initialWidth = 1;
     m_NWide = new QSpinBox();
     m_NWide->setRange(1,proj->GetImgConst(fook,0).W());
     m_NWide->setValue(initialWidth);
@@ -261,8 +230,6 @@ void FromSpritesheetDialog::rethinkPreview()
     std::vector<Box> frames;
     
     // TODO: multilayer support
-    assert(false);
-//    assert(m_Proj->NumLayers()==1);
     NodePath fook;
 
     Box srcBox = m_Proj->GetImgConst(fook,0).Bounds();

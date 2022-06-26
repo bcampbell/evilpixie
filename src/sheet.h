@@ -12,8 +12,7 @@ Box LayoutSpritesheet(Layer const& src, int nWide, std::vector<Box>& frames);
 void SplitSpritesheet(Box const& srcBox, int nWide, int nHigh, std::vector<Box>& frames);
 
 
-// TODO: take frames as params
-Img* GenerateSpriteSheet(Layer const& src, int maxAcross);
+Layer* LayerToSpriteSheet(Layer const& src, int nColumns);
 void FramesFromSpriteSheet(Img const& src, int nWide, int nHigh, std::vector<Img*>& destFrames);
 
 

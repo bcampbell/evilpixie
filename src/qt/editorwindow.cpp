@@ -5,6 +5,7 @@
 #include "../util.h"
 #include "../exception.h"
 #include "../file_save.h"
+#include "../file_type.h"
 #include "../cmd.h"
 #include "../cmd_changefmt.h"
 #include "../cmd_remap.h"
@@ -1006,7 +1007,7 @@ void EditorWindow::do_tospritesheet()
     ToSpritesheetDialog dlg(this, &Proj());
     if( dlg.exec() == QDialog::Accepted )
     {
-        Cmd* c= new Cmd_ToSpriteSheet(Proj(), dlg.NumAcross());
+        Cmd* c= new Cmd_ToSpriteSheet(Proj(), dlg.Columns());
         AddCmd(c);
     }
 #endif
@@ -1125,7 +1126,6 @@ void EditorWindow::do_open()
     }
 }
 
-
 void EditorWindow::do_save()
 {
     if( Proj().Filename().empty() )
@@ -1133,23 +1133,8 @@ void EditorWindow::do_save()
         do_saveas();
         return;
     }
-
-    try
-    {
-        // save focused layer
-        Layer const& l = Proj().ResolveLayer(m_Focus);
-        SaveLayer(l, Proj().mFilename);
-        Proj().SetModifiedFlag(false);
-    }
-    catch( Exception const& e )
-    {
-        GUIShowError( e.what() );
-    }
-    RethinkWindowTitle();
+    SaveProject(Proj().mFilename);
 }
-
-
-
 
 void EditorWindow::do_saveas()
 {
@@ -1171,21 +1156,58 @@ void EditorWindow::do_saveas()
     if( filename.isNull() )
         return;
 
+    SaveProject(filename.toStdString());
+}
+
+void EditorWindow::SaveProject(std::string const& filename)
+{
     try
     {
-        // save focused layer
-        SaveLayer(l, filename.toStdString());
-        Proj().mFilename = filename.toStdString();
+        Filetype ft = FiletypeFromFilename(filename);
+        if (ft == FILETYPE_UNKNOWN) {
+            throw Exception("Unsupported file format.");
+        }
+
+        SaveRequirements reqs = CheckSave(*(Proj().mRoot), ft);
+        if (reqs.cantSave) {
+            throw Exception("Can't save in that format.");
+        }
+        if (reqs.flatten) {
+            throw Exception("Can't save multiple layers in that format.");
+        }
+        if (reqs.quantise) {
+            throw Exception("Format only supports paletted (indexed) images");
+        }
+
+        if (reqs.noAnim) {
+            // TODO: Implement an Uber-savedialog to prompt user for assorted
+            // save options...
+            Layer const& l = Proj().ResolveLayer(m_Focus);
+            // For now, just drop user into unexplained spritesheet dlg :-)
+            ToSpritesheetDialog dlg(this, &l);
+            if( dlg.exec() == QDialog::Accepted )
+            {
+                int cols = dlg.Columns();
+                // convert to spritesheet
+                Layer* tmp = LayerToSpriteSheet(l, cols);
+                SaveLayer(*tmp, filename);
+                // TODO: handle leak due to exceptions!!!!!!
+                delete tmp;
+            }
+        } else {
+            // Save directly - no processing required.
+            Layer const& l = Proj().ResolveLayer(m_Focus);
+            SaveLayer(l, filename);
+        }
+        Proj().mFilename = filename;
         Proj().SetModifiedFlag(false);
     }
     catch( Exception const& e )
     {
         GUIShowError( e.what() );
     }
-
     RethinkWindowTitle();
 }
-
 
 void EditorWindow::showHelp()
 {

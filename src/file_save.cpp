@@ -1,6 +1,7 @@
 #include <impy.h>
 
 #include "file_save.h"
+#include "file_type.h"
 #include "layer.h"
 #include "img.h"
 #include "exception.h"
@@ -8,27 +9,43 @@
 
 static im_img* to_im_img( Img const& img, Palette const& pal );
 
+SaveRequirements CheckSave(Stack const& stack, Filetype ft)
+{
+    // Get capabilities of format (TODO: move this stuff into impy).
+    bool canSave = (ft == FILETYPE_PNG || ft == FILETYPE_GIF || ft == FILETYPE_BMP);
+    bool fmtSupportsLayers = false;
+    bool fmtIndexedOnly = (ft == FILETYPE_GIF || ft == FILETYPE_PCX || ft == FILETYPE_IFF_ILBM);
+    bool fmtSupportsAnim = (ft == FILETYPE_GIF);
+
+    // Get characteristics of project.
+    std::vector<Layer const*> layers;
+    stack.WalkConst([&] (BaseNode const* n ) {if (n->ToLayerConst()) {layers.push_back(n->ToLayerConst());};});
+
+    bool isAnimated = false;
+    bool isIndexed = true;
+    for (auto l: layers) {
+        if (l->mFrames.size()>1) {
+            isAnimated = true;
+        }
+        if (l->Fmt() != FMT_I8) {
+            isIndexed = false;
+        }
+    }
+
+    SaveRequirements req;
+    req.cantSave = !canSave;
+    req.flatten = (!fmtSupportsLayers) && (layers.size() > 1);
+    req.quantise = fmtIndexedOnly && (!isIndexed);
+    req.noAnim = (!fmtSupportsAnim) && isAnimated;
+    req.sheetColumns = 1;   // just so we don't leave it unset...
+    return req;
+}
+
+
+
 void SaveLayer(Layer const& layer, std::string const& filename)
 {
-    // sanity check
-    std::string ext = ToLower(ExtName(filename));
-
-    if (layer.mFrames.size() > 1) {
-        if (ext!=".gif") {
-            throw Exception("To save animation, you need to save as .gif or convert to a spritesheet");
-        }
-    }
-
-    if (layer.Fmt()!= FMT_I8) {
-        if( ext==".gif") {
-            throw Exception("Sorry, .gif can only save 8-bit indexed images");
-        }
-    }
-    // end sanity check
-
-    im_bundle* bundle;
-
-    bundle = im_bundle_new();
+    im_bundle* bundle = im_bundle_new();
     if (!bundle) {
         throw Exception( "out of memory" );
     }

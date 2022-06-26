@@ -89,12 +89,13 @@ void Layer::Dump() const
 PixelFormat Layer::Fmt() const
     { return mFrames.front()->mImg->Fmt(); }
 
-void Layer::CalcBounds(Box& bound, int /*first*/, int /*last*/) const
+Box Layer::Bounds() const
 {
-    //TODO: constrain to first..last!
+    Box bound = {0,0,0,0};
     for (auto f : mFrames) {
         bound.Merge(f->mImg->Bounds());
     }
+    return bound;
 }
 
 int Layer::FrameIndexClipped(uint64_t t) const

@@ -15,7 +15,7 @@ class QSpinBox;
 #include "../projectlistener.h"
 
 class Project;
-
+class Layer;
 
 //---------------------------------------
 // display a scaled-down sprite sheet layout
@@ -47,18 +47,18 @@ class ToSpritesheetDialog : public QDialog, ProjectListener
     Q_OBJECT
 
 public:
-    ToSpritesheetDialog(QWidget *parent, Project* proj);
+    ToSpritesheetDialog(QWidget *parent, Layer const* layer);
     virtual ~ToSpritesheetDialog();
 
-    int NumAcross();
-
+    // Return the number of columns chosen by the user.
+    int Columns() const;
 
     // projectlistener implementation
     void OnFramesAdded(int /*first*/, int /*last*/);
     void OnFramesRemoved(int /*first*/, int /*last*/);
 
 private:
-    Project *m_Proj;
+    Layer const* m_Layer;
     QSpinBox *m_Width;
     SheetPreviewWidget *m_Preview;
     QLabel *m_Info;

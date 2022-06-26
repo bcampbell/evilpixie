@@ -12,7 +12,7 @@ Box LayoutSpritesheet(Layer const& src, int nWide, std::vector<Box>& frames)
 
     // calc max frame size
     int f;
-    Box contain;
+    Box contain(0, 0, 0, 0);
     for (f=0; f<src.NumFrames(); ++f)
     {
         Box const& b = src.GetImgConst(f).Bounds();
@@ -22,7 +22,7 @@ Box LayoutSpritesheet(Layer const& src, int nWide, std::vector<Box>& frames)
 
     // lay out frames
 
-    Box  extent(0,0,0,0);
+    Box  extent(0, 0, 0, 0);
     for (f=0; f<src.NumFrames(); ++f)
     {
         Point offset(
@@ -59,25 +59,24 @@ void SplitSpritesheet(Box const& srcBox, int nWide, int nHigh, std::vector<Box>&
 }
 
 
-// TODO: should return a set of bounding boxes for the offets
-Img* GenerateSpriteSheet(Layer const& src, int maxAcross)
+// TODO: should return a set of bounding boxes for the offsets?
+Layer* LayerToSpriteSheet(Layer const& src, int nColumns)
 {
+    assert(nColumns>0);
     int nWide = src.NumFrames();
     int nHigh = 1;
-    if(maxAcross>0 && nWide>maxAcross) {
-        nHigh = (nWide+(maxAcross-1)) / maxAcross;
-        nWide = maxAcross;
+    if(nWide>nColumns) {
+        nHigh = (nWide+(nColumns-1)) / nColumns;
+        nWide = nColumns;
     }
 
     // TODO: handle differing frame offsets
 
-    Box bounds;
-    src.CalcBounds(bounds,0,src.NumFrames());
+    Box bounds = src.Bounds();
     int frameW = bounds.W();
     int frameH = bounds.H();
 
     Img *dest = new Img(src.Fmt(), frameW*nWide, frameH*nHigh);
-
     int frame = 0;
     int y;
     for( y=0; y<nHigh; ++y)
@@ -92,7 +91,16 @@ Img* GenerateSpriteSheet(Layer const& src, int maxAcross)
             Blit(srcImg, srcImg.Bounds(), *dest, destBox);
         }
     }
-    return dest;
+
+    Layer* newLayer = new Layer();
+    newLayer->mFPS = src.mFPS;
+    newLayer->mPalette = src.mPalette;
+    newLayer->mRanges = src.mRanges;
+    Frame* f = new Frame();
+    f->mDuration = 1000000/newLayer->mFPS;
+    f->mImg = dest;
+    newLayer->mFrames.push_back(f);
+    return newLayer;
 }
 
 

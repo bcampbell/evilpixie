@@ -206,6 +206,8 @@ private:
 
     // set current frame, tell things that need to know (views, widgets etc)
     void setFrame(int frame);
+
+    void SaveProject(std::string const& filename);
 };
 
 

@@ -5,13 +5,13 @@
 #include <algorithm>
 #include <string>
 
+#include "box.h"
 #include "colours.h"
 #include "img.h"
 #include "palette.h"
 #include "point.h"
 #include "ranges.h"
 
-struct Box;
 class Layer;
 class Stack;
 
@@ -69,11 +69,16 @@ public:
     }
 
     // cheesy rtti
+    virtual bool IsLayer() const {return false;}
     virtual Layer* ToLayer() {return nullptr;}
+    virtual Layer const* ToLayerConst() const {return nullptr;}
+    virtual bool IsStack() const {return false;}
     virtual Stack* ToStack() {return nullptr;}
+    virtual Stack const* ToStackConst() const {return nullptr;}
 
     // transfers ownership - this node now owns n.
     void AddChild(BaseNode* n) {
+        assert(!IsLayer());
         assert(!n->mParent);
         n->mParent = this;
         mChildren.push_back(n);
@@ -102,6 +107,12 @@ public:
         mParent = nullptr;
     }
 
+    void WalkConst(auto visit) const {
+        visit(this);
+        for (auto const child: mChildren) {
+            child->WalkConst(visit);
+        }
+    }
 };
 
 // Starting at n, find the first layer.
@@ -114,7 +125,9 @@ NodePath CalcPath(BaseNode *n);
 // A Stack groups multiple Layers (and/or other Stacks).
 class Stack : public BaseNode {
 public:
+    virtual bool IsStack() const {return true;}
     virtual Stack* ToStack() {return this;}
+    virtual Stack const* ToStackConst() const {return this;}
 };
 
 
@@ -141,7 +154,9 @@ public:
     Layer();
     ~Layer();
 
+    virtual bool IsLayer() const {return true;}
     virtual Layer* ToLayer() {return this;}
+    virtual Layer const* ToLayerConst() const {return this;}
 
     int NumFrames() const { return mFrames.size(); }
     Img& GetImg(int n) {
@@ -168,8 +183,8 @@ public:
 
     // transfer frames in range [srcfirst, srclast) to another Layer
     void TransferFrames(int srcfirst, int srclast, Layer& dest, int destfirst);
-    // work out bounds of selection of anim (ie union of frames)
-    void CalcBounds(Box& bound, int first, int last) const;
+    // Work out bounds, taking all frames into consideration.
+    Box Bounds() const;
 
     // frame rate control (in fps)
     int FPS() const { return mFPS; }
