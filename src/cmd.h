@@ -109,25 +109,27 @@ private:
 class Cmd_ToSpriteSheet : public Cmd
 {
 public:
-    Cmd_ToSpriteSheet(Project& proj, int maxAcross);
+    Cmd_ToSpriteSheet(Project& proj, NodePath const& targ, int columns);
     virtual ~Cmd_ToSpriteSheet();
     virtual void Do();
     virtual void Undo();
 private:
+    NodePath m_Targ;
     int m_NumFrames;
-    int m_NWide;
+    int m_Columns;
 };
 
 class Cmd_FromSpriteSheet : public Cmd
 {
 public:
-    Cmd_FromSpriteSheet(Project& proj, int maxAcross, int numFrames);
+    Cmd_FromSpriteSheet(Project& proj, NodePath const& targ, int columns, int numFrames);
     virtual ~Cmd_FromSpriteSheet();
     virtual void Do();
     virtual void Undo();
 private:
+    NodePath m_Targ;
     int m_NumFrames;
-    int m_NWide;
+    int m_Columns;
 };
 
 

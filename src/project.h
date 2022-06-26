@@ -111,13 +111,14 @@ public:
     // notify operations on frames
     void NotifyFramesAdded(NodePath const& target, int first, int count);
     void NotifyFramesRemoved(NodePath const& target, int first, int count);
-    void NotifyFramesBlatted(NodePath const& ftarget, int irst, int count);
+    void NotifyFramesBlatted(NodePath const& target, int first, int count);
 
     // notify palette modified
     void NotifyPaletteChange(NodePath const& target, int frame, int index, int count);
     void NotifyPaletteReplaced(NodePath const& target, int frame);
 
     void NotifyRangesBlatted(NodePath const& target, int frame);
+ 
     void SetModifiedFlag( bool newmodifiedflag );
 
     // Return true if both paths share the same palette

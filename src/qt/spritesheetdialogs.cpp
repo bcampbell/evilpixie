@@ -78,13 +78,15 @@ QSize SheetPreviewWidget::minimumSizeHint () const
 
 //---------------------------------------------------------
 
-ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Layer const* layer)
+ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Project& project, NodePath const& targ)
     : QDialog(parent),
-    m_Layer(layer)
+    m_Proj(project),
+    m_Targ(targ)
 {
+    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
     int initialWidth = 1;
     m_Width = new QSpinBox();
-    m_Width->setRange(1, layer->mFrames.size());
+    m_Width->setRange(1, layer.mFrames.size());
     m_Width->setValue(initialWidth);
 
     QLabel* widthlabel = new QLabel(tr("Columns:"));
@@ -134,7 +136,8 @@ int ToSpritesheetDialog::Columns() const
 void ToSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
-    Box extent = LayoutSpritesheet(*m_Layer, Columns(), frames);
+    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
+    Box extent = LayoutSpritesheet(layer, Columns(), frames);
     m_Preview->setFrames(frames,extent);
 
     char buf[64];
@@ -150,23 +153,24 @@ void ToSpritesheetDialog::widthChanged(int)
 
 //---------------------------------------------------------
 
-FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project* proj)
+FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project& proj, NodePath const& targ)
     : QDialog(parent),
-    m_Proj(proj)
+    m_Proj(proj),
+    m_Targ(targ)
 {
-    m_Proj->AddListener(this);
+    m_Proj.AddListener(this);
 
-    NodePath fook;
+    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
 
     int initialWidth = 1;
     m_NWide = new QSpinBox();
-    m_NWide->setRange(1,proj->GetImgConst(fook,0).W());
+    m_NWide->setRange(1, layer.GetImgConst(0).W());
     m_NWide->setValue(initialWidth);
     QLabel* widelabel = new QLabel(tr("Across:"));
     widelabel->setBuddy(m_NWide);
 
     m_NHigh = new QSpinBox();
-    m_NHigh->setRange(1,proj->GetImgConst(fook,0).H());
+    m_NHigh->setRange(1, layer.GetImgConst(0).H());
     m_NHigh->setValue(initialWidth);
     QLabel* highlabel = new QLabel(tr("High:"));
     highlabel->setBuddy(m_NHigh);
@@ -199,7 +203,7 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project* proj)
 
 FromSpritesheetDialog::~FromSpritesheetDialog()
 {
-    m_Proj->RemoveListener(this);
+    m_Proj.RemoveListener(this);
 }
 
 
@@ -229,16 +233,12 @@ void FromSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
     
-    // TODO: multilayer support
-    NodePath fook;
+    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
+    Box srcBox = layer.GetImgConst(0).Bounds();
 
-    Box srcBox = m_Proj->GetImgConst(fook,0).Bounds();
-
-
-    SplitSpritesheet(srcBox,getNWide(), getNHigh(), frames);
+    SplitSpritesheet(srcBox, getNWide(), getNHigh(), frames);
 
     m_Preview->setFrames(frames,srcBox);
 }
-
 
 

@@ -1002,36 +1002,27 @@ void EditorWindow::setFrame(int frame)
 
 void EditorWindow::do_tospritesheet()
 {
-    assert(false);  //TODO: implement
-#if 0
-    ToSpritesheetDialog dlg(this, &Proj());
+    ToSpritesheetDialog dlg(this, Proj(), m_Focus);
     if( dlg.exec() == QDialog::Accepted )
     {
-        Cmd* c= new Cmd_ToSpriteSheet(Proj(), dlg.Columns());
+        Cmd* c= new Cmd_ToSpriteSheet(Proj(), m_Focus, dlg.Columns());
         AddCmd(c);
     }
-#endif
 }
 
 void EditorWindow::do_fromspritesheet()
 {
-    assert(false);  //TODO: implement
-#if 0
-    // TODO - multilayer!
-    assert(Proj().NumLayers()==1);
-    Layer& layer0 = Proj().GetLayer(0);
-
-    FromSpritesheetDialog dlg(this, &Proj());
+    FromSpritesheetDialog dlg(this, Proj(), m_Focus);
     if( dlg.exec() == QDialog::Accepted )
     {
+        Layer const& layer0 = Proj().ResolveLayer(m_Focus);
         std::vector<Box> frames;
         SplitSpritesheet(layer0.GetImgConst(0).Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
 
         // TODO: pass in frames
-        Cmd* c= new Cmd_FromSpriteSheet(Proj(), dlg.getNWide(), frames.size());
+        Cmd* c= new Cmd_FromSpriteSheet(Proj(), m_Focus, dlg.getNWide(), frames.size());
         AddCmd(c);
     }
-#endif
 }
 
 
@@ -1182,13 +1173,13 @@ void EditorWindow::SaveProject(std::string const& filename)
         if (reqs.noAnim) {
             // TODO: Implement an Uber-savedialog to prompt user for assorted
             // save options...
-            Layer const& l = Proj().ResolveLayer(m_Focus);
             // For now, just drop user into unexplained spritesheet dlg :-)
-            ToSpritesheetDialog dlg(this, &l);
+            ToSpritesheetDialog dlg(this, Proj(), m_Focus);
             if( dlg.exec() == QDialog::Accepted )
             {
                 int cols = dlg.Columns();
                 // convert to spritesheet
+                Layer const& l = Proj().ResolveLayer(m_Focus);
                 Layer* tmp = LayerToSpriteSheet(l, cols);
                 SaveLayer(*tmp, filename);
                 // TODO: handle leak due to exceptions!!!!!!

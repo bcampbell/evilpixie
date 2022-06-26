@@ -13,9 +13,9 @@ class QSpinBox;
 
 #include "../box.h"
 #include "../projectlistener.h"
+#include "../project.h"
+#include "../layer.h"
 
-class Project;
-class Layer;
 
 //---------------------------------------
 // display a scaled-down sprite sheet layout
@@ -47,7 +47,7 @@ class ToSpritesheetDialog : public QDialog, ProjectListener
     Q_OBJECT
 
 public:
-    ToSpritesheetDialog(QWidget *parent, Layer const* layer);
+    ToSpritesheetDialog(QWidget *parent, Project& proj, NodePath const& targ);
     virtual ~ToSpritesheetDialog();
 
     // Return the number of columns chosen by the user.
@@ -58,7 +58,8 @@ public:
     void OnFramesRemoved(int /*first*/, int /*last*/);
 
 private:
-    Layer const* m_Layer;
+    Project& m_Proj;
+    NodePath m_Targ;
     QSpinBox *m_Width;
     SheetPreviewWidget *m_Preview;
     QLabel *m_Info;
@@ -78,7 +79,7 @@ class FromSpritesheetDialog : public QDialog, ProjectListener
     Q_OBJECT
 
 public:
-    FromSpritesheetDialog(QWidget *parent, Project* proj);
+    FromSpritesheetDialog(QWidget *parent, Project& proj, NodePath const& targ);
     virtual ~FromSpritesheetDialog();
 
     int getNWide();
@@ -90,7 +91,8 @@ public:
     void OnFramesRemoved(int /*first*/, int /*last*/);
 
 private:
-    Project *m_Proj;
+    Project& m_Proj;
+    NodePath m_Targ;
     QSpinBox *m_NWide;
     QSpinBox *m_NHigh;
     SheetPreviewWidget *m_Preview;

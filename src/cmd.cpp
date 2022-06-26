@@ -203,18 +203,13 @@ void Cmd_DeleteFrames::Undo()
 
 //-----------
 //
-Cmd_ToSpriteSheet::Cmd_ToSpriteSheet(Project& proj, int nWide) :
+Cmd_ToSpriteSheet::Cmd_ToSpriteSheet(Project& proj, NodePath const& targ, int columns) :
     Cmd(proj,NOT_DONE),
-    m_NumFrames(/*proj.NumFrames()*/),
-    m_NWide(nWide)
+    m_Targ(targ),
+    m_Columns(columns)
 {
-    assert(false);  // TODO: implement!
-#if 0
-    if( m_NWide>m_NumFrames)
-    {
-        m_NWide = m_NumFrames;
-    }
-#endif
+    Layer const& l = Proj().ResolveLayer(m_Targ);
+    m_NumFrames = l.mFrames.size();
 }
 
 Cmd_ToSpriteSheet::~Cmd_ToSpriteSheet()
@@ -225,58 +220,46 @@ Cmd_ToSpriteSheet::~Cmd_ToSpriteSheet()
 
 void Cmd_ToSpriteSheet::Do()
 {
-    assert(false);  // TODO: implement!
-#if 0
-    // TODO: figure out what to do with multiple layers
-    assert(Proj().NumLayers() == 1);
-    Layer& layer = Proj().GetLayer(0);
+    Layer& l = Proj().ResolveLayer(m_Targ);
+    m_NumFrames = l.mFrames.size();
 
-    Img* sheet = GenerateSpriteSheet(layer, m_NWide);
-    m_NumFrames = layer.NumFrames();
+    Layer* newLayer = LayerToSpriteSheet(l, m_Columns);
 
-    layer.Zap();
-    layer.Append(sheet);
+    l.Replace(newLayer);
+    delete &l;
 
-    Proj().NotifyLayerReplaced();
+    Proj().NotifyFramesRemoved(m_Targ, 1, m_NumFrames-1);
+    Proj().NotifyFramesBlatted(m_Targ, 0, 1);
     SetState(DONE);
-#endif
 }
 
 
 void Cmd_ToSpriteSheet::Undo()
 {
-    assert(false);  // TODO: implement!
-#if 0
-    // TODO: figure out what to do with multiple layers
-    assert(Proj().NumLayers() == 1);
-    Layer& targLayer = Proj().GetLayer(0);
-
-    assert(targLayer.NumFrames()==1);
-    Img const& src = targLayer.GetImgConst(0);
+    Layer& l = Proj().ResolveLayer(m_Targ);
+    assert(l.mFrames.size() == 1);
+    Img const& src = l.GetImgConst(0);
 
     std::vector<Img*> frames;
-    FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
-    targLayer.Zap();
+    FramesFromSpriteSheet(src, m_Columns, m_NumFrames, frames);
+    l.Zap();
     unsigned int n;
     for(n=0;n<frames.size();++n) {
-        targLayer.Append(frames[n]);
+        l.Append(frames[n]);
     }
-    Proj().NotifyLayerReplaced();
+    Proj().NotifyFramesBlatted(m_Targ, 0, 1);
+    Proj().NotifyFramesAdded(m_Targ, 1, m_NumFrames-1);
     SetState(NOT_DONE);
-#endif
 }
 
 //-----------
 //
-Cmd_FromSpriteSheet::Cmd_FromSpriteSheet(Project& proj, int nWide, int numFrames) :
+Cmd_FromSpriteSheet::Cmd_FromSpriteSheet(Project& proj, NodePath const& targ, int columns, int numFrames) :
     Cmd(proj,NOT_DONE),
+    m_Targ(targ),
     m_NumFrames(numFrames),
-    m_NWide(nWide)
+    m_Columns(columns)
 {
-    if( m_NWide>m_NumFrames)
-    {
-        m_NWide = m_NumFrames;
-    }
 }
 
 Cmd_FromSpriteSheet::~Cmd_FromSpriteSheet()
@@ -287,45 +270,36 @@ Cmd_FromSpriteSheet::~Cmd_FromSpriteSheet()
 
 void Cmd_FromSpriteSheet::Do()
 {
-    assert(false);  // TODO: implement!
-#if 0
-    // TODO: figure out what to do with multiple layers
-    assert(Proj().NumLayers() == 1);
-    Layer& layer = Proj().GetLayer(0);
-    assert(layer.NumFrames()==1);
+    Layer& layer = Proj().ResolveLayer(m_Targ);
+    assert(layer.mFrames.size() == 1);
 
     Img const& src = layer.GetImgConst(0);
 
     std::vector<Img*> frames;
-    FramesFromSpriteSheet(src,m_NWide,m_NumFrames, frames);
+    FramesFromSpriteSheet(src, m_Columns, m_NumFrames, frames);
     layer.Zap();
     unsigned int n;
     for(n=0;n<frames.size();++n)
     {
         layer.Append(frames[n]);
     }
-    Proj().NotifyLayerReplaced();
+    Proj().NotifyFramesAdded(m_Targ, 1, m_NumFrames-1);
+    Proj().NotifyFramesBlatted(m_Targ, 0, 1);
     SetState( DONE );
-#endif
 }
 
 void Cmd_FromSpriteSheet::Undo()
 {
-    assert(false);  // TODO: implement!
-#if 0
-    // TODO: figure out what to do with multiple layers
-    assert(Proj().NumLayers() == 1);
-    Layer& layer = Proj().GetLayer(0);
-
-    Img* sheet = GenerateSpriteSheet(layer,m_NWide);
+    Layer& layer = Proj().ResolveLayer(m_Targ);
     m_NumFrames = layer.NumFrames();
+    Layer* newLayer = LayerToSpriteSheet(layer, m_Columns);
 
-    layer.Zap();
-    layer.Append(sheet);
+    layer.Replace(newLayer);
+    delete &layer;
 
-    Proj().NotifyLayerReplaced();
+    Proj().NotifyFramesRemoved(m_Targ, 1, m_NumFrames-1);
+    Proj().NotifyFramesBlatted(m_Targ, 0, 1);
     SetState( NOT_DONE );
-#endif
 }
 
 //-----------
