@@ -1,4 +1,5 @@
 #include <impy.h>
+#include <vector>
 
 #include "file_load.h"
 #include "layer.h"
@@ -6,53 +7,84 @@
 #include "exception.h"
 #include "util.h"
 
-static Img* from_im_img( im_img* srcimg, Palette& pal);
 
 Layer* LoadLayer(std::string const& filename)
 {
     ImErr err;
 
-    im_bundle* bundle = im_bundle_load(filename.c_str(), &err);
-    if (!bundle) {
-            switch(err) {
-                case ERR_NOMEM:
-                   throw Exception("Ran out of memory");
-                case ERR_COULDNTOPEN:
-                case ERR_FILE:
-                    throw Exception("File error (imerr code %d)",err);
-                case ERR_UNKNOWN_FILE_TYPE:
-                    throw Exception("Unknown or unsupported file type");
-                case ERR_UNSUPPORTED:
-                    throw Exception("Unsupported");
-                case ERR_MALFORMED:
-                    throw Exception("File malformed");
-                default:
-                    throw Exception( "Load failed (imerr code %d)", (int)err);
-            }
-    }
-    Layer *layer = new Layer();
-    int nframes = im_bundle_num_frames(bundle);
-    int frame;
-    for(frame=0; frame<nframes; ++frame)
-    {
-        im_img* srcimg = im_bundle_get_frame(bundle,frame);
+    im_imginfo inf;
+    im_read* rdr = im_read_open_file(filename.c_str(), &err);
 
-        if (!srcimg) {
-            // TODO: how to handle missing frames?
-            continue;
+    Layer *layer = new Layer();
+    while (im_read_img(rdr, &inf)) {
+        Img *img = nullptr;
+        switch(inf.fmt) {
+            case IM_FMT_RGB:
+                im_read_set_fmt(rdr, IM_FMT_RGBX);
+                img = new Img(FMT_RGBX8, inf.w, inf.h);
+                break;
+            case IM_FMT_RGBA:
+                im_read_set_fmt(rdr, IM_FMT_RGBA);
+                img = new Img(FMT_RGBA8, inf.w, inf.h);
+                break;
+            case IM_FMT_INDEX8:
+                im_read_set_fmt(rdr, IM_FMT_INDEX8);
+                img = new Img(FMT_I8, inf.w, inf.h);
+                break;
+            default: break;
+        }
+        if (!img) {
+            throw Exception("Unsupported pixel format.");
         }
 
+        // read palette, if any.
+        if (inf.pal_num_colours > 0) {
+            Palette pal(inf.pal_num_colours);
+            std::vector<uint8_t> buf(4 * inf.pal_num_colours);
+            im_read_palette(rdr, IM_FMT_RGBA, buf.data());
+            uint8_t* src = buf.data(); 
+            for (unsigned int i = 0; i < inf.pal_num_colours; ++i) {
+                pal.Colours[i] = RGBA8(src[0], src[1], src[2], src[3]);
+                src += 4;
+            }
+            // KLUDGE!!!
+            layer->mPalette = pal;
+        
+        }
+
+        // read the image rows
+        im_read_rows(rdr, img->H(), img->Ptr(0,0), img->Pitch());
+
+        //
         Frame* frame = new Frame();
-        frame->mImg = from_im_img(srcimg, layer->mPalette);
+        frame->mImg = img;
         layer->mFrames.push_back(frame);
     }
 
-    im_bundle_free(bundle);
+    err = im_read_finish(rdr);
+    if (err != IM_ERR_NONE) {
+        switch(err) {
+            case IM_ERR_NOMEM:
+               throw Exception("Ran out of memory");
+            case IM_ERR_COULDNTOPEN:
+                throw Exception("Couldn't open file");
+            case IM_ERR_FILE:
+                throw Exception("File error");
+            case IM_ERR_UNKNOWN_FILE_TYPE:
+                throw Exception("Unknown or unsupported file type");
+            case IM_ERR_UNSUPPORTED:
+                throw Exception("Unsupported");
+            case IM_ERR_MALFORMED:
+                throw Exception("File malformed");
+            default:
+                throw Exception( "Load failed (impy err %d)", (int)err);
+        }
+    }
     return layer;
 }
 
 
-
+#if 0
 static Img* from_im_img( im_img* srcimg, Palette& pal)
 {
     int x,y;
@@ -139,4 +171,4 @@ static Img* from_im_img( im_img* srcimg, Palette& pal)
 
     throw Exception( "unsupported pixelformat" );
 }
-
+#endif

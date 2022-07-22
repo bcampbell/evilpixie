@@ -45,6 +45,14 @@ public:
 	RGBA8 const* PtrConst_RGBA8( int x, int y ) const
 		{ assert(Fmt()==FMT_RGBA8); return (RGBA8*)PtrConst(x,y); }
 
+    // Raw access.
+	uint8_t* Ptr( int x, int y )
+		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
+	uint8_t const* PtrConst( int x, int y ) const
+		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
+    int Pitch() const
+        { return m_BytesPerRow; }
+
     Box const& Bounds() const
         { return m_Bounds; }
 
@@ -68,7 +76,6 @@ public:
 		{ return *PtrConst_I8(p.x,p.y); }
 
 
-
 protected:
     void init();
 
@@ -78,10 +85,6 @@ protected:
     Box m_Bounds;
 	uint8_t* m_Pixels;
 private:
-	uint8_t* Ptr( int x, int y )
-		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
-	uint8_t const* PtrConst( int x, int y ) const
-		{ return m_Pixels + (y*m_BytesPerRow) + (x*m_BytesPerPixel); }
 };
 
 
