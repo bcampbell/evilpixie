@@ -18,20 +18,17 @@ Layer* LoadLayer(std::string const& filename)
     Layer *layer = new Layer();
     while (im_read_img(rdr, &inf)) {
         Img *img = nullptr;
-        switch(inf.fmt) {
-            case IM_FMT_RGB:
-                im_read_set_fmt(rdr, IM_FMT_RGBX);
-                img = new Img(FMT_RGBX8, inf.w, inf.h);
-                break;
-            case IM_FMT_RGBA:
+        if (im_fmt_is_indexed(inf.fmt)) {
+            im_read_set_fmt(rdr, IM_FMT_INDEX8);
+            img = new Img(FMT_I8, inf.w, inf.h);
+        } else if (im_fmt_has_rgb(inf.fmt)) {
+            if (im_fmt_has_alpha(inf.fmt)) {
                 im_read_set_fmt(rdr, IM_FMT_RGBA);
                 img = new Img(FMT_RGBA8, inf.w, inf.h);
-                break;
-            case IM_FMT_INDEX8:
-                im_read_set_fmt(rdr, IM_FMT_INDEX8);
-                img = new Img(FMT_I8, inf.w, inf.h);
-                break;
-            default: break;
+            } else {
+                im_read_set_fmt(rdr, IM_FMT_RGBX);
+                img = new Img(FMT_RGBX8, inf.w, inf.h);
+            }
         }
         if (!img) {
             throw Exception("Unsupported pixel format.");
