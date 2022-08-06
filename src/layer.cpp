@@ -55,10 +55,10 @@ Layer::Layer() :
 
 Layer::~Layer()
 {
-    Zap();
+    ZapFrames();
 }
 
-void Layer::Zap()
+void Layer::ZapFrames()
 {
     while( !mFrames.empty() )
     {

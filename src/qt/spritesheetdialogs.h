@@ -74,28 +74,23 @@ private slots:
 //---------------------------------------
 // GUI for splitting up a single image spritesheet back into an anim
 //
-class FromSpritesheetDialog : public QDialog, ProjectListener
+class FromSpritesheetDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    FromSpritesheetDialog(QWidget *parent, Project& proj, NodePath const& targ);
-    virtual ~FromSpritesheetDialog();
+    FromSpritesheetDialog(QWidget *parent, Img const& srcImg);
+    virtual ~FromSpritesheetDialog() {}
 
     int getNWide();
     int getNHigh();
 
 
-    // projectlistener implementation
-    void OnFramesAdded(int /*first*/, int /*last*/);
-    void OnFramesRemoved(int /*first*/, int /*last*/);
-
 private:
-    Project& m_Proj;
-    NodePath m_Targ;
-    QSpinBox *m_NWide;
-    QSpinBox *m_NHigh;
-    SheetPreviewWidget *m_Preview;
+    Img const& mSrcImg;
+    QSpinBox *mNWide;
+    QSpinBox *mNHigh;
+    SheetPreviewWidget *mPreview;
 
 private slots:
     void rethinkPreview();

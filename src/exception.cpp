@@ -1,8 +1,6 @@
-
-
-
 #include "exception.h"
 #include <cstdio>
+#include <cstring>
 #include <cstdarg>
 
 #ifdef _MSC_VER
@@ -19,5 +17,11 @@ Exception::Exception( const char* fmt, ... )
 		m_Message[MAXLEN-1] = '\0';
 }
 
+
+Exception::Exception(std::string const& msg)
+{
+    strncpy(m_Message, msg.c_str(), MAXLEN-1);
+	m_Message[MAXLEN-1] = '\0';
+}
 
 

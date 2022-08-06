@@ -14,6 +14,7 @@
 #include "guistuff.h"
 #include "editorwindow.h"
 #include "editviewwidget.h"
+#include "file_load.h"
 #include "griddialog.h"
 #include "palettewidget.h"
 #include "rangeswidget.h"
@@ -25,6 +26,7 @@
 #include "spritesheetdialogs.h"
 #include "miscwindows.h"
 #include "layerswidget.h"
+#include "qtapp.h"
 
 #include <algorithm>
 #include <memory>
@@ -734,23 +736,9 @@ void EditorWindow::do_changefmt()
 
 void EditorWindow::do_new()
 {
-    NewProjectDialog dlg(this);
-    if( dlg.exec() == QDialog::Accepted )
-    {
-        QSize sz = dlg.GetSize();
-        Palette* pal = Palette::Load( JoinPath(g_App->DataPath(), "default.gpl").c_str());
-        if( dlg.pixel_format == FMT_I8)
-            pal->SetNumColours(dlg.num_colours);
-        else
-            pal->SetNumColours(256);
-        Project* p = new Project( dlg.pixel_format, sz.width(), sz.height(), pal, dlg.num_frames );
-//        printf("%d frames, %d colours\n",dlg.num_frames,dlg.num_colours);
-        EditorWindow* fenster = new EditorWindow(p);
-        fenster->show();
-        fenster->raise();
-        fenster->activateWindow();
-
-        if( Proj().Expendable() )
+    EditorWindow* newFenster = static_cast<QTApp*>(g_App)->NewProject();
+    if (newFenster) {
+        if (Proj().Expendable())
             this->close();
     }
 }
@@ -1012,12 +1000,12 @@ void EditorWindow::do_tospritesheet()
 
 void EditorWindow::do_fromspritesheet()
 {
-    FromSpritesheetDialog dlg(this, Proj(), m_Focus);
+    Img const& srcImg = Proj().ResolveLayer(m_Focus).GetImgConst(0);
+    FromSpritesheetDialog dlg(this, srcImg);
     if( dlg.exec() == QDialog::Accepted )
     {
-        Layer const& layer0 = Proj().ResolveLayer(m_Focus);
         std::vector<Box> frames;
-        SplitSpritesheet(layer0.GetImgConst(0).Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
+        SplitSpritesheet(srcImg.Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
 
         // TODO: pass in frames
         Cmd* c= new Cmd_FromSpriteSheet(Proj(), m_Focus, dlg.getNWide(), frames.size());
@@ -1100,16 +1088,10 @@ void EditorWindow::do_open()
 
     try
     {
-
-        Project* new_proj = new Project(filename.toStdString());
-        EditorWindow* fenster = new EditorWindow(new_proj);
-        fenster->show();
-        fenster->activateWindow();
-        fenster->raise();
-
-        if( Proj().Expendable() )
+        EditorWindow* newFenster = static_cast<QTApp*>(g_App)->LoadProject(filename.toStdString());
+        if (newFenster && Proj().Expendable()) {
             this->close();
-
+        }
     }
     catch( Exception const& e )
     {

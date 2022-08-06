@@ -96,10 +96,7 @@ Layer* LayerToSpriteSheet(Layer const& src, int nColumns)
     newLayer->mFPS = src.mFPS;
     newLayer->mPalette = src.mPalette;
     newLayer->mRanges = src.mRanges;
-    Frame* f = new Frame();
-    f->mDuration = 1000000/newLayer->mFPS;
-    f->mImg = dest;
-    newLayer->mFrames.push_back(f);
+    newLayer->mFrames.push_back(new Frame(dest, 1000000/newLayer->mFPS));
     return newLayer;
 }
 

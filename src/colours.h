@@ -25,6 +25,7 @@ struct RGBX8
     RGBX8() {}
     RGBX8(uint8_t red, uint8_t green, uint8_t blue) : b(blue), g(green), r(red), pad(255) {}
     // KLUDGE: this order for QT version (QImage ARGB fmt assumes native byte order...)
+    // TODO: handle big-endian!
 	uint8_t b;
 	uint8_t g;
 	uint8_t r;
@@ -41,6 +42,7 @@ struct RGBA8
     RGBA8(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) : b(blue),g(green),r(red),a(alpha) {}
     RGBA8(RGBX8 rgb) : b(rgb.b),g(rgb.g),r(rgb.r),a(255) {}
     // KLUDGE: this order for QT version (QImage ARGB fmt assumes native byte order...)
+    // TODO: handle big-endian!
 	uint8_t b;
 	uint8_t g;
 	uint8_t r;

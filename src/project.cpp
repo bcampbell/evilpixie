@@ -24,6 +24,18 @@ Project::Project( std::string const& filename ) :
 }
 
 
+// Create project from a single layer
+Project::Project(Layer* layer) :
+    mRoot(nullptr),
+    m_Expendable(false),
+    m_Modified( false )
+{
+    mFilename = layer->mFilename;
+    mRoot = new Stack();
+    mRoot->AddChild(layer);
+}
+
+
 Project::Project() :
     mRoot(nullptr),
     m_Expendable(true),

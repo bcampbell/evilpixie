@@ -153,32 +153,27 @@ void ToSpritesheetDialog::widthChanged(int)
 
 //---------------------------------------------------------
 
-FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project& proj, NodePath const& targ)
+FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Img const& srcImg)
     : QDialog(parent),
-    m_Proj(proj),
-    m_Targ(targ)
+    mSrcImg(srcImg)
 {
-    m_Proj.AddListener(this);
-
-    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
-
     int initialWidth = 1;
-    m_NWide = new QSpinBox();
-    m_NWide->setRange(1, layer.GetImgConst(0).W());
-    m_NWide->setValue(initialWidth);
+    mNWide = new QSpinBox();
+    mNWide->setRange(1, mSrcImg.W());
+    mNWide->setValue(initialWidth);
     QLabel* widelabel = new QLabel(tr("Across:"));
-    widelabel->setBuddy(m_NWide);
+    widelabel->setBuddy(mNWide);
 
-    m_NHigh = new QSpinBox();
-    m_NHigh->setRange(1, layer.GetImgConst(0).H());
-    m_NHigh->setValue(initialWidth);
+    mNHigh = new QSpinBox();
+    mNHigh->setRange(1, mSrcImg.H());
+    mNHigh->setValue(initialWidth);
     QLabel* highlabel = new QLabel(tr("High:"));
-    highlabel->setBuddy(m_NHigh);
+    highlabel->setBuddy(mNHigh);
 
-    connect( m_NWide, SIGNAL( valueChanged(int) ), this, SLOT(rethinkPreview() ) );
-    connect( m_NHigh, SIGNAL( valueChanged(int) ), this, SLOT(rethinkPreview() ) );
+    connect( mNWide, SIGNAL( valueChanged(int) ), this, SLOT(rethinkPreview() ) );
+    connect( mNHigh, SIGNAL( valueChanged(int) ), this, SLOT(rethinkPreview() ) );
 
-    m_Preview = new SheetPreviewWidget(this);
+    mPreview = new SheetPreviewWidget(this);
     rethinkPreview();
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -188,57 +183,34 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Project& proj, Nod
     QGridLayout *l = new QGridLayout;
 //    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
     l->addWidget(widelabel, 0, 0);
-    l->addWidget(m_NWide, 0, 1);
+    l->addWidget(mNWide, 0, 1);
 
     l->addWidget(highlabel, 1, 0);
-    l->addWidget(m_NHigh, 1, 1);
+    l->addWidget(mNHigh, 1, 1);
 
-    l->addWidget(m_Preview, 2, 0,1,2);
+    l->addWidget(mPreview, 2, 0,1,2);
 
     l->addWidget(buttonBox, 3, 0, 1, 2 );
     setLayout(l);
     setWindowTitle(tr("Convert spritesheet to animation"));
-
 }
-
-FromSpritesheetDialog::~FromSpritesheetDialog()
-{
-    m_Proj.RemoveListener(this);
-}
-
 
 int FromSpritesheetDialog::getNWide()
 {
-    return m_NWide->value();
+    return mNWide->value();
 }
 
 int FromSpritesheetDialog::getNHigh()
 {
-    return m_NHigh->value();
-}
-
-
-// projectlistener implementation
-void FromSpritesheetDialog::OnFramesAdded(int /*first*/, int /*last*/)
-{
-    rethinkPreview();
-}
-
-void FromSpritesheetDialog::OnFramesRemoved(int /*first*/, int /*last*/)
-{
-    rethinkPreview();
+    return mNHigh->value();
 }
 
 void FromSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
-    
-    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
-    Box srcBox = layer.GetImgConst(0).Bounds();
-
+    Box srcBox = mSrcImg.Bounds();
     SplitSpritesheet(srcBox, getNWide(), getNHigh(), frames);
-
-    m_Preview->setFrames(frames,srcBox);
+    mPreview->setFrames(frames, srcBox);
 }
 
 

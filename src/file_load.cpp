@@ -1,4 +1,5 @@
 #include <impy.h>
+#include <string>
 #include <vector>
 
 #include "file_load.h"
@@ -7,6 +8,25 @@
 #include "exception.h"
 #include "util.h"
 
+// Return a readable string from an impy errorcode.
+std::string const impyErrToMsg(ImErr err) {
+    const struct {ImErr code; std::string msg;} msgs[] = {
+        {IM_ERR_NONE, "OK"},
+        {IM_ERR_NOMEM, "Ran out of memory"},
+        {IM_ERR_COULDNTOPEN, "Couldn't open file"},
+        {IM_ERR_FILE, "File error"},
+        {IM_ERR_UNKNOWN_FILE_TYPE, "Unknown or unsupported file type"},
+        {IM_ERR_UNSUPPORTED, "Unsupported file format"},
+        {IM_ERR_MALFORMED, "File malformed"},
+    };
+
+    for(auto const& ent: msgs) {
+        if(err == ent.code) {
+            return ent.msg;
+        }
+    }
+    return std::string("Error code ") + std::to_string(err);
+}
 
 Layer* LoadLayer(std::string const& filename)
 {
@@ -14,6 +34,9 @@ Layer* LoadLayer(std::string const& filename)
 
     im_imginfo inf;
     im_read* rdr = im_read_open_file(filename.c_str(), &err);
+    if (!rdr) {
+        throw Exception(std::string("Load failed: ") + impyErrToMsg(err));
+    }
 
     Layer *layer = new Layer();
     while (im_read_img(rdr, &inf)) {
@@ -22,11 +45,16 @@ Layer* LoadLayer(std::string const& filename)
             im_read_set_fmt(rdr, IM_FMT_INDEX8);
             img = new Img(FMT_I8, inf.w, inf.h);
         } else if (im_fmt_has_rgb(inf.fmt)) {
+            // Our internal component ordering is set up to match QImage ARGB.
+            // (But Qt accesses it as uint32_t and we're little-endian specific
+            // at the moment, so bytewise it comes out as BGRA!).
+            // Luckily, impy can just supply whatever we ask for.
+            // TODO: handle big-endian!
             if (im_fmt_has_alpha(inf.fmt)) {
-                im_read_set_fmt(rdr, IM_FMT_RGBA);
+                im_read_set_fmt(rdr, IM_FMT_BGRA);
                 img = new Img(FMT_RGBA8, inf.w, inf.h);
             } else {
-                im_read_set_fmt(rdr, IM_FMT_RGBX);
+                im_read_set_fmt(rdr, IM_FMT_BGRX);
                 img = new Img(FMT_RGBX8, inf.w, inf.h);
             }
         }
@@ -60,23 +88,11 @@ Layer* LoadLayer(std::string const& filename)
 
     err = im_read_finish(rdr);
     if (err != IM_ERR_NONE) {
-        switch(err) {
-            case IM_ERR_NOMEM:
-               throw Exception("Ran out of memory");
-            case IM_ERR_COULDNTOPEN:
-                throw Exception("Couldn't open file");
-            case IM_ERR_FILE:
-                throw Exception("File error");
-            case IM_ERR_UNKNOWN_FILE_TYPE:
-                throw Exception("Unknown or unsupported file type");
-            case IM_ERR_UNSUPPORTED:
-                throw Exception("Unsupported");
-            case IM_ERR_MALFORMED:
-                throw Exception("File malformed");
-            default:
-                throw Exception( "Load failed (impy err %d)", (int)err);
-        }
+        throw Exception(std::string("Load failed: ") + impyErrToMsg(err));
     }
+
+    layer->mFilename = filename;
+
     return layer;
 }
 

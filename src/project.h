@@ -44,8 +44,10 @@ public:
     Project();
 
     // palette ownership taken by project
-	Project( PixelFormat fmt, int w, int h, Palette* palette=0, int num_frames=1 );
+	Project(PixelFormat fmt, int w, int h, Palette* palette=0, int num_frames=1);
     Project(std::string const& filename);
+    // Project takes ownership of layer.
+    Project(Layer* layer);
 	virtual ~Project();
 
 

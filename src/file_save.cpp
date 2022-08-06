@@ -7,6 +7,8 @@
 #include "exception.h"
 #include "util.h"
 
+// defined in file_load.cpp
+extern std::string const impyErrToMsg(ImErr err);
 
 SaveRequirements CheckSave(Stack const& stack, Filetype ft)
 {
@@ -41,36 +43,25 @@ SaveRequirements CheckSave(Stack const& stack, Filetype ft)
 }
 
 
-static void throwImpyErr(ImErr err) {
-    switch(err) {
-        case IM_ERR_NOMEM:
-           throw Exception("Ran out of memory");
-        case IM_ERR_UNKNOWN_FILE_TYPE:
-           throw Exception("Unknown file type (try .png or .gif maybe?)");
-        case IM_ERR_COULDNTOPEN:
-        case IM_ERR_FILE:
-            throw Exception("File error (imerr code %d)",err);
-        case IM_ERR_UNSUPPORTED:
-            throw Exception("Unsupported");
-        default:
-            throw Exception("Error (impy err %d)",err);
-    }
-}
-
 void SaveLayer(Layer const& layer, std::string const& filename)
 {
     ImErr err;
     im_write* writer = im_write_open_file( filename.c_str(), &err);
     if (!writer) {
-        throwImpyErr(err);
+        throw Exception(std::string("Save failed: ") + impyErrToMsg(err));
     }
 
     for (Frame const* frame : layer.mFrames) {
         Img const* img = frame->mImg;
         ImFmt fmt;
         switch (img->Fmt()) {
-            case FMT_RGBX8: fmt = IM_FMT_RGBX; break;
-            case FMT_RGBA8: fmt = IM_FMT_RGBA; break;
+            // Our internal component ordering is set up to match QImage ARGB.
+            // (But Qt accesses it as uint32_t and we're little-endian specific
+            // at the moment, so bytewise it comes out as BGRA!).
+            // Luckily, impy can just supply whatever we ask for.
+            // TODO: handle big-endian!
+            case FMT_RGBX8: fmt = IM_FMT_BGRX; break;
+            case FMT_RGBA8: fmt = IM_FMT_BGRA; break;
             case FMT_I8: fmt = IM_FMT_INDEX8; break;
             default:
             {
@@ -101,7 +92,7 @@ void SaveLayer(Layer const& layer, std::string const& filename)
 
     err = im_write_finish(writer);
     if (err != IM_ERR_NONE) {
-        throwImpyErr(err);
+        throw Exception(std::string("Save failed: ") + impyErrToMsg(err));
     }
 }
 

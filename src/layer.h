@@ -134,14 +134,15 @@ public:
 
 class Frame {
 public:
+    // Frame owns the Img object
+    Img* mImg;
     // How long this frame should be displayed, in microsecs.
     int mDuration;
-    // frame owns the Img object
-    Img* mImg;
-    // can have per-frame palette
+    // Can have per-frame palette
     // Palette mPalette;
 
-    Frame() : mDuration(0), mImg(nullptr) {}
+    Frame(Img* img, int duration) : mImg(img), mDuration(duration) {}
+    Frame() : mImg(nullptr), mDuration(0) {}
     ~Frame() { delete mImg; }
 };
 
@@ -179,7 +180,7 @@ public:
         f->mImg = img;
         mFrames.push_back(f);
     }
-    void Zap();
+    void ZapFrames();
 
     // transfer frames in range [srcfirst, srclast) to another Layer
     void TransferFrames(int srcfirst, int srclast, Layer& dest, int destfirst);
@@ -209,6 +210,8 @@ public:
     int mFPS;
     Palette mPalette;
     RangeGrid mRanges;
+
+    std::string mFilename;
 };
 
 #endif // LAYER_H

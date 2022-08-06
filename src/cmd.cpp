@@ -242,7 +242,7 @@ void Cmd_ToSpriteSheet::Undo()
 
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src, m_Columns, m_NumFrames, frames);
-    l.Zap();
+    l.ZapFrames();
     unsigned int n;
     for(n=0;n<frames.size();++n) {
         l.Append(frames[n]);
@@ -277,7 +277,7 @@ void Cmd_FromSpriteSheet::Do()
 
     std::vector<Img*> frames;
     FramesFromSpriteSheet(src, m_Columns, m_NumFrames, frames);
-    layer.Zap();
+    layer.ZapFrames();
     unsigned int n;
     for(n=0;n<frames.size();++n)
     {
