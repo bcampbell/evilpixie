@@ -1001,14 +1001,16 @@ void EditorWindow::do_tospritesheet()
 void EditorWindow::do_fromspritesheet()
 {
     Img const& srcImg = Proj().ResolveLayer(m_Focus).GetImgConst(0);
-    FromSpritesheetDialog dlg(this, srcImg);
+    SpriteGrid grid;
+    FromSpritesheetDialog dlg(this, srcImg, grid);
     if( dlg.exec() == QDialog::Accepted )
     {
         std::vector<Box> frames;
-        SplitSpritesheet(srcImg.Bounds(), dlg.getNWide(), dlg.getNHigh(), frames);
+        SpriteGrid grid = dlg.getSpriteGrid();
+        UnpackSpriteGrid(srcImg.Bounds(), grid, frames);
 
         // TODO: pass in frames
-        Cmd* c= new Cmd_FromSpriteSheet(Proj(), m_Focus, dlg.getNWide(), frames.size());
+        Cmd* c= new Cmd_FromSpriteSheet(Proj(), m_Focus, grid.numColumns, frames.size());
         AddCmd(c);
     }
 }

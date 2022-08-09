@@ -137,7 +137,14 @@ void ToSpritesheetDialog::rethinkPreview()
 {
     std::vector<Box> frames;
     Layer const& layer = m_Proj.ResolveLayer(m_Targ);
-    Box extent = LayoutSpritesheet(layer, Columns(), frames);
+    SpriteGrid grid;
+//    grid.orientation = ROW;
+    grid.numColumns = Columns();
+    grid.numRows = 0;
+    grid.hpad = 0;
+    grid.vpad = 0;
+
+    Box extent = LayoutSpritesheet(layer, grid, frames);
     m_Preview->setFrames(frames,extent);
 
     char buf[64];
@@ -153,28 +160,27 @@ void ToSpritesheetDialog::widthChanged(int)
 
 //---------------------------------------------------------
 
-FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Img const& srcImg)
+FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Img const& srcImg, SpriteGrid const& initialGrid)
     : QDialog(parent),
-    mSrcImg(srcImg)
+    mSrcImg(srcImg),
+    mGrid(initialGrid)
 {
-    int initialWidth = 1;
     mNWide = new QSpinBox();
     mNWide->setRange(1, mSrcImg.W());
-    mNWide->setValue(initialWidth);
+    mNWide->setValue(mGrid.numColumns);
     QLabel* widelabel = new QLabel(tr("Across:"));
     widelabel->setBuddy(mNWide);
 
     mNHigh = new QSpinBox();
     mNHigh->setRange(1, mSrcImg.H());
-    mNHigh->setValue(initialWidth);
+    mNHigh->setValue(mGrid.numRows);
     QLabel* highlabel = new QLabel(tr("High:"));
     highlabel->setBuddy(mNHigh);
 
-    connect( mNWide, SIGNAL( valueChanged(int) ), this, SLOT(rethinkPreview() ) );
-    connect( mNHigh, SIGNAL( valueChanged(int) ), this, SLOT(rethinkPreview() ) );
-
+    connect(mNWide, SIGNAL(valueChanged(int)), this, SLOT(rethink()));
+    connect(mNHigh, SIGNAL(valueChanged(int)), this, SLOT(rethink()));
     mPreview = new SheetPreviewWidget(this);
-    rethinkPreview();
+    rethink();
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
@@ -195,21 +201,16 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Img const& srcImg)
     setWindowTitle(tr("Convert spritesheet to animation"));
 }
 
-int FromSpritesheetDialog::getNWide()
+void FromSpritesheetDialog::rethink()
 {
-    return mNWide->value();
-}
+    // Update the grid data
+    mGrid.numColumns = mNWide->value();
+    mGrid.numRows = mNHigh->value();
+    mGrid.totalFrames = mGrid.numColumns * mGrid.numRows;
 
-int FromSpritesheetDialog::getNHigh()
-{
-    return mNHigh->value();
-}
-
-void FromSpritesheetDialog::rethinkPreview()
-{
     std::vector<Box> frames;
     Box srcBox = mSrcImg.Bounds();
-    SplitSpritesheet(srcBox, getNWide(), getNHigh(), frames);
+    UnpackSpriteGrid(srcBox, mGrid, frames);
     mPreview->setFrames(frames, srcBox);
 }
 

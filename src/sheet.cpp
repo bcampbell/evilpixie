@@ -5,54 +5,61 @@
 #include "layer.h"
 #include <cstdio>
 
-Box LayoutSpritesheet(Layer const& src, int nWide, std::vector<Box>& frames)
+Box LayoutSpritesheet(Layer const& srcLayer, SpriteGrid const& grid, std::vector<Box>& outFrames)
 {
-    assert(src.NumFrames()>0);
-    assert(frames.empty());
+    assert(srcLayer.NumFrames() > 0);
+    assert(outFrames.empty());
 
     // calc max frame size
-    int f;
     Box contain(0, 0, 0, 0);
-    for (f=0; f<src.NumFrames(); ++f)
-    {
-        Box const& b = src.GetImgConst(f).Bounds();
-        contain.Merge(b);
+    for (auto f : srcLayer.mFrames) {
+        contain.Merge(f->mImg->Bounds());
     }
     assert(!contain.Empty());
 
     // lay out frames
-
-    Box  extent(0, 0, 0, 0);
-    for (f=0; f<src.NumFrames(); ++f)
-    {
+    Box extent(0, 0, 0, 0);
+    const unsigned int w = contain.w + (grid.hpad * 2);
+    const unsigned int h = contain.h + (grid.vpad * 2);
+    int n = 0;
+    for (auto f : srcLayer.mFrames) {
         Point offset(
-            (f % nWide) * contain.w,
-            (f / nWide) * contain.h );
-        Box b( src.GetImgConst(f).Bounds() );
+            grid.hpad + (n % grid.numColumns) * w,
+            grid.vpad + (n / grid.numColumns) * h);
+        Box b(f->mImg->Bounds() );
         b += offset;
-        frames.push_back(b);
+        outFrames.push_back(b);
         extent.Merge(b);
+        ++n;
+        //printf("%d: %d,%d %dx%d\n", n, b.x, b.y, b.w, b.h);
     }
 
+    // Include padding in total extent.
+    extent.x -= grid.hpad;
+    extent.y -= grid.vpad;
+    extent.w += grid.hpad*2;
+    extent.h += grid.vpad*2;
+
+    //printf("extent: %d,%d %dx%d\n", extent.x, extent.y, extent.w, extent.h);
     return extent;
 }
 
 
 
 
-void SplitSpritesheet(Box const& srcBox, int nWide, int nHigh, std::vector<Box>& frames)
+void UnpackSpriteGrid(Box const& srcBox, SpriteGrid const& grid, std::vector<Box>& frames)
 {
     assert(frames.empty());
 
-    int nFrames = nWide*nHigh;
-    int frameW = srcBox.w / nWide;
-    int frameH = srcBox.h / nHigh;
+    int nFrames = grid.totalFrames;
+    int frameW = srcBox.w / grid.numColumns;
+    int frameH = srcBox.h / grid.numRows;
 
     int f;
     for( f=0; f<nFrames; ++f)
     {
-        int x = f%nWide;
-        int y = f/nWide;
+        int x = f % grid.numColumns;
+        int y = f / grid.numColumns;
         Box b(x*frameW, y*frameH, frameW, frameH);
         frames.push_back(b);
     }

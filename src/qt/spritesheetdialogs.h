@@ -15,6 +15,7 @@ class QSpinBox;
 #include "../projectlistener.h"
 #include "../project.h"
 #include "../layer.h"
+#include "../sheet.h"
 
 
 //---------------------------------------
@@ -79,21 +80,21 @@ class FromSpritesheetDialog : public QDialog
     Q_OBJECT
 
 public:
-    FromSpritesheetDialog(QWidget *parent, Img const& srcImg);
+    FromSpritesheetDialog(QWidget *parent, Img const& srcImg, SpriteGrid const& initialGrid);
     virtual ~FromSpritesheetDialog() {}
 
-    int getNWide();
-    int getNHigh();
-
+    SpriteGrid const& getSpriteGrid() const
+        {return mGrid;}
 
 private:
     Img const& mSrcImg;
+    SpriteGrid mGrid;
     QSpinBox *mNWide;
     QSpinBox *mNHigh;
     SheetPreviewWidget *mPreview;
 
 private slots:
-    void rethinkPreview();
+    void rethink();
 };
 
 #endif
