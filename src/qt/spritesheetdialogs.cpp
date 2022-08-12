@@ -78,28 +78,27 @@ QSize SheetPreviewWidget::minimumSizeHint () const
 
 //---------------------------------------------------------
 
-ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Project& project, NodePath const& targ)
+ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, SpriteGrid const& initialGrid, Project& project, NodePath const& targ)
     : QDialog(parent),
-    m_Proj(project),
-    m_Targ(targ)
+    mProj(project),
+    mTarg(targ),
+    mGrid(initialGrid)
 {
-    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
-    int initialWidth = 1;
-    m_Width = new QSpinBox();
-    m_Width->setRange(1, layer.mFrames.size());
-    m_Width->setValue(initialWidth);
+    //Layer const& layer = mProj.ResolveLayer(mTarg);
+    mWidth = new QSpinBox();
+    mWidth->setRange(1, mGrid.numFrames);
+    mWidth->setValue(mGrid.numColumns);
 
     QLabel* widthlabel = new QLabel(tr("Columns:"));
-    widthlabel->setBuddy(m_Width);
+    widthlabel->setBuddy(mWidth);
 
-    connect( m_Width, SIGNAL( valueChanged(int) ), this, SLOT(widthChanged(int) ) );
+    connect(mWidth, SIGNAL(valueChanged(int)), this, SLOT(widthChanged(int)));
 
-    m_Preview = new SheetPreviewWidget(this);
+    mPreview = new SheetPreviewWidget(this);
 
-
-    m_Info = new QLabel(this);
+    mInfo = new QLabel(this);
     //m_Info->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    m_Info->setTextFormat(Qt::PlainText);
+    mInfo->setTextFormat(Qt::PlainText);
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
@@ -108,11 +107,9 @@ ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Project& project, Node
     QGridLayout *l = new QGridLayout;
 //    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
     l->addWidget(widthlabel, 0, 0);
-    l->addWidget(m_Width, 0, 1);
-
-    l->addWidget(m_Info, 1, 0, 1, 2 );
-
-    l->addWidget(m_Preview, 2, 0,1,2);
+    l->addWidget(mWidth, 0, 1);
+    l->addWidget(mInfo, 1, 0, 1, 2 );
+    l->addWidget(mPreview, 2, 0,1,2);
     l->setRowStretch(2,1);   // preview widget gets any extra space
 
     l->addWidget(buttonBox, 3, 0, 1, 2 );
@@ -120,7 +117,6 @@ ToSpritesheetDialog::ToSpritesheetDialog(QWidget *parent, Project& project, Node
     setWindowTitle(tr("Convert animation to spritesheet"));
 
     rethinkPreview();
-
 }
 
 ToSpritesheetDialog::~ToSpritesheetDialog()
@@ -128,32 +124,22 @@ ToSpritesheetDialog::~ToSpritesheetDialog()
 }
 
 
-int ToSpritesheetDialog::Columns() const
-{
-    return m_Width->value();
-}
-
 void ToSpritesheetDialog::rethinkPreview()
 {
-    std::vector<Box> frames;
-    Layer const& layer = m_Proj.ResolveLayer(m_Targ);
-    SpriteGrid grid;
-//    grid.orientation = ROW;
-    grid.numColumns = Columns();
-    grid.numRows = 0;
-    grid.hpad = 0;
-    grid.vpad = 0;
-
-    Box extent = LayoutSpritesheet(layer, grid, frames);
-    m_Preview->setFrames(frames,extent);
+    std::vector<Box> cells;
+    mGrid.Layout(cells);
+    Box extent = mGrid.Extent();
+    mPreview->setFrames(cells, extent);
 
     char buf[64];
     ::snprintf(buf, sizeof(buf), "Resultant sheet is %dx%d:", extent.w, extent.h);
-    m_Info->setText(QString::fromUtf8(buf));
+    mInfo->setText(QString::fromUtf8(buf));
 }
 
 void ToSpritesheetDialog::widthChanged(int)
 {
+    mGrid.numColumns = mWidth->value();
+    mGrid.numRows = 1 + ((mGrid.numFrames-1) / mGrid.numColumns);
     rethinkPreview();
 }
 
@@ -204,14 +190,11 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Img const& srcImg,
 void FromSpritesheetDialog::rethink()
 {
     // Update the grid data
-    mGrid.numColumns = mNWide->value();
-    mGrid.numRows = mNHigh->value();
-    mGrid.totalFrames = mGrid.numColumns * mGrid.numRows;
-
-    std::vector<Box> frames;
-    Box srcBox = mSrcImg.Bounds();
-    UnpackSpriteGrid(srcBox, mGrid, frames);
-    mPreview->setFrames(frames, srcBox);
+    mGrid.SubdivideBox(mSrcImg.Bounds(), mNWide->value(), mNHigh->value());
+    std::vector<Box> cells;
+    mGrid.Layout(cells);
+    Box extent = mGrid.Extent();
+    mPreview->setFrames(cells, extent);
 }
 
 

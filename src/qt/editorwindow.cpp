@@ -990,10 +990,22 @@ void EditorWindow::setFrame(int frame)
 
 void EditorWindow::do_tospritesheet()
 {
-    ToSpritesheetDialog dlg(this, Proj(), m_Focus);
+    SpriteGrid grid;
+    Layer const& l = Proj().ResolveLayer(m_Focus);
+
+    Box cell = {0, 0, 0, 0};
+    for (auto frame : l.mFrames) {
+        cell.Merge(frame->mImg->Bounds());
+    }
+    grid.numColumns = l.mFrames.size();
+    grid.numFrames = l.mFrames.size();
+    grid.cellW = cell.w;
+    grid.cellH = cell.h;
+
+    ToSpritesheetDialog dlg(this, grid, Proj(), m_Focus);
     if( dlg.exec() == QDialog::Accepted )
     {
-        Cmd* c= new Cmd_ToSpriteSheet(Proj(), m_Focus, dlg.Columns());
+        Cmd* c= new Cmd_ToSpriteSheet(Proj(), m_Focus, dlg.getGrid());
         AddCmd(c);
     }
 }
@@ -1002,15 +1014,11 @@ void EditorWindow::do_fromspritesheet()
 {
     Img const& srcImg = Proj().ResolveLayer(m_Focus).GetImgConst(0);
     SpriteGrid grid;
+    grid.SubdivideBox(srcImg.Bounds(), 4, 1);
     FromSpritesheetDialog dlg(this, srcImg, grid);
     if( dlg.exec() == QDialog::Accepted )
     {
-        std::vector<Box> frames;
-        SpriteGrid grid = dlg.getSpriteGrid();
-        UnpackSpriteGrid(srcImg.Bounds(), grid, frames);
-
-        // TODO: pass in frames
-        Cmd* c= new Cmd_FromSpriteSheet(Proj(), m_Focus, grid.numColumns, frames.size());
+        Cmd* c= new Cmd_FromSpriteSheet(Proj(), m_Focus, dlg.getGrid());
         AddCmd(c);
     }
 }
@@ -1158,13 +1166,22 @@ void EditorWindow::SaveProject(std::string const& filename)
             // TODO: Implement an Uber-savedialog to prompt user for assorted
             // save options...
             // For now, just drop user into unexplained spritesheet dlg :-)
-            ToSpritesheetDialog dlg(this, Proj(), m_Focus);
+            SpriteGrid grid;
+            Layer const& l = Proj().ResolveLayer(m_Focus);
+            Box cell{0,0,0,0};
+            for (auto frame : l.mFrames) {
+                cell.Merge(frame->mImg->Bounds());
+            }
+            grid.cellW = cell.w;
+            grid.cellH = cell.h;
+            grid.numColumns = l.mFrames.size();
+            grid.numFrames = l.mFrames.size();
+ 
+            ToSpritesheetDialog dlg(this, grid, Proj(), m_Focus);
             if( dlg.exec() == QDialog::Accepted )
             {
-                int cols = dlg.Columns();
                 // convert to spritesheet
-                Layer const& l = Proj().ResolveLayer(m_Focus);
-                Layer* tmp = LayerToSpriteSheet(l, cols);
+                Layer* tmp = LayerToSpriteSheet(l, dlg.getGrid());
                 SaveLayer(*tmp, filename);
                 // TODO: handle leak due to exceptions!!!!!!
                 delete tmp;

@@ -6,6 +6,7 @@
 #include "point.h"
 #include "img.h"
 #include "brush.h"
+#include "sheet.h"
 
 #include <vector>
 
@@ -109,27 +110,25 @@ private:
 class Cmd_ToSpriteSheet : public Cmd
 {
 public:
-    Cmd_ToSpriteSheet(Project& proj, NodePath const& targ, int columns);
+    Cmd_ToSpriteSheet(Project& proj, NodePath const& targ, SpriteGrid const& grid);
     virtual ~Cmd_ToSpriteSheet();
     virtual void Do();
     virtual void Undo();
 private:
-    NodePath m_Targ;
-    int m_NumFrames;
-    int m_Columns;
+    NodePath mTarg;
+    const SpriteGrid mGrid;
 };
 
 class Cmd_FromSpriteSheet : public Cmd
 {
 public:
-    Cmd_FromSpriteSheet(Project& proj, NodePath const& targ, int columns, int numFrames);
+    Cmd_FromSpriteSheet(Project& proj, NodePath const& targ, SpriteGrid const& grid);
     virtual ~Cmd_FromSpriteSheet();
     virtual void Do();
     virtual void Undo();
 private:
-    NodePath m_Targ;
-    int m_NumFrames;
-    int m_Columns;
+    NodePath mTarg;
+    const SpriteGrid mGrid;
 };
 
 

@@ -48,22 +48,26 @@ class ToSpritesheetDialog : public QDialog, ProjectListener
     Q_OBJECT
 
 public:
-    ToSpritesheetDialog(QWidget *parent, Project& proj, NodePath const& targ);
+    ToSpritesheetDialog(QWidget *parent, SpriteGrid const& initialGrid, Project& proj, NodePath const& targ);
     virtual ~ToSpritesheetDialog();
 
-    // Return the number of columns chosen by the user.
-    int Columns() const;
+    // Return the chosen layout.
+    SpriteGrid const& getGrid() const
+        {return mGrid;}
 
     // projectlistener implementation
     void OnFramesAdded(int /*first*/, int /*last*/);
     void OnFramesRemoved(int /*first*/, int /*last*/);
 
 private:
-    Project& m_Proj;
-    NodePath m_Targ;
-    QSpinBox *m_Width;
-    SheetPreviewWidget *m_Preview;
-    QLabel *m_Info;
+    Project& mProj;
+    NodePath mTarg;
+    SpriteGrid mGrid;
+
+    QSpinBox *mWidth;
+    SheetPreviewWidget *mPreview;
+    QLabel *mInfo;
+
     void rethinkPreview();
 
 private slots:
@@ -83,7 +87,7 @@ public:
     FromSpritesheetDialog(QWidget *parent, Img const& srcImg, SpriteGrid const& initialGrid);
     virtual ~FromSpritesheetDialog() {}
 
-    SpriteGrid const& getSpriteGrid() const
+    SpriteGrid const& getGrid() const
         {return mGrid;}
 
 private:
