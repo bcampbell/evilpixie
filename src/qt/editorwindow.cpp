@@ -1012,9 +1012,21 @@ void EditorWindow::do_tospritesheet()
 
 void EditorWindow::do_fromspritesheet()
 {
-    Img const& srcImg = Proj().ResolveLayer(m_Focus).GetImgConst(0);
+    Layer& layer = Proj().ResolveLayer(m_Focus);
+    Img const& srcImg = layer.GetImgConst(0);
     SpriteGrid grid;
-    grid.SubdivideBox(srcImg.Bounds(), 4, 1);
+    if (layer.mSpriteSheetGrid.numFrames != 1) {
+        // use the existing settings
+        grid = layer.mSpriteSheetGrid;
+    } else {
+        // Use a default grid
+        Box b = srcImg.Bounds();
+        grid.numColumns = 4;
+        grid.numRows = 1;
+        grid.cellW = (b.w / grid.numColumns)-(grid.padX*2);
+        grid.cellH = (b.h / grid.numRows)-(grid.padY*2);
+        grid.numFrames = 0; // use rows*cols
+    }
     FromSpritesheetDialog dlg(this, srcImg, grid);
     if( dlg.exec() == QDialog::Accepted )
     {
@@ -1121,15 +1133,7 @@ void EditorWindow::do_save()
 
 void EditorWindow::do_saveas()
 {
-    QString savefilters;
-  
-    Layer const& l = Proj().ResolveLayer(m_Focus);
-    if (l.mFrames.size() > 1) {
-        savefilters = "Animated GIF (*.gif);;Any files (*)";
-    } else {
-        savefilters = "Image files (*.bmp *.gif *.png);;Any files (*)";
-    }
-
+    QString savefilters = "Image files (*.bmp *.gif *.png);;Any files (*)";
     QString filename = QFileDialog::getSaveFileName(
                     this,
                     "Save image as",
@@ -1175,6 +1179,7 @@ void EditorWindow::SaveProject(std::string const& filename)
             grid.cellW = cell.w;
             grid.cellH = cell.h;
             grid.numColumns = l.mFrames.size();
+            grid.numRows = 1;
             grid.numFrames = l.mFrames.size();
  
             ToSpritesheetDialog dlg(this, grid, Proj(), m_Focus);

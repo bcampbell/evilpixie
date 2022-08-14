@@ -190,7 +190,14 @@ FromSpritesheetDialog::FromSpritesheetDialog(QWidget *parent, Img const& srcImg,
 void FromSpritesheetDialog::rethink()
 {
     // Update the grid data
-    mGrid.SubdivideBox(mSrcImg.Bounds(), mNWide->value(), mNHigh->value());
+    unsigned int cols = mNWide->value();
+    unsigned int rows = mNHigh->value();
+    Box b = mSrcImg.Bounds();
+    mGrid.numColumns = cols;
+    mGrid.numRows = rows;
+    mGrid.cellW = (b.w / cols)-(mGrid.padX*2);
+    mGrid.cellH = (b.h / rows)-(mGrid.padY*2);
+
     std::vector<Box> cells;
     mGrid.Layout(cells);
     Box extent = mGrid.Extent();

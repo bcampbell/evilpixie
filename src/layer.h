@@ -11,6 +11,7 @@
 #include "palette.h"
 #include "point.h"
 #include "ranges.h"
+#include "sheet.h"
 
 class Layer;
 class Stack;
@@ -212,6 +213,10 @@ public:
     RangeGrid mRanges;
 
     std::string mFilename;
+
+    // Grid layout to use when converting this layer to/from a spritesheet
+    // use IsZero() to check if set or not.
+    SpriteGrid mSpriteSheetGrid;
 };
 
 #endif // LAYER_H

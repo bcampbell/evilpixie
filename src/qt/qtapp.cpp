@@ -101,26 +101,22 @@ EditorWindow* QTApp::LoadProject(std::string const& filename)
 {
     Layer* l = LoadLayer(filename);
     assert(!l->mFrames.empty());
-    // TODO: check for hints of spritesheet, and prompt a conversion.
-#if 0
-    Img const& srcImg = *(l->mFrames[0]->mImg);
-    FromSpritesheetDialog dlg(nullptr, srcImg);
+    // Check for hints of spritesheet, and prompt a conversion.
+    if( l->mSpriteSheetGrid.numFrames > 1) {
+        Img const& srcImg = *(l->mFrames[0]->mImg);
 
-    if (dlg.exec() != QDialog::Accepted) {
-        return nullptr;
+        FromSpritesheetDialog dlg(nullptr, srcImg, l->mSpriteSheetGrid);
+        if (dlg.exec() == QDialog::Accepted) {
+            std::vector<Img*> frames;
+            l->mSpriteSheetGrid = dlg.getGrid();
+            FramesFromSpriteSheet(srcImg, dlg.getGrid(), frames);
+            l->ZapFrames();
+            for (Img* img : frames) {
+                // TODO: duration!
+                l->mFrames.push_back(new Frame(img,0));
+            }
+        }
     }
-
-    std::vector<Img*> frames;
-    //printf("nwide: %d nhigh=%d\n",dlg.getNWide(), dlg.getNHigh());
-    FramesFromSpriteSheet(srcImg, dlg.getNWide(), dlg.getNWide()*dlg.getNHigh(), frames);
-
-    l->ZapFrames();
-    for (Img* img : frames) {
-        // TODO: duration!
-        l->mFrames.push_back(new Frame(img,0));
-    }
-#endif
-
     Project* new_proj = new Project(l);
     EditorWindow* fenster = new EditorWindow(new_proj);
     fenster->show();

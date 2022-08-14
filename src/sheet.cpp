@@ -3,18 +3,136 @@
 #include "draw.h"
 #include "img.h"
 #include "layer.h"
+#include "lexer.h"
+
 #include <cstdio>
 
 void SpriteGrid::Layout(std::vector<Box>& cells) const
 {
-    assert (numFrames > 0 );
+    assert(cellW > 0);
+    assert(cellH > 0);
+    unsigned int cnt = (numFrames > 0) ? numFrames : numColumns * numRows;
     int w = padX + cellW + padX;
     int h = padY + cellH + padY;
-    for (unsigned int i=0; i<numFrames; ++i) {
+    for (unsigned int i = 0; i < cnt; ++i) {
         int x = (i % numColumns) * w;
         int y = (i / numColumns) * h;
         cells.push_back(Box(x, y, cellW, cellH));
     }
+}
+
+
+std::string SpriteGrid::Stringify(Box const& imgbounds) const
+{
+    std::string out;
+    if (numFrames < 2) {
+        return out;
+    }
+
+    auto append = [&](std::string name, int val) {
+        if (!out.empty()) {
+            out += " ";
+        }
+        out += name + "=" + std::to_string(val);
+    };
+
+    if (numColumns != 1) {
+        append("cols",numColumns);
+    }
+    if (numRows != 1) {
+        append("rows",numRows);
+    }
+    if (padX > 0) {
+        append("xpad",padX);
+    }
+    if (padY > 0) {
+        append("ypad",padY);
+    }
+    // Don't write cellw and cellh if they can be inferred from the overall
+    // image size.
+    bool exactW = (numColumns * (padX + cellW + padX) == (unsigned int)imgbounds.w);
+    if (!exactW) {
+        append("w",cellW);
+    }
+    bool exactH = (numRows * (padY + cellH + padY) == (unsigned int)imgbounds.h);
+    if (!exactH) {
+        append("h",cellH);
+    }
+    // Don't write framecount if it can be easily inferred.
+    if (numFrames != numColumns * numRows) {
+        append("frames",numFrames);
+    }
+    return out;
+}
+
+
+bool SpriteGrid::Parse(std::string input, Box const& imgbounds)
+{
+    Lexer lexer(input);
+
+    // Defaults
+    numColumns = 1;
+    numRows = 1;
+    padX = 0;
+    padY = 0;
+    // Stuff we'll derive if not explicit in input.
+    numFrames = 0;
+    cellW = 0;
+    cellH = 0;
+
+    while(true) {
+        // Expect identifier or end.
+        Tok t = lexer.Next();
+        if (t.kind == Tok::END) {
+            break;
+        }
+        if (t.kind != Tok::IDENT) {
+            return false;   // syntax error
+        }
+
+        std::string ident = t.text();
+        // Expect '='
+        t = lexer.Next();
+        if (t.kind != Tok::EQUALS) {
+            return false;   // syntax error
+        }
+        // Expect number.
+        t = lexer.Next();
+        if (t.kind != Tok::NUMERIC) {
+            return false;   // syntax error
+        }
+        int n = std::stoi(t.text());
+
+        if (ident == "cols") {
+            numColumns = (unsigned int)n;
+        } else if (ident == "rows") {
+            numRows = (unsigned int)n;
+        } else if (ident == "xpad") {
+            padX = (unsigned int)n;
+        } else if (ident == "ypad") {
+            padY = (unsigned int)n;
+        } else if (ident == "w") {
+            cellW = (unsigned int)n;
+        } else if (ident == "h") {
+            cellH = (unsigned int)n;
+        } else if (ident == "frames") {
+            numFrames = (unsigned int)n;
+        } else {
+            // Ignore unknown fields.
+        }
+    }
+
+    if (cellW == 0) {
+        cellW = (imgbounds.w / numColumns) - (padX * 2);
+    }
+    if (cellH == 0) {
+        cellH = (imgbounds.h / numRows) - (padY * 2);
+    }
+    if (numFrames == 0) {
+        numFrames = numColumns * numRows;
+    }
+
+    return true;
 }
 
 
@@ -34,6 +152,8 @@ Layer* LayerToSpriteSheet(Layer const& src, SpriteGrid const& grid)
     newLayer->mPalette = src.mPalette;
     newLayer->mRanges = src.mRanges;
     newLayer->mFrames.push_back(new Frame(dest, 1000000/newLayer->mFPS));
+
+    newLayer->mSpriteSheetGrid = grid;
     return newLayer;
 }
 

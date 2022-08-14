@@ -2,6 +2,9 @@
 #define SHEET_H
 
 #include <vector>
+#include <string>
+#include <cassert>
+
 #include "box.h"
 
 class Img;
@@ -13,30 +16,31 @@ struct SpriteGrid
 //    enum {ROW, COLUMN} orientation{ROW};
     unsigned int numColumns{1};
     unsigned int numRows{1};
-    unsigned int cellW{0};  // width of each cell (exclude padX)
-    unsigned int cellH{0};  // height of each cell (excluding padY)
     unsigned int padX{0};
     unsigned int padY{0};
-    unsigned int numFrames{1};
+
+    unsigned int cellW{0};  // width of each cell (exclude padX) 0=unset
+    unsigned int cellH{0};  // height of each cell (excluding padY) 0=unset
+    unsigned int numFrames{0};  // 0 = rows * cols
 
     // Calculate cells in the grid. Returns overall bounding box.
     void Layout(std::vector<Box>& cells) const;
 
     // Return the overall size of the layout.
-    Box Extent() const {
+    Box Extent() const
+    {
+        assert(numColumns > 0);
+        assert(numRows > 0);
+
+        assert(cellW > 0);
+        assert(cellH > 0);
         const int w = padX + cellW + padX;
         const int h = padY + cellH + padY;
         return Box(0, 0, numColumns * w, numRows * h);
     }
 
-    void SubdivideBox(Box const& src, int cols, int rows)
-    {
-        numColumns = cols;
-        numRows = rows;
-        cellW = (src.w / cols)-(padX*2);
-        cellH = (src.h / rows)-(padY*2);
-        numFrames = cols * rows;
-    }
+    std::string Stringify(Box const& imgbounds) const;
+    bool Parse(std::string input, Box const& imgbounds);
 };
 
 

@@ -80,6 +80,19 @@ Layer* LoadLayer(std::string const& filename)
         // read the image rows
         im_read_rows(rdr, img->H(), img->Ptr(0,0), img->Pitch());
 
+        // check metadata
+        for (const im_kv* kv = im_read_kv(rdr); kv->key; ++kv) {
+            std::string key(kv->key);
+            std::string payload(kv->value);
+            if (key == "SpriteSheet") {
+                SpriteGrid grid;
+                bool ok = grid.Parse(payload, img->Bounds());
+                if (ok) {
+                    layer->mSpriteSheetGrid = grid;
+                }
+            }
+        }
+
         //
         Frame* frame = new Frame();
         frame->mImg = img;

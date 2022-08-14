@@ -256,7 +256,6 @@ Cmd_FromSpriteSheet::Cmd_FromSpriteSheet(Project& proj, NodePath const& targ, Sp
 {
     Layer& l = Proj().ResolveLayer(mTarg);
     assert(l.mFrames.size() == 1);
-    assert(mGrid.numFrames >= 1);
 }
 
 Cmd_FromSpriteSheet::~Cmd_FromSpriteSheet()
@@ -284,7 +283,6 @@ void Cmd_FromSpriteSheet::Do()
 void Cmd_FromSpriteSheet::Undo()
 {
     Layer& l = Proj().ResolveLayer(mTarg);
-    assert(mGrid.numFrames == l.mFrames.size());
     Layer* newLayer = LayerToSpriteSheet(l, mGrid);
 
     l.Replace(newLayer);

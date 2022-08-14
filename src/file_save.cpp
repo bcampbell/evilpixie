@@ -71,6 +71,7 @@ void SaveLayer(Layer const& layer, std::string const& filename)
         }
         im_write_img(writer, img->W(), img->H(), fmt);
 
+        // Write out palette?
         // TODO: handle global and per-frame palettes...
         Palette const& pal = layer.mPalette;
         if (pal.NColours > 0) {
@@ -86,7 +87,17 @@ void SaveLayer(Layer const& layer, std::string const& filename)
             }
             im_write_palette(writer, IM_FMT_RGBA, pal.NColours, colbuf.data());
             err = im_write_err(writer);
-        } 
+        }
+
+        // Write metadata
+        {
+            SpriteGrid const& g = layer.mSpriteSheetGrid;
+            unsigned int cnt = (g.numFrames > 0) ? g.numFrames : g.numColumns * g.numRows;
+            if (cnt > 1) {
+                im_write_kv(writer, "SpriteSheet", layer.mSpriteSheetGrid.Stringify(img->Bounds()).c_str());
+            }
+        }
+
         im_write_rows(writer, img->H(), img->PtrConst(0, 0), img->Pitch());
     }
 
