@@ -135,6 +135,9 @@ public:
 
     // last known filename of project (empty string for none)
     std::string mFilename;
+
+    // Grid configuration for the project.
+    Box mGrid {0,0,8,8};
 private:
     Project( Project const& );  // disallowed
 

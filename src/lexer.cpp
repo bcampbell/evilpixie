@@ -38,6 +38,32 @@ void Lexer::advance() {
     curr.end = pos;
 }
 
+bool ParseNumericAssignment(Lexer& lex, std::string& name, int& val)
+{
+    // Expect identifier or end.
+    Tok t = lex.Next(); 
+    if (t.kind == Tok::END) {
+        return false;
+    }
+    if (t.kind != Tok::IDENT) {
+        return false;   // syntax error
+    }
+    name = t.text();
+
+    // Expect '='
+    t = lex.Next();
+    if (t.kind != Tok::EQUALS) {
+        return false;   // syntax error
+    }
+    t = lex.Next();
+    if (t.kind != Tok::NUMERIC) {
+        return false;   // syntax error
+    }
+    val = std::stoi(t.text());
+    return true;
+}
+
+
 
 #ifdef LEXTEST
 // Noddy little interactive driver for trying out the lexer eg: 

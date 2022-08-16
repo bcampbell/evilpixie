@@ -44,4 +44,11 @@ private:
 
     Tok curr;
 };
+
+
+// VarName=<number>
+// eg ("foo=99", "Answer = 12")
+// Returns true if an assignment was found, else false.
+bool ParseNumericAssignment(Lexer& lex, std::string& name, int& val);
+
 #endif // LEXER_H

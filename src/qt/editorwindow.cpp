@@ -1187,14 +1187,14 @@ void EditorWindow::SaveProject(std::string const& filename)
             {
                 // convert to spritesheet
                 Layer* tmp = LayerToSpriteSheet(l, dlg.getGrid());
-                SaveLayer(*tmp, filename);
+                SaveLayer(*tmp, filename, Proj().mGrid);
                 // TODO: handle leak due to exceptions!!!!!!
                 delete tmp;
             }
         } else {
             // Save directly - no processing required.
             Layer const& l = Proj().ResolveLayer(m_Focus);
-            SaveLayer(l, filename);
+            SaveLayer(l, filename, Proj().mGrid);
         }
         Proj().mFilename = filename;
         Proj().SetModifiedFlag(false);

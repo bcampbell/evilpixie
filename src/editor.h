@@ -39,8 +39,8 @@ public:
 
     bool GridActive() const           { return m_GridActive; }
     void ActivateGrid( bool yesno )     { m_GridActive=yesno; }
-    void SetGrid( Box const& g )        { m_Grid=g; }
-    Box const& Grid() const             { return m_Grid; }
+    void SetGrid( Box const& g )        { Proj().mGrid = g; }
+    Box const& Grid() const             { return Proj().mGrid; }
 
     // snap p to grid, if active (else left unchanged)
     void GridSnap( Point& p );
@@ -132,9 +132,7 @@ private:
 
     int m_Brush; // StdBrush index, or -1 for custombrush
 
-    // grid stuff
     bool m_GridActive;
-    Box m_Grid;
 
     PenColour m_FGPen;
     PenColour m_BGPen;

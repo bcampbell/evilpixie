@@ -4,6 +4,7 @@
 #include <string>
 #include "file_type.h"
 
+class Box;
 class Layer;
 class Stack;
 
@@ -20,6 +21,6 @@ struct SaveRequirements
 // Work out what operations are required to save the stack in the
 // given file format.
 SaveRequirements CheckSave(Stack const& stack, Filetype ft);
-void SaveLayer(Layer const& layer, std::string const& filename);
+void SaveLayer(Layer const& layer, std::string const& filename, Box const& grid);
 
 #endif // FILE_SAVE_H

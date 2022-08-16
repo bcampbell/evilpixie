@@ -11,11 +11,10 @@
 #include <assert.h>
 #include <cstdio>
 
-
 Project::Project( std::string const& filename ) :
     mRoot(nullptr),
     m_Expendable(false),
-    m_Modified( false )
+    m_Modified(false)
 {
     mFilename = filename;
     Layer* l = LoadLayer(filename.c_str());

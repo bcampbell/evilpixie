@@ -43,7 +43,7 @@ SaveRequirements CheckSave(Stack const& stack, Filetype ft)
 }
 
 
-void SaveLayer(Layer const& layer, std::string const& filename)
+void SaveLayer(Layer const& layer, std::string const& filename, Box const& grid)
 {
     ImErr err;
     im_write* writer = im_write_open_file( filename.c_str(), &err);
@@ -91,10 +91,25 @@ void SaveLayer(Layer const& layer, std::string const& filename)
 
         // Write metadata
         {
+            // Is there a spritesheet layout grid?
             SpriteGrid const& g = layer.mSpriteSheetGrid;
             unsigned int cnt = (g.numFrames > 0) ? g.numFrames : g.numColumns * g.numRows;
             if (cnt > 1) {
                 im_write_kv(writer, "SpriteSheet", layer.mSpriteSheetGrid.Stringify(img->Bounds()).c_str());
+            }
+
+
+            // Grid settings?
+            Box defaultGrid(0, 0, 8, 8);
+            if (!grid.Empty() /* && grid != defaultGrid */) {
+                std::string spec =
+                    "w=" + std::to_string(grid.w) +
+                    " h=" + std::to_string(grid.h);
+                if(grid.x !=0 || grid.y != 0) {
+                    spec += " x=" + std::to_string(grid.x);
+                    spec += " y=" + std::to_string(grid.y);
+                }
+                im_write_kv(writer, "Grid", spec.c_str());
             }
         }
 

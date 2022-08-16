@@ -4,6 +4,7 @@
 
 #include "file_load.h"
 #include "layer.h"
+#include "lexer.h"
 #include "img.h"
 #include "exception.h"
 #include "util.h"
@@ -27,6 +28,24 @@ std::string const impyErrToMsg(ImErr err) {
     }
     return std::string("Error code ") + std::to_string(err);
 }
+
+
+static Box parseGrid(std::string input)
+{
+    Lexer lexer(input);
+    Box b{0,0,8,8};
+
+    std::string name;
+    int val;
+    while(ParseNumericAssignment(lexer, name, val)){
+        if (name == "w") { b.w = val; }
+        if (name == "h") { b.h = val; }
+        if (name == "x") { b.x = val; }
+        if (name == "y") { b.y = val; }
+    }
+    return b;
+}
+
 
 Layer* LoadLayer(std::string const& filename)
 {
@@ -90,6 +109,10 @@ Layer* LoadLayer(std::string const& filename)
                 if (ok) {
                     layer->mSpriteSheetGrid = grid;
                 }
+            }
+            if (key == "Grid") {
+                Box b = parseGrid(payload);
+                printf("Grid %d %d %d %d\n", b.x, b.y, b.w, b.h);
             }
         }
 

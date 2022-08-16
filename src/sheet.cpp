@@ -80,29 +80,9 @@ bool SpriteGrid::Parse(std::string input, Box const& imgbounds)
     cellW = 0;
     cellH = 0;
 
-    while(true) {
-        // Expect identifier or end.
-        Tok t = lexer.Next();
-        if (t.kind == Tok::END) {
-            break;
-        }
-        if (t.kind != Tok::IDENT) {
-            return false;   // syntax error
-        }
-
-        std::string ident = t.text();
-        // Expect '='
-        t = lexer.Next();
-        if (t.kind != Tok::EQUALS) {
-            return false;   // syntax error
-        }
-        // Expect number.
-        t = lexer.Next();
-        if (t.kind != Tok::NUMERIC) {
-            return false;   // syntax error
-        }
-        int n = std::stoi(t.text());
-
+    std::string ident;
+    int n;
+    while(ParseNumericAssignment(lexer, ident, n)) {
         if (ident == "cols") {
             numColumns = (unsigned int)n;
         } else if (ident == "rows") {
