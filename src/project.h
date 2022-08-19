@@ -19,17 +19,23 @@ class Tool;
 class ProjectListener;
 
 
+// General project settings
 struct ProjSettings
 {
-    ProjSettings() :
-        PixW(1),
-        PixH(1)
-    {}
+    std::string Filename;
+
+    //
+    Box Grid {0,0,8,8};
+
+    // Grid layout to use when converting this layer to/from a spritesheet
+    // use IsZero() to check if set or not.
+    SpriteGrid SpriteSheetGrid;
 
     // pixel ratio. Usually 1:1 but might be 2:1 (C64 multicolour)
     // or 1:2 (Amiga hires) say...
-    int PixW;
-    int PixH;
+    // TODO: should be in LayerSettings!
+    int PixW {1};
+    int PixH {1};
 };
 
 
@@ -51,7 +57,7 @@ public:
 	virtual ~Project();
 
 
-    ProjSettings const& Settings() { return m_Settings; }
+    ProjSettings const& Settings() { return mSettings; }
 
 	void AddListener( ProjectListener* l )
 		{ m_Listeners.insert( l ); }
@@ -136,14 +142,11 @@ public:
     // last known filename of project (empty string for none)
     std::string mFilename;
 
-    // Grid configuration for the project.
-    Box mGrid {0,0,8,8};
+    ProjSettings mSettings;
 private:
     Project( Project const& );  // disallowed
 
 	std::set< ProjectListener* > m_Listeners;
-
-    ProjSettings m_Settings;
 
     bool m_Expendable;
 

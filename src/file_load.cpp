@@ -3,10 +3,11 @@
 #include <vector>
 
 #include "file_load.h"
+#include "exception.h"
+#include "img.h"
 #include "layer.h"
 #include "lexer.h"
-#include "img.h"
-#include "exception.h"
+#include "project.h"
 #include "util.h"
 
 // Return a readable string from an impy errorcode.
@@ -47,7 +48,7 @@ static Box parseGrid(std::string input)
 }
 
 
-Layer* LoadLayer(std::string const& filename)
+Layer* LoadLayer(std::string const& filename, ProjSettings& projSettings)
 {
     ImErr err;
 
@@ -107,12 +108,12 @@ Layer* LoadLayer(std::string const& filename)
                 SpriteGrid grid;
                 bool ok = grid.Parse(payload, img->Bounds());
                 if (ok) {
-                    layer->mSpriteSheetGrid = grid;
+                    projSettings.SpriteSheetGrid = grid;
                 }
             }
             if (key == "Grid") {
                 Box b = parseGrid(payload);
-                printf("Grid %d %d %d %d\n", b.x, b.y, b.w, b.h);
+                projSettings.Grid = b;
             }
         }
 
@@ -126,9 +127,6 @@ Layer* LoadLayer(std::string const& filename)
     if (err != IM_ERR_NONE) {
         throw Exception(std::string("Load failed: ") + impyErrToMsg(err));
     }
-
-    layer->mFilename = filename;
-
     return layer;
 }
 

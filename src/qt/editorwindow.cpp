@@ -1015,11 +1015,11 @@ void EditorWindow::do_fromspritesheet()
     Layer& layer = Proj().ResolveLayer(m_Focus);
     Img const& srcImg = layer.GetImgConst(0);
     SpriteGrid grid;
-    if (layer.mSpriteSheetGrid.numFrames != 1) {
+    if (Proj().mSettings.SpriteSheetGrid.numFrames != 1) {
         // use the existing settings
-        grid = layer.mSpriteSheetGrid;
+        grid = Proj().mSettings.SpriteSheetGrid;
     } else {
-        // Use a default grid
+        // Use a default spritesheet layout.
         Box b = srcImg.Bounds();
         grid.numColumns = 4;
         grid.numRows = 1;
@@ -1187,14 +1187,15 @@ void EditorWindow::SaveProject(std::string const& filename)
             {
                 // convert to spritesheet
                 Layer* tmp = LayerToSpriteSheet(l, dlg.getGrid());
-                SaveLayer(*tmp, filename, Proj().mGrid);
+                Proj().mSettings.SpriteSheetGrid = dlg.getGrid();
+                SaveLayer(*tmp, filename, Proj().mSettings);
                 // TODO: handle leak due to exceptions!!!!!!
                 delete tmp;
             }
         } else {
             // Save directly - no processing required.
             Layer const& l = Proj().ResolveLayer(m_Focus);
-            SaveLayer(l, filename, Proj().mGrid);
+            SaveLayer(l, filename, Proj().mSettings);
         }
         Proj().mFilename = filename;
         Proj().SetModifiedFlag(false);

@@ -214,9 +214,6 @@ public:
 
     std::string mFilename;
 
-    // Grid layout to use when converting this layer to/from a spritesheet
-    // use IsZero() to check if set or not.
-    SpriteGrid mSpriteSheetGrid;
 };
 
 #endif // LAYER_H

@@ -133,7 +133,6 @@ Layer* LayerToSpriteSheet(Layer const& src, SpriteGrid const& grid)
     newLayer->mRanges = src.mRanges;
     newLayer->mFrames.push_back(new Frame(dest, 1000000/newLayer->mFPS));
 
-    newLayer->mSpriteSheetGrid = grid;
     return newLayer;
 }
 

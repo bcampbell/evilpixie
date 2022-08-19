@@ -40,6 +40,11 @@ struct Box
     void Merge( Box const& other );
     bool Contains( Box const& other ) const;
     bool Contains( Point const& pt ) const;
+
+
+    bool operator==(Box const& other) const {
+        return x == other.x && y == other.y && w == other.w && h == other.h;
+    }
 };
 
 

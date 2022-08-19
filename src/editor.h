@@ -39,8 +39,8 @@ public:
 
     bool GridActive() const           { return m_GridActive; }
     void ActivateGrid( bool yesno )     { m_GridActive=yesno; }
-    void SetGrid( Box const& g )        { Proj().mGrid = g; }
-    Box const& Grid() const             { return Proj().mGrid; }
+    void SetGrid( Box const& g )        { Proj().mSettings.Grid = g; }
+    Box const& Grid() const             { return Proj().mSettings.Grid; }
 
     // snap p to grid, if active (else left unchanged)
     void GridSnap( Point& p );

@@ -99,17 +99,18 @@ EditorWindow* QTApp::NewProject()
 
 EditorWindow* QTApp::LoadProject(std::string const& filename)
 {
-    Layer* l = LoadLayer(filename);
+    ProjSettings projSettings;
+    Layer* l = LoadLayer(filename, projSettings);
     assert(!l->mFrames.empty());
     // Check for hints of spritesheet, and prompt a conversion.
-    if( l->mSpriteSheetGrid.numFrames > 1) {
+    if( projSettings.SpriteSheetGrid.numFrames > 1) {
         Img const& srcImg = *(l->mFrames[0]->mImg);
 
-        FromSpritesheetDialog dlg(nullptr, srcImg, l->mSpriteSheetGrid);
+        FromSpritesheetDialog dlg(nullptr, srcImg, projSettings.SpriteSheetGrid);
         if (dlg.exec() == QDialog::Accepted) {
+            projSettings.SpriteSheetGrid = dlg.getGrid();
             std::vector<Img*> frames;
-            l->mSpriteSheetGrid = dlg.getGrid();
-            FramesFromSpriteSheet(srcImg, dlg.getGrid(), frames);
+            FramesFromSpriteSheet(srcImg, projSettings.SpriteSheetGrid, frames);
             l->ZapFrames();
             for (Img* img : frames) {
                 // TODO: duration!
@@ -118,6 +119,9 @@ EditorWindow* QTApp::LoadProject(std::string const& filename)
         }
     }
     Project* new_proj = new Project(l);
+    new_proj->mSettings = projSettings;
+    new_proj->mFilename = filename;
+
     EditorWindow* fenster = new EditorWindow(new_proj);
     fenster->show();
     fenster->activateWindow();

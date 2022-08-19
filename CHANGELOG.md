@@ -22,6 +22,7 @@
 - Fix next/prev pen shortcut keys ('[' and ']').
 - Sync colour picking between palette editor and main editor window.
 - Stash spritesheet info in PNG metadata to ease reloading
+- Stash grid settings in PNG metadata
 
 ## v0.2.1 (Jan 2021)
 

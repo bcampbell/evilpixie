@@ -17,7 +17,7 @@ Project::Project( std::string const& filename ) :
     m_Modified(false)
 {
     mFilename = filename;
-    Layer* l = LoadLayer(filename.c_str());
+    Layer* l = LoadLayer(filename.c_str(), mSettings);
     mRoot = new Stack();
     mRoot->AddChild(l);
 }
@@ -29,7 +29,6 @@ Project::Project(Layer* layer) :
     m_Expendable(false),
     m_Modified( false )
 {
-    mFilename = layer->mFilename;
     mRoot = new Stack();
     mRoot->AddChild(layer);
 }

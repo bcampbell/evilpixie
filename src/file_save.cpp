@@ -2,9 +2,10 @@
 
 #include "file_save.h"
 #include "file_type.h"
-#include "layer.h"
-#include "img.h"
 #include "exception.h"
+#include "img.h"
+#include "layer.h"
+#include "project.h"
 #include "util.h"
 
 // defined in file_load.cpp
@@ -43,7 +44,7 @@ SaveRequirements CheckSave(Stack const& stack, Filetype ft)
 }
 
 
-void SaveLayer(Layer const& layer, std::string const& filename, Box const& grid)
+void SaveLayer(Layer const& layer, std::string const& filename, ProjSettings const& projSettings)
 {
     ImErr err;
     im_write* writer = im_write_open_file( filename.c_str(), &err);
@@ -92,16 +93,18 @@ void SaveLayer(Layer const& layer, std::string const& filename, Box const& grid)
         // Write metadata
         {
             // Is there a spritesheet layout grid?
-            SpriteGrid const& g = layer.mSpriteSheetGrid;
+            SpriteGrid const& g = projSettings.SpriteSheetGrid;
             unsigned int cnt = (g.numFrames > 0) ? g.numFrames : g.numColumns * g.numRows;
             if (cnt > 1) {
-                im_write_kv(writer, "SpriteSheet", layer.mSpriteSheetGrid.Stringify(img->Bounds()).c_str());
+                im_write_kv(writer, "SpriteSheet", g.Stringify(img->Bounds()).c_str());
             }
 
 
             // Grid settings?
-            Box defaultGrid(0, 0, 8, 8);
-            if (!grid.Empty() /* && grid != defaultGrid */) {
+
+            Box defaultGrid{0,0,8,8};
+            Box const& grid = projSettings.Grid;
+            if (!grid.Empty() && grid != defaultGrid ) {
                 std::string spec =
                     "w=" + std::to_string(grid.w) +
                     " h=" + std::to_string(grid.h);

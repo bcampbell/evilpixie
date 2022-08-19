@@ -4,7 +4,8 @@
 #include <string>
 
 class Layer;
+struct ProjSettings;
 
-Layer* LoadLayer(std::string const& filename);
+Layer* LoadLayer(std::string const& filename, ProjSettings& projSettings);
 
 #endif // FILE_LOAD_H
