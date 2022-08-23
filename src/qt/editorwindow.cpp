@@ -931,7 +931,7 @@ void EditorWindow::do_addlayer()
 
 void EditorWindow::do_addframe()
 {
-    assert(Focus().sel == NodePath::SEL_MAIN);
+    assert(!Focus().IsEmpty());
     Cmd* c = new Cmd_InsertFrames(Proj(), m_Focus, m_Frame+1, 1);
     AddCmd(c);
     // update frame in OnFramesAdded
@@ -942,7 +942,7 @@ void EditorWindow::do_addframe()
 
 void EditorWindow::do_zapframe()
 {
-    assert(Focus().sel == NodePath::SEL_MAIN);
+    assert(!Focus().IsEmpty());
     Cmd* c= new Cmd_DeleteFrames(Proj(), m_Focus, m_Frame, 1);
     AddCmd(c);
     // update frame in OnFramesRemoved
@@ -951,7 +951,7 @@ void EditorWindow::do_zapframe()
 void EditorWindow::do_prevframe()
 {
     Layer const& l = Proj().ResolveLayer(m_Focus);
-    assert(m_Focus.sel == NodePath::SEL_MAIN);
+    assert(!Focus().IsEmpty() && m_Frame != SPARE_FRAME);
     if (m_Frame > 0) {
         setFrame(m_Frame - 1);
     } else {
@@ -962,7 +962,7 @@ void EditorWindow::do_prevframe()
 void EditorWindow::do_nextframe()
 {
     Layer const& l = Proj().ResolveLayer(m_Focus);
-    assert(m_Focus.sel == NodePath::SEL_MAIN);
+    assert(!Focus().IsEmpty() && m_Frame != SPARE_FRAME);
     if (m_Frame < (int)l.mFrames.size() - 1) {
         setFrame(m_Frame + 1);
     } else {

@@ -41,7 +41,6 @@ NodePath CalcPath(BaseNode *n)
     }
     std::reverse(trace.begin(), trace.end());
     NodePath out;
-    out.sel = NodePath::SEL_MAIN;
     out.path = trace;
     return out;
 }

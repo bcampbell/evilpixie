@@ -72,7 +72,7 @@ public:
     bool Expendable() const { return m_Expendable; }
 
     Layer& ResolveLayer(NodePath const& target) const {
-        assert(target.sel == NodePath::SEL_MAIN);
+        assert(!target.IsEmpty());
         BaseNode *n = mRoot;
         for (auto i : target.path) {
             n = n->mChildren[i];

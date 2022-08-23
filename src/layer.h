@@ -16,32 +16,28 @@
 class Layer;
 class Stack;
 
+#define SPARE_FRAME (-1)
 
 //
 struct NodePath {
-    enum {SEL_NULL=0, SEL_MAIN, SEL_SPARE} sel;
     std::vector<int> path;
-    //int frame;  // frame within target (if layer)
-
-    NodePath() : sel(SEL_NULL) {}
-
-    bool IsNull() const {
-        return sel == SEL_NULL;
-    }
 
     bool operator==(NodePath const& other) const {
-        return (sel == other.sel && path == other.path);
+        return (path == other.path);
     }
     bool operator!=(NodePath const& other) const {
         return (!(*this == other));
     }
 
     void dump() {
-        printf("%d:", sel);
         for( auto i : path) {
             printf("%d/",i);
         }
         printf("\n");
+    }
+
+    bool IsEmpty() const {
+        return path.empty();
     }
 };
 

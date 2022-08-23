@@ -391,9 +391,6 @@ void EditView::DrawView( Box const& viewbox, Box* affectedview )
 // called when project has been modified
 void EditView::OnDamaged(NodePath const& target, int frame, Box const& projdmg)
 {
-    if (m_Focus.sel != target.sel) {
-        return;
-    }
     if (m_Frame != frame) {
         return;
     }
@@ -433,9 +430,6 @@ void EditView::OnModifiedFlagChanged(bool /*changed*/)
 
 void EditView::OnFramesAdded(NodePath const& target, int /*first*/, int /*count*/)
 {
-    if (m_Focus.sel != target.sel) {
-        return;
-    }
     //Layer const& l = Proj().ResolveLayer(target);
     // TODO: ignore changes on non-visible layers.
 
@@ -447,9 +441,6 @@ void EditView::OnFramesAdded(NodePath const& target, int /*first*/, int /*count*
 
 void EditView::OnFramesRemoved(NodePath const& target, int /*first*/, int /*count*/)
 {
-    if (m_Focus.sel != target.sel) {
-        return;
-    }
     Layer const& l = Proj().ResolveLayer(target);
     // TODO: ignore changes on non-visible layers.
 
@@ -466,10 +457,6 @@ void EditView::OnFramesRemoved(NodePath const& target, int /*first*/, int /*coun
 
 void EditView::OnFramesBlatted(NodePath const& target, int /*first*/, int /*count*/)
 {
-    if (m_Focus.sel != target.sel) {
-        return;
-    }
-
     // redraw the whole view (including padding)
     Box affected;
     DrawView(m_ViewBox,&affected);

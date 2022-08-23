@@ -94,7 +94,7 @@ void DrawTransaction::BeginDamage(NodePath const& target, int frame)
 
 void DrawTransaction::AddDamage(Box const& affected)
 {
-    assert(!m_Target.IsNull());
+    assert(!m_Target.IsEmpty());
     assert(m_Frame != -1);
     if (affected.Empty()) {
         return;
