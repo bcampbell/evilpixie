@@ -126,3 +126,17 @@ uint64_t Layer::FrameTime(int frame) const
     return t;
 }
 
+void Layer::EnsureSpareFrame(int templateFrame)
+{
+    assert(templateFrame != SPARE_FRAME);
+    assert(!mFrames.empty());
+    if (mSpare) {
+        return;
+    }
+
+    // just clone current frame
+    Img const* tmpl = mFrames[templateFrame]->mImg;
+    Img* spareImg = new Img(tmpl->Fmt(), tmpl->W(), tmpl->H());
+    mSpare = new Frame(spareImg, 0);
+}
+

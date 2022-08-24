@@ -73,10 +73,8 @@ public:
     EditorWindow(Project* proj, QWidget *parent = 0);
     virtual ~EditorWindow();
 
-    void SetTime(uint64_t micros);
     uint64_t Time() const { return m_Time; }
 
-    void SetFocus(NodePath const& focus);
     NodePath Focus() const { return m_Focus; };
 
     // Editor implementation
@@ -119,7 +117,8 @@ public slots:
     void update_menu_states();
     void do_undo();
     void do_redo();
-    void do_gridonoff( bool checked );
+    void do_gridonoff(bool checked);
+    void do_togglespare(bool checked);
     void do_gridconfig();
     void do_resize();
     void do_changefmt();
@@ -148,7 +147,8 @@ public slots:
 private:
     uint64_t m_Time;
     NodePath m_Focus;
-    int m_Frame;
+    int m_Frame;            // Currently-focused frame (can be SPARE_FRAME)
+    int m_NonSpareFrame;    // Backup of frame number when m_Frame is SPARE_FRAME
 
     QSplitter* m_ViewSplitter;      // container for main & magnified views.
     EditViewWidget* m_ViewWidget;   // main view
@@ -180,6 +180,7 @@ private:
     QAction* m_ActionRedo;
     QAction* m_ActionGridOnOff;
     QAction* m_ActionGridConfig;
+    QAction* m_ActionToggleSpare;
     QAction* m_ActionUseBrushPalette;
     QAction* m_ActionScale2xBrush;
     QAction* m_ActionRemapBrush;

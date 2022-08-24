@@ -119,6 +119,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_Focus = CalcPath(firstLayer);
     m_Time = 0;
     m_Frame = 0;
+    m_NonSpareFrame = 0;
 
     // set up mouse cursors
     {
@@ -370,25 +371,6 @@ QLayout* EditorWindow::CreateBrushButtons()
 }
 
 
-void EditorWindow::SetFocus(NodePath const& focus)
-{
-    m_Focus = focus;
-    Layer const& l = Proj().ResolveLayer(m_Focus);
-    m_Frame = l.FrameIndexClipped(m_Time);
-    // TODO: propagate!
-    assert(false);
-}
-
-void EditorWindow::SetTime(uint64_t micros)
-{
-    m_Time = micros;
-    Layer const& l = Proj().ResolveLayer(m_Focus);
-    m_Frame = l.FrameIndexClipped(m_Time);
-    // TODO: propagate!
-    assert(false);
-}
-
-
 void EditorWindow::OnPenChanged()
 {
     // new fg or bg pen
@@ -471,7 +453,7 @@ void EditorWindow::OnFramesAdded(NodePath const& /*target*/, int /*first*/, int 
 void EditorWindow::OnFramesRemoved(NodePath const& target, int /*first*/, int /*count*/)
 {
     Layer const& l = Proj().ResolveLayer(target);
-    if (m_Frame >= (int)l.mFrames.size()) {
+    if (m_Frame != SPARE_FRAME && m_Frame >= (int)l.mFrames.size()) {
         // Make sure we're not left pointing at an invalid frame.
         setFrame((int)l.mFrames.size() - 1);
     } else {
@@ -652,12 +634,15 @@ void EditorWindow::update_menu_states()
     // TODO: IMPLEMENT!
     Layer const& l = Proj().ResolveLayer(m_Focus);
     int nframes = l.mFrames.size();
+    // TODO: Handle spare page selected
     m_ActionZapFrame->setEnabled(nframes>1);
     m_ActionNextFrame->setEnabled(nframes>1);
     m_ActionPrevFrame->setEnabled(nframes>1);
 
     m_ActionToSpritesheet->setEnabled(nframes>1);
     m_ActionFromSpritesheet->setEnabled(nframes==1);
+
+    m_ActionToggleSpare->setChecked(m_Frame == SPARE_FRAME);
 }
 
 void EditorWindow::do_undo()
@@ -684,6 +669,17 @@ void EditorWindow::do_gridconfig()
     if( dlg.exec() == QDialog::Accepted )
     {
         SetGrid(dlg.Grid());
+    }
+}
+
+void EditorWindow::do_togglespare(bool /*checked*/)
+{
+    assert(!Focus().IsEmpty());
+    if (m_Frame != SPARE_FRAME) {
+        m_NonSpareFrame = m_Frame;
+        setFrame(SPARE_FRAME);
+    } else {
+        setFrame(m_NonSpareFrame);
     }
 }
 
@@ -932,18 +928,20 @@ void EditorWindow::do_addlayer()
 void EditorWindow::do_addframe()
 {
     assert(!Focus().IsEmpty());
-    Cmd* c = new Cmd_InsertFrames(Proj(), m_Focus, m_Frame+1, 1);
+    int pos = (m_Frame == SPARE_FRAME) ? m_NonSpareFrame : m_Frame;
+    Cmd* c = new Cmd_InsertFrames(Proj(), m_Focus, pos + 1, 1);
     AddCmd(c);
     // update frame in OnFramesAdded
 
     // go to newly-inserted frame
-    setFrame(m_Frame + 1);
+    setFrame(pos + 1);
 }
 
 void EditorWindow::do_zapframe()
 {
     assert(!Focus().IsEmpty());
-    Cmd* c= new Cmd_DeleteFrames(Proj(), m_Focus, m_Frame, 1);
+    int pos = (m_Frame == SPARE_FRAME) ? m_NonSpareFrame : m_Frame;
+    Cmd* c= new Cmd_DeleteFrames(Proj(), m_Focus, pos, 1);
     AddCmd(c);
     // update frame in OnFramesRemoved
 }
@@ -951,18 +949,25 @@ void EditorWindow::do_zapframe()
 void EditorWindow::do_prevframe()
 {
     Layer const& l = Proj().ResolveLayer(m_Focus);
-    assert(!Focus().IsEmpty() && m_Frame != SPARE_FRAME);
+    assert(!Focus().IsEmpty());
+    if (m_Frame == SPARE_FRAME) {
+        m_Frame == m_NonSpareFrame;
+    }
     if (m_Frame > 0) {
         setFrame(m_Frame - 1);
     } else {
         setFrame(l.mFrames.size() - 1); // Wrap.
     }
 }
-
+// TODO: figure out oddness when performing next/prev frame while on spare frame.
+// it works, but the numbering is off...
 void EditorWindow::do_nextframe()
 {
     Layer const& l = Proj().ResolveLayer(m_Focus);
-    assert(!Focus().IsEmpty() && m_Frame != SPARE_FRAME);
+    assert(!Focus().IsEmpty());
+    if (m_Frame == SPARE_FRAME) {
+        m_Frame == m_NonSpareFrame;
+    }
     if (m_Frame < (int)l.mFrames.size() - 1) {
         setFrame(m_Frame + 1);
     } else {
@@ -972,9 +977,13 @@ void EditorWindow::do_nextframe()
 
 void EditorWindow::setFrame(int frame)
 {
+//    printf("setFrame(%d)\n",frame);
     //printf("EditorWindow::setFrame(%d->%d)\n", m_Frame, frame);
-    Layer const& l = Proj().ResolveLayer(m_Focus);
-    assert(frame >= 0 && frame < (int)l.mFrames.size());
+    Layer& l = Proj().ResolveLayer(m_Focus);
+    assert(frame == SPARE_FRAME || (frame >= 0 && frame < (int)l.mFrames.size()));
+    if (frame == SPARE_FRAME) {
+        l.EnsureSpareFrame(0);
+    }
     m_Frame = frame;
     m_Time = l.FrameTime(m_Frame);
 
@@ -1291,7 +1300,6 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionGridOnOff = a = m->addAction( "&Grid On?", this, SLOT( do_gridonoff(bool)), QKeySequence("g") );
         a->setCheckable(true);
         m_ActionGridConfig = m->addAction( "Grid Config...", this, SLOT( do_gridconfig()));
-
         a = m->addAction( "Resize...", this, SLOT(do_resize()));
         a = m->addAction( "Change format...", this, SLOT(do_changefmt()));
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
@@ -1314,6 +1322,9 @@ QMenuBar* EditorWindow::CreateMenuBar()
     {
         QMenu* m = menubar->addMenu("Layers");
         m->addAction( "&Add Layer", this, SLOT( do_addlayer()) );
+
+        m_ActionToggleSpare = a = m->addAction("Spare page?", this, SLOT(do_togglespare(bool)),QKeySequence("j"));
+        a->setCheckable(true);
     }
 
 
@@ -1390,7 +1401,7 @@ void EditorWindow::RethinkWindowTitle()
         name = "Untitled";
 
     Layer const& l = Proj().ResolveLayer(m_Focus);
-    Img const& img = *l.mFrames[m_Frame]->mImg;
+    Img const& img = (m_Frame==SPARE_FRAME) ? *l.mSpare->mImg : *l.mFrames[m_Frame]->mImg;
     int w = img.W();
     int h = img.H();
 

@@ -60,7 +60,7 @@ private:
 
 DrawTransaction::DrawTransaction( Project& proj) :
     m_Proj(proj),
-    m_Frame(-1),
+    m_Frame(0),
     m_Backup(nullptr),
     m_Affected( 0,0,0,0 ),           // start with nothing affected
     m_Batch( new Cmd_Batch(proj, Cmd::DONE))
@@ -95,7 +95,6 @@ void DrawTransaction::BeginDamage(NodePath const& target, int frame)
 void DrawTransaction::AddDamage(Box const& affected)
 {
     assert(!m_Target.IsEmpty());
-    assert(m_Frame != -1);
     if (affected.Empty()) {
         return;
     }
@@ -131,7 +130,6 @@ void DrawTransaction::flush()
         delete m_Backup;
         m_Backup = nullptr;
         m_Target = NodePath();  // null
-        m_Frame = -1;
     }
 }
 

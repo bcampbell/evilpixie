@@ -45,6 +45,7 @@ Cmd_ResizeLayer::Cmd_ResizeLayer(Project& proj, NodePath const& targ, Box const&
     Layer& l = proj.ResolveLayer(m_Targ);
 
     // populate frameswap with the resized frames
+    // NOTE: doesn't resize the spare frame...
     for (auto src : l.mFrames) {
         Frame* dest = new Frame(*src);
         dest->mImg = new Img(src->mImg->Fmt(), newArea.w, newArea.h);
@@ -160,6 +161,7 @@ Cmd_DeleteFrames::Cmd_DeleteFrames(Project& proj, NodePath const& target, int po
     m_Pos(pos),
     m_NumFrames(numFrames)
 {
+    assert(pos != SPARE_FRAME);     // Senseless!
 }
 
 Cmd_DeleteFrames::~Cmd_DeleteFrames()
@@ -298,7 +300,7 @@ void Cmd_FromSpriteSheet::Undo()
 Cmd_PaletteModify::Cmd_PaletteModify(Project& proj, NodePath const& target, int frame, int first, int cnt, Colour const* colours) :
     Cmd(proj,NOT_DONE),
     m_Target(target),
-    m_Frame(frame),
+    m_Frame(frame), // can be SPARE_FRAME
     m_First(first),
     m_Cnt(cnt)
 {

@@ -158,10 +158,18 @@ public:
 
     int NumFrames() const { return mFrames.size(); }
     Img& GetImg(int n) {
+        if (n == SPARE_FRAME) {
+            assert(mSpare);
+            return *mSpare->mImg;
+        }
         assert(n >= 0 && n < (int)mFrames.size());
         return *mFrames[n]->mImg;
     }
     Img const& GetImgConst(int n) const {
+        if (n == SPARE_FRAME) {
+            assert(mSpare);
+            return *mSpare->mImg;
+        }
         assert(n >= 0 && n < (int)mFrames.size());
         return *mFrames[n]->mImg;
     }
@@ -200,11 +208,16 @@ public:
     uint64_t FrameTime(int frame) const;
 
 
+    // Make sure SPARE_FRAME, creating it if it doesn't.
+    // The dimensions are taken from templateFrame.
+    void EnsureSpareFrame(int templateFrame);
+
     // DATA
 
     std::vector<Frame*> mFrames;
+    Frame* mSpare {nullptr};    // SPARE_FRAME, if any.
 
-    int mFPS;
+    int mFPS {0};
     Palette mPalette;
     RangeGrid mRanges;
 

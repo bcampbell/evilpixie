@@ -17,6 +17,9 @@ private:
     void Swap();
     NodePath m_Target;
     Layer* m_Other;
+
+    Frame* ConvertFrame(Frame const* srcFrame, PixelFormat newFmt,
+        Palette const& srcPalette, Palette const& destPalette) const;
 };
 
 #endif // CMD_CHANGEFMT_H
