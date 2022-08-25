@@ -37,59 +37,79 @@ void Cmd_Draw::Undo()
 }
 
 
-Cmd_ResizeLayer::Cmd_ResizeLayer(Project& proj, NodePath const& targ, Box const& newArea, PenColour const& fillpen) :
+Cmd_ResizeFrames::Cmd_ResizeFrames(Project& proj, NodePath const& targ,
+    int firstFrame,
+    int numFrames,
+    Box const& newArea, PenColour const& fillPen) :
     Cmd(proj, NOT_DONE),
-    m_Targ(targ),
-    m_FrameSwap()
+    mTarg(targ),
+    mFirstFrame(firstFrame),
+    mNumFrames(numFrames)
 {
-    Layer& l = proj.ResolveLayer(m_Targ);
+    Layer& l = proj.ResolveLayer(mTarg);
 
     // populate frameswap with the resized frames
-    // NOTE: doesn't resize the spare frame...
-    for (auto src : l.mFrames) {
-        Frame* dest = new Frame(*src);
-        dest->mImg = new Img(src->mImg->Fmt(), newArea.w, newArea.h);
-        Box foo(dest->mImg->Bounds());
-        dest->mImg->FillBox(fillpen, foo);
-        Box srcArea(src->mImg->Bounds());
-        Box destArea(srcArea);
-        destArea -= newArea.TopLeft();
-        Blit(*src->mImg, srcArea, *dest->mImg, destArea);
-
-        m_FrameSwap.push_back(dest);
+    if (mFirstFrame == SPARE_FRAME) {
+        assert(mNumFrames == 1);
+        assert(l.mSpare);
+        mFrameSwap.push_back(Resize(l.mSpare, newArea, fillPen));
+    } else {
+        for (int i = mFirstFrame; i < mFirstFrame + mNumFrames; ++i) {
+            Frame const* src = l.mFrames[i];
+            mFrameSwap.push_back(Resize(src, newArea, fillPen));
+        }
     }
 }
 
-
-Cmd_ResizeLayer::~Cmd_ResizeLayer()
+Frame* Cmd_ResizeFrames::Resize(Frame const* src,
+    Box const& newArea, PenColour const& fillPen) const
 {
-    for (auto frame : m_FrameSwap) {
+    Frame* dest = new Frame(*src);
+    dest->mImg = new Img(src->mImg->Fmt(), newArea.w, newArea.h);
+    Box foo(dest->mImg->Bounds());
+    dest->mImg->FillBox(fillPen, foo);
+    Box srcArea(src->mImg->Bounds());
+    Box destArea(srcArea);
+    destArea -= newArea.TopLeft();
+    Blit(*src->mImg, srcArea, *dest->mImg, destArea);
+    return dest;
+}
+
+Cmd_ResizeFrames::~Cmd_ResizeFrames()
+{
+    for (auto frame : mFrameSwap) {
         delete frame;
     }
 }
 
 
-void Cmd_ResizeLayer::Swap()
+void Cmd_ResizeFrames::Swap()
 {
-    Layer& l = Proj().ResolveLayer(m_Targ);
-    assert(l.mFrames.size() == m_FrameSwap.size());
-    std::vector<Frame*> tmp = l.mFrames;
-    l.mFrames = m_FrameSwap;
-    m_FrameSwap = tmp;
-
-    Proj().NotifyFramesBlatted(m_Targ, 0, l.NumFrames());
+    Layer& l = Proj().ResolveLayer(mTarg);
+    if (mFirstFrame == SPARE_FRAME) {
+        Frame* tmp = l.mSpare;
+        l.mSpare = mFrameSwap[0];
+        mFrameSwap[0] = tmp;
+    } else {
+        for (int i = 0; i < mNumFrames; ++i) {
+            Frame* tmp = l.mFrames[mFirstFrame + i];
+            l.mFrames[mFirstFrame + i] = mFrameSwap[i];
+            mFrameSwap[i] = tmp;
+        }
+    }
+    Proj().NotifyFramesBlatted(mTarg, mFirstFrame, mNumFrames);
 }
 
-void Cmd_ResizeLayer::Do()
+void Cmd_ResizeFrames::Do()
 {
     Swap();
-    SetState( DONE );
+    SetState(DONE);
 }
 
-void Cmd_ResizeLayer::Undo()
+void Cmd_ResizeFrames::Undo()
 {
     Swap();
-    SetState( NOT_DONE );
+    SetState(NOT_DONE);
 }
 
 

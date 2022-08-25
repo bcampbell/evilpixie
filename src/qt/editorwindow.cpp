@@ -700,7 +700,15 @@ void EditorWindow::do_resize()
     if (dlg.exec() == QDialog::Accepted)
     {
         QRect area = dlg.GetArea();
-        Cmd* c = new Cmd_ResizeLayer(Proj(), Focus(),
+        Layer const& l = Proj().ResolveLayer(m_Focus);
+        int firstFrame = 0;
+        int numFrames = (int)l.mFrames.size();
+        if (m_Frame == SPARE_FRAME) {
+            firstFrame = SPARE_FRAME;
+            numFrames = 1;
+        }
+        Cmd* c = new Cmd_ResizeFrames(Proj(), Focus(),
+            firstFrame, numFrames,
             Box(0,0,area.width(),area.height()),
             BGPen() );
         AddCmd(c);

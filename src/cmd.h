@@ -60,19 +60,24 @@ private:
 
 
 
-// Resize a layer without scaling - just clip or pad as needed.
-class Cmd_ResizeLayer : public Cmd
+// Resize frames without scaling - just clip or pad as needed.
+class Cmd_ResizeFrames : public Cmd
 {
 public:
-    Cmd_ResizeLayer(Project& proj, NodePath const& layer,
-        Box const& new_area, PenColour const& fillpen);
-    virtual ~Cmd_ResizeLayer();
+    Cmd_ResizeFrames(Project& proj, NodePath const& targ,
+        int firstFrame, int numFrames,
+        Box const& new_area, PenColour const& fillPen);
+    virtual ~Cmd_ResizeFrames();
     virtual void Do();
     virtual void Undo();
 private:
+    Frame* Resize(Frame const* src,
+        Box const& newArea, PenColour const& fillPen) const;
     void Swap();
-    NodePath m_Targ;
-    std::vector<Frame*> m_FrameSwap;
+    NodePath mTarg;
+    std::vector<Frame*> mFrameSwap;
+    int mFirstFrame;
+    int mNumFrames;
 };
 
 
