@@ -55,6 +55,7 @@ Layer::Layer() :
 Layer::~Layer()
 {
     ZapFrames();
+    delete mSpare;
 }
 
 void Layer::ZapFrames()
