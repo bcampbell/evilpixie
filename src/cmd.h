@@ -120,8 +120,10 @@ public:
     virtual void Do();
     virtual void Undo();
 private:
+    void Swap();
     NodePath mTarg;
-    const SpriteGrid mGrid;
+    std::vector<Frame*> mFrameSwap;
+    SpriteGrid mGridSwap;
 };
 
 class Cmd_FromSpriteSheet : public Cmd
@@ -132,8 +134,10 @@ public:
     virtual void Do();
     virtual void Undo();
 private:
+    void Swap();
     NodePath mTarg;
-    const SpriteGrid mGrid;
+    std::vector<Frame*> mFrameSwap;
+    SpriteGrid mGridSwap;
 };
 
 

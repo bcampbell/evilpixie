@@ -116,24 +116,18 @@ bool SpriteGrid::Parse(std::string input, Box const& imgbounds)
 }
 
 
-Layer* LayerToSpriteSheet(Layer const& src, SpriteGrid const& grid)
+Img* FramesToSpriteSheet(std::vector<Frame*> const& frames, SpriteGrid const& grid)
 {
+    assert(!frames.empty());
     std::vector<Box> cells;
     grid.Layout(cells);
     Box destBounds = grid.Extent();
-    Img *dest = new Img(src.Fmt(), destBounds.w, destBounds.h);
+    Img *dest = new Img(frames[0]->mImg->Fmt(), destBounds.w, destBounds.h);
     for (unsigned int i = 0; i < cells.size(); ++i) {
-        Img const& srcImg = *src.mFrames[i]->mImg;
+        Img const& srcImg = *frames[i]->mImg;
         Blit(srcImg, srcImg.Bounds(), *dest, cells[i]);
     }
-
-    Layer* newLayer = new Layer();
-    newLayer->mFPS = src.mFPS;
-    newLayer->mPalette = src.mPalette;
-    newLayer->mRanges = src.mRanges;
-    newLayer->mFrames.push_back(new Frame(dest, 1000000/newLayer->mFPS));
-
-    return newLayer;
+    return dest;
 }
 
 

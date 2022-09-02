@@ -452,10 +452,19 @@ void EditorWindow::OnFramesAdded(NodePath const& /*target*/, int /*first*/, int 
 
 void EditorWindow::OnFramesRemoved(NodePath const& target, int /*first*/, int /*count*/)
 {
+    // Make sure we're not left pointing at invalid frames.
     Layer const& l = Proj().ResolveLayer(target);
-    if (m_Frame != SPARE_FRAME && m_Frame >= (int)l.mFrames.size()) {
-        // Make sure we're not left pointing at an invalid frame.
-        setFrame((int)l.mFrames.size() - 1);
+    int lastFrame = (int)l.mFrames.size() - 1;
+    if (m_Frame == SPARE_FRAME) {
+        if(m_NonSpareFrame > lastFrame) {
+            m_NonSpareFrame = lastFrame;
+        }
+        RethinkWindowTitle();
+        return;
+    }
+
+    if(m_Frame > lastFrame) {
+        setFrame(lastFrame);
     } else {
         RethinkWindowTitle();
     }
@@ -465,7 +474,7 @@ void EditorWindow::OnFramesBlatted(NodePath const& target, int first, int count)
 {
     // Don't worry about the image changes, but assume the palette
     // has been replaced.
-    for (int i=first; i<count; ++i) {
+    for (int i=first; i<first + count; ++i) {
         OnPaletteReplaced(target, i);
     }
 }
@@ -959,7 +968,7 @@ void EditorWindow::do_prevframe()
     Layer const& l = Proj().ResolveLayer(m_Focus);
     assert(!Focus().IsEmpty());
     if (m_Frame == SPARE_FRAME) {
-        m_Frame == m_NonSpareFrame;
+        m_Frame = m_NonSpareFrame;
     }
     if (m_Frame > 0) {
         setFrame(m_Frame - 1);
@@ -974,7 +983,7 @@ void EditorWindow::do_nextframe()
     Layer const& l = Proj().ResolveLayer(m_Focus);
     assert(!Focus().IsEmpty());
     if (m_Frame == SPARE_FRAME) {
-        m_Frame == m_NonSpareFrame;
+        m_Frame = m_NonSpareFrame;
     }
     if (m_Frame < (int)l.mFrames.size() - 1) {
         setFrame(m_Frame + 1);
@@ -985,8 +994,6 @@ void EditorWindow::do_nextframe()
 
 void EditorWindow::setFrame(int frame)
 {
-//    printf("setFrame(%d)\n",frame);
-    //printf("EditorWindow::setFrame(%d->%d)\n", m_Frame, frame);
     Layer& l = Proj().ResolveLayer(m_Focus);
     assert(frame == SPARE_FRAME || (frame >= 0 && frame < (int)l.mFrames.size()));
     if (frame == SPARE_FRAME) {
@@ -1010,15 +1017,20 @@ void EditorWindow::do_tospritesheet()
     SpriteGrid grid;
     Layer const& l = Proj().ResolveLayer(m_Focus);
 
-    Box cell = {0, 0, 0, 0};
-    for (auto frame : l.mFrames) {
-        cell.Merge(frame->mImg->Bounds());
+    if (Proj().mSettings.SpriteSheetGrid.numFrames != 1) {
+        // use the existing settings
+        grid = Proj().mSettings.SpriteSheetGrid;
+    } else {
+        // Use a default spritesheet layout.
+        Box cell = {0, 0, 0, 0};
+        for (auto frame : l.mFrames) {
+            cell.Merge(frame->mImg->Bounds());
+        }
+        grid.numColumns = l.mFrames.size();
+        grid.numFrames = l.mFrames.size();
+        grid.cellW = cell.w;
+        grid.cellH = cell.h;
     }
-    grid.numColumns = l.mFrames.size();
-    grid.numFrames = l.mFrames.size();
-    grid.cellW = cell.w;
-    grid.cellH = cell.h;
-
     ToSpritesheetDialog dlg(this, grid, Proj(), m_Focus);
     if( dlg.exec() == QDialog::Accepted )
     {
@@ -1189,25 +1201,39 @@ void EditorWindow::SaveProject(std::string const& filename)
             // For now, just drop user into unexplained spritesheet dlg :-)
             SpriteGrid grid;
             Layer const& l = Proj().ResolveLayer(m_Focus);
+            // use the existing grid settings if compatible enough...
             Box cell{0,0,0,0};
             for (auto frame : l.mFrames) {
                 cell.Merge(frame->mImg->Bounds());
             }
-            grid.cellW = cell.w;
-            grid.cellH = cell.h;
-            grid.numColumns = l.mFrames.size();
-            grid.numRows = 1;
-            grid.numFrames = l.mFrames.size();
- 
+            SpriteGrid const& pg = Proj().mSettings.SpriteSheetGrid;
+            if (pg.numFrames == l.mFrames.size() &&
+                pg.cellW == (unsigned int)cell.w &&
+                pg.cellH == (unsigned int)cell.h) {
+                grid = Proj().mSettings.SpriteSheetGrid;
+            } else {
+                grid.cellW = cell.w;
+                grid.cellH = cell.h;
+                grid.numColumns = l.mFrames.size();
+                grid.numRows = 1;
+                grid.numFrames = l.mFrames.size();
+            } 
             ToSpritesheetDialog dlg(this, grid, Proj(), m_Focus);
             if( dlg.exec() == QDialog::Accepted )
             {
                 // convert to spritesheet
-                Layer* tmp = LayerToSpriteSheet(l, dlg.getGrid());
+                Img* sheet = FramesToSpriteSheet(l.mFrames, dlg.getGrid());
+
+                Layer* tmpLayer = new Layer();
+                tmpLayer->mFPS = l.mFPS;
+                tmpLayer->mPalette = l.mPalette;
+                tmpLayer->mRanges = l.mRanges;
+                tmpLayer->mFrames.push_back(new Frame(sheet, 1000000/tmpLayer->mFPS));
+                tmpLayer->mSpare = nullptr;
                 Proj().mSettings.SpriteSheetGrid = dlg.getGrid();
-                SaveLayer(*tmp, filename, Proj().mSettings);
+                SaveLayer(*tmpLayer, filename, Proj().mSettings);
                 // TODO: handle leak due to exceptions!!!!!!
-                delete tmp;
+                delete tmpLayer;
             }
         } else {
             // Save directly - no processing required.

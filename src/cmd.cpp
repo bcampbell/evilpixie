@@ -6,6 +6,7 @@
 #include "project.h"
 #include <assert.h>
 #include <cstdio>
+#include <utility>
 
 Cmd_Draw::Cmd_Draw(Project& proj, NodePath const& target, int frame, Box const& affected, Img const& undoimg) :
     Cmd(proj, DONE),
@@ -87,14 +88,10 @@ void Cmd_ResizeFrames::Swap()
 {
     Layer& l = Proj().ResolveLayer(mTarg);
     if (mFirstFrame == SPARE_FRAME) {
-        Frame* tmp = l.mSpare;
-        l.mSpare = mFrameSwap[0];
-        mFrameSwap[0] = tmp;
+        std::swap(l.mSpare, mFrameSwap[0]);
     } else {
         for (int i = 0; i < mNumFrames; ++i) {
-            Frame* tmp = l.mFrames[mFirstFrame + i];
-            l.mFrames[mFirstFrame + i] = mFrameSwap[i];
-            mFrameSwap[i] = tmp;
+            std::swap(l.mFrames[mFirstFrame + i], mFrameSwap[i]);
         }
     }
     Proj().NotifyFramesBlatted(mTarg, mFirstFrame, mNumFrames);
@@ -228,44 +225,50 @@ void Cmd_DeleteFrames::Undo()
 Cmd_ToSpriteSheet::Cmd_ToSpriteSheet(Project& proj, NodePath const& targ, SpriteGrid const& grid) :
     Cmd(proj,NOT_DONE),
     mTarg(targ),
-    mGrid(grid)
+    mGridSwap(grid)
 {
     Layer& l = Proj().ResolveLayer(mTarg);
-    assert(mGrid.numFrames == l.mFrames.size());
+    assert(grid.numFrames == l.mFrames.size());
+
+    Img* sheet = FramesToSpriteSheet(l.mFrames, grid);
+    mFrameSwap.push_back(new Frame(sheet,0));
 }
 
 Cmd_ToSpriteSheet::~Cmd_ToSpriteSheet()
 {
+    for (auto frame: mFrameSwap) {
+        delete frame;
+    }
 }
 
-void Cmd_ToSpriteSheet::Do()
+void Cmd_ToSpriteSheet::Swap()
 {
     Layer& l = Proj().ResolveLayer(mTarg);
 
-    Layer* newLayer = LayerToSpriteSheet(l, mGrid);
+    int delta = (int)mFrameSwap.size() - (int)l.mFrames.size();
+    int blatcount = std::min(mFrameSwap.size(), l.mFrames.size());
+    std::swap(l.mFrames, mFrameSwap);
+    std::swap(Proj().mSettings.SpriteSheetGrid, mGridSwap);
 
-    l.Replace(newLayer);
-    delete &l;
+    if (delta < 0) {
+        Proj().NotifyFramesRemoved(mTarg, blatcount, -delta);
+    }
+    Proj().NotifyFramesBlatted(mTarg, 0, blatcount);
+    if (delta > 0) {
+        Proj().NotifyFramesAdded(mTarg, blatcount, delta);
+    }
+}
 
-    Proj().NotifyFramesRemoved(mTarg, 1, mGrid.numFrames - 1);
-    Proj().NotifyFramesBlatted(mTarg, 0, 1);
+
+void Cmd_ToSpriteSheet::Do()
+{
+    Swap();
     SetState(DONE);
 }
 
 void Cmd_ToSpriteSheet::Undo()
 {
-    Layer& l = Proj().ResolveLayer(mTarg);
-    assert(l.mFrames.size() == 1);
-    Img const& src = l.GetImgConst(0);
-
-    std::vector<Img*> frames;
-    FramesFromSpriteSheet(src, mGrid, frames);
-    l.ZapFrames();
-    for(unsigned int n = 0; n < frames.size(); ++n) {
-        l.Append(frames[n]);
-    }
-    Proj().NotifyFramesBlatted(mTarg, 0, 1);
-    Proj().NotifyFramesAdded(mTarg, 1, l.mFrames.size() - 1);
+    Swap();
     SetState(NOT_DONE);
 }
 
@@ -274,45 +277,55 @@ void Cmd_ToSpriteSheet::Undo()
 Cmd_FromSpriteSheet::Cmd_FromSpriteSheet(Project& proj, NodePath const& targ, SpriteGrid const& grid) :
     Cmd(proj,NOT_DONE),
     mTarg(targ),
-    mGrid(grid)
+    mGridSwap(grid)
 {
     Layer& l = Proj().ResolveLayer(mTarg);
     assert(l.mFrames.size() == 1);
+
+    Img const& src = *(l.mFrames[0]->mImg);
+
+    std::vector<Img*> cells;
+    FramesFromSpriteSheet(src, grid, cells);
+    for (auto img : cells) {
+        mFrameSwap.push_back(new Frame(img, 0));
+    }
 }
 
 Cmd_FromSpriteSheet::~Cmd_FromSpriteSheet()
 {
+    for (auto frame: mFrameSwap) {
+        delete frame;
+    }
+}
+
+void Cmd_FromSpriteSheet::Swap()
+{
+    Layer& l = Proj().ResolveLayer(mTarg);
+
+    int delta = (int)mFrameSwap.size() - (int)l.mFrames.size();
+    int blatcount = std::min(mFrameSwap.size(), l.mFrames.size());
+    std::swap(l.mFrames, mFrameSwap);
+    std::swap(Proj().mSettings.SpriteSheetGrid, mGridSwap);
+
+    if (delta < 0) {
+        Proj().NotifyFramesRemoved(mTarg, blatcount, -delta);
+    }
+    Proj().NotifyFramesBlatted(mTarg, 0, blatcount);
+    if (delta > 0) {
+        Proj().NotifyFramesAdded(mTarg, blatcount, delta);
+    }
 }
 
 void Cmd_FromSpriteSheet::Do()
 {
-    Layer& l = Proj().ResolveLayer(mTarg);
-    assert(l.mFrames.size() == 1);
-
-    Img const& src = l.GetImgConst(0);
-
-    std::vector<Img*> frames;
-    FramesFromSpriteSheet(src, mGrid, frames);
-    l.ZapFrames();
-    for(unsigned int n = 0; n < frames.size(); ++n) {
-        l.Append(frames[n]);
-    }
-    Proj().NotifyFramesAdded(mTarg, 1, l.mFrames.size() - 1);
-    Proj().NotifyFramesBlatted(mTarg, 0, 1);
+    Swap();
     SetState(DONE);
 }
 
 void Cmd_FromSpriteSheet::Undo()
 {
-    Layer& l = Proj().ResolveLayer(mTarg);
-    Layer* newLayer = LayerToSpriteSheet(l, mGrid);
-
-    l.Replace(newLayer);
-    delete &l;
-
-    Proj().NotifyFramesRemoved(mTarg, 1, mGrid.numFrames-1);
-    Proj().NotifyFramesBlatted(mTarg, 0, 1);
-    SetState( NOT_DONE );
+    Swap();
+    SetState(NOT_DONE);
 }
 
 //-----------

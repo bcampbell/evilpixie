@@ -9,6 +9,7 @@
 
 class Img;
 class Layer;
+class Frame;
 
 // Struct to describe how to lay out sprites on a regular grid.
 struct SpriteGrid
@@ -47,9 +48,9 @@ struct SpriteGrid
 // fns for converting layouts between spritesheets and anims
 
 
-// LayerToSpriteSheet() creates a spritesheet layer from a multi-frame layer.
+// FramesToSpriteSheet() creates a spritesheet image from a sequence of frames.
 // The frames are laid out according to the grid.
-Layer* LayerToSpriteSheet(Layer const& src, SpriteGrid const& grid);
+Img* FramesToSpriteSheet(std::vector<Frame*> const& frames, SpriteGrid const& grid);
 
 void FramesFromSpriteSheet(Img const& src, SpriteGrid const& grid, std::vector<Img*>& destFrames);
 
