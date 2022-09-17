@@ -3,6 +3,7 @@
 
 #include "colours.h"
 #include <cassert>
+#include <string>
 
 struct Palette
 {
@@ -30,6 +31,7 @@ public:
     int Closest(const Colour targ) const;
     void SpreadHSV( int n0, Colour const& c0, int n1, Colour const& c1 );
 
+    void Save(std::string const& filename) const;
     static Palette* Load(const char* filename);
 
     void SetNumColours(int ncolours);

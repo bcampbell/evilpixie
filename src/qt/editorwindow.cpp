@@ -623,6 +623,8 @@ void EditorWindow::useeyedroppertool()
 
 void EditorWindow::update_menu_states()
 {
+    Palette const& pal = Proj().PaletteConst(m_Focus, m_Frame);
+
     assert( m_ActionUndo && m_ActionRedo );
     m_ActionUndo->setEnabled( CanUndo() );
     m_ActionRedo->setEnabled( CanRedo() );
@@ -633,11 +635,11 @@ void EditorWindow::update_menu_states()
     m_ActionScale2xBrush->setEnabled(
         GetBrush() == -1 && CurrentBrush().Fmt() == FMT_I8);
 
-    {
-        // custom brush, and focus has a palette?
-        Palette const& pal = Proj().PaletteConst(m_Focus, m_Frame);
-        m_ActionScale2xBrush->setEnabled(GetBrush() == -1 && pal.NColours >0);
-    }
+    // custom brush, and focus has a palette?
+    m_ActionScale2xBrush->setEnabled(GetBrush() == -1 && pal.NColours >0);
+
+    // Got a palette in focus?
+    m_ActionSavePalette->setEnabled(pal.NColours > 0);
 
     // int nframes= Proj().GetLayer(ActiveLayer()).NumFrames();
     // TODO: IMPLEMENT!
@@ -1064,7 +1066,6 @@ void EditorWindow::do_fromspritesheet()
     }
 }
 
-
 void EditorWindow::do_loadpalette()
 {
 
@@ -1114,6 +1115,27 @@ void EditorWindow::do_loadpalette()
         GUIShowError( e.what() );
     }
 //    RethinkWindowTitle();
+}
+
+void EditorWindow::do_savepalette()
+{
+    QString filename = QFileDialog::getSaveFileName(
+                    this,
+                    "Save palette as",
+                    ProjDir(),
+                    "GIMP Palette files (*.gpl)");
+    if(filename.isNull()) {
+        return;
+    }
+    try
+    {
+        Palette const& pal = Proj().PaletteConst(m_Focus, m_Frame);
+        pal.Save(filename.toStdString());
+    }
+    catch(Exception const& e)
+    {
+        GUIShowError(e.what());
+    }
 }
 
 
@@ -1323,6 +1345,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
         a = m->addAction( "Edit palette...", this, SLOT(togglepaletteeditor()));
         m_ActionUseBrushPalette = a = m->addAction( "Use Brush Palette...", this, SLOT(do_usebrushpalette()) );
         a = m->addAction( "&Load Palette...", this, SLOT( do_loadpalette()) );
+        m_ActionSavePalette = a = m->addAction( "&Save Palette...", this, SLOT( do_savepalette()) );
         m->addSeparator();
         m->addAction( "X-Flip Brush", this, SLOT(do_xflipbrush()),QKeySequence("x") );
         m->addAction( "Y-Flip Brush", this, SLOT(do_yflipbrush()),QKeySequence("y") );

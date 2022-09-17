@@ -127,6 +127,7 @@ public slots:
     void do_save();
     void do_saveas();
     void do_loadpalette();
+    void do_savepalette();
     void do_usebrushpalette();
     void do_xflipbrush();
     void do_yflipbrush();
@@ -182,6 +183,7 @@ private:
     QAction* m_ActionGridConfig;
     QAction* m_ActionToggleSpare;
     QAction* m_ActionUseBrushPalette;
+    QAction* m_ActionSavePalette;
     QAction* m_ActionScale2xBrush;
     QAction* m_ActionRemapBrush;
     QAction* m_ActionZapFrame;

@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cinttypes>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@
 
 
 static void LoadGimpPalette(FILE* fp, Palette& pal);
+static void SaveGimpPalette(FILE* fp, Palette const& pal, std::string const& name);
 
 
 Palette::Palette(int numcolours) :
@@ -170,7 +172,24 @@ Palette* Palette::Load( const char* filename )
 }
 
 
-
+void Palette::Save(std::string const& filename) const
+{
+    FILE* fp = fopen(filename.c_str(), "wb");
+    if( !fp )
+        throw Exception("couldn't open %s",filename.c_str());
+    try
+    {
+        SaveGimpPalette(fp, *this, BaseName(filename));
+        if (fclose(fp) != 0) {
+            throw Exception("write error");
+        }
+    }
+    catch( Exception const& e )
+    {
+        fclose(fp);
+        throw;
+    }
+}
 
 static void LoadGimpPalette(FILE* fp, Palette& pal)
 {
@@ -224,6 +243,25 @@ static void LoadGimpPalette(FILE* fp, Palette& pal)
     }
 
     pal.SetNumColours(idx);
+}
+
+static void SaveGimpPalette(FILE* fp, Palette const& pal, std::string const& name)
+{
+    assert(pal.NColours > 0 && pal.NColours<=256);
+    // Arbitrary columns
+    int cols = 1 + (pal.NColours-1) / 16;
+
+    int n = fprintf(fp, "GIMP Palette\nName: %s\nColumns: %d\n#\n", name.c_str(), cols);
+    for (int i = 0; n >= 0 && i < pal.NColours; ++i) {
+        Colour const& c = pal.Colours[i];
+        n = fprintf(fp, "%3" PRIu8 " %3" PRIu8 " %3" PRIu8 "\n", c.r, c.g, c.b);
+        if (n<0) {
+            break;
+        }
+    } 
+    if (n<0) {
+        throw Exception("write error");
+    }
 }
 
 

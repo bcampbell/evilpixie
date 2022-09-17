@@ -24,6 +24,7 @@
 - Stash spritesheet info in PNG metadata to ease reloading
 - Stash grid settings in PNG metadata
 - Add spare 'scratch' frame (toggle with 'j' key).
+- Add "Save Palette".
 
 ## v0.2.1 (Jan 2021)
 
