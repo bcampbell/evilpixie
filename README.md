@@ -29,7 +29,7 @@ Under Linux, Mac and Windows (under msys2):
 
     $ git clone https://github.com/bcampbell/evilpixie.git
     $ cd evilpixie
-    $ meson setup build
+    $ meson setup --buildtype release build
     $ meson compile -C build
 
 Under Linux, you can then install it with:
