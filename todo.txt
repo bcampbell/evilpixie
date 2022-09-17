@@ -26,3 +26,4 @@ perspective line guides
 x palette quantise/remap
 x split window with different zooms
 x brush scale2x (PD code: https://github.com/rwohleb/imageresampler)
+remove exception use (only some load/save routines throw)
