@@ -288,7 +288,7 @@ QLayout* EditorWindow::CreateToolButtons()
         QToolButton* b = new QToolButton();
         b->setIcon( icon );
         b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        b->setIconSize(QSize(64,64));
+        //b->setIconSize(QSize(32,32));
         b->setCheckable(true);
         if( i==0 )
             b->setChecked(true);
