@@ -1,10 +1,9 @@
-project('evilpixie', 'cpp', default_options: ['cpp_std=c++20']) #, default_options : ['cpp_std=c++11', 'warning_level=3'])
+project('evilpixie', 'cpp', default_options: ['cpp_std=c++20'])
 
 qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
 
-cxx = meson.get_compiler('cpp')
-impy_dep = [ cxx.find_library('impy') ]
+impy_dep = dependency('impy', static: true)
 
 incdirs = include_directories('src')
 
@@ -25,9 +24,9 @@ ep_headers = [
 	'src/editor.h',
 	'src/editview.h',
 	'src/exception.h',
-    'src/file_load.h',
-    'src/file_save.h',
-    'src/file_type.h',
+	'src/file_load.h',
+	'src/file_save.h',
+	'src/file_type.h',
 	'src/global.h',
 	'src/img_convert.h',
 	'src/img.h',
@@ -61,9 +60,9 @@ ep_sources = ['src/app.cpp',
 	'src/editor.cpp',
 	'src/editview.cpp',
 	'src/exception.cpp',
-    'src/file_load.cpp',
-    'src/file_save.cpp',
-    'src/file_type.cpp',
+	'src/file_load.cpp',
+	'src/file_save.cpp',
+	'src/file_type.cpp',
 	'src/img_convert.cpp',
 	'src/img.cpp',
 	'src/layer.cpp',
@@ -128,13 +127,14 @@ conf_data = configuration_data()
 conf_data.set('evilpixie_data_dir',
   join_paths([ get_option('prefix'), get_option('datadir'), 'evilpixie']))
 configure_file(input : 'src/config.h.in',
-               output : 'config.h',
-               configuration : conf_data)
+			   output : 'config.h',
+			   configuration : conf_data)
 
 executable('evilpixie',
   sources: [ep_sources, ep_qt_sources, moc_files],
   include_directories: incdirs,
   dependencies : [qt5_dep, impy_dep], #, png_dep, gif_dep, jpeg_dep],
+  win_subsystem: 'windows',
   install : true)
 
 install_subdir('data', install_dir : 'share/evilpixie', strip_directory : true)
