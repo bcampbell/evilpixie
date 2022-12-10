@@ -1,19 +1,19 @@
 # Changelog
 
-## Unreleased
+## v0.2.2 - (Dec 2022) "Your in test" TCE Shanghai Gutter Edition
 
 - New panel to define colour ranges
 - New drawmode: range
 - Palette: show little black/white triangles on currently-selected colours.
 - Change image format (with colour quantisation if needed)
-- Brush scale2x (TODO: check usage in RGB/RGBA)
+- Brush scale2x
 - Option to change grid settings.
 - Palette editor improvements
     - Add hex widget (#rrggbb)
     - Add HSV sliders
     - Improved "spread" function using HSV
     - drag & drop colours (internally, and between other apps)
-- Magnify view (M to split screen)
+- Magnify view ('m' to split screen)
 - "Use brush palette"/"load palette" now offer to remap image to new colours.
 - Add "Remap Brush", to remap brush into current image palette.
 - Bugfix: don't crash when using brushes with different palette size.
