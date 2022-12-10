@@ -1359,6 +1359,9 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m_ActionGridConfig = m->addAction( "Grid Config...", this, SLOT( do_gridconfig()));
         a = m->addAction( "Resize...", this, SLOT(do_resize()));
         a = m->addAction( "Change format...", this, SLOT(do_changefmt()));
+        m->addSeparator();
+        m_ActionToggleSpare = a = m->addAction("Spare page?", this, SLOT(do_togglespare(bool)),QKeySequence("j"));
+        a->setCheckable(true);
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 
@@ -1375,15 +1378,14 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addAction( m_ActionFromSpritesheet);
     }
 
+#if 0
     // Layer menu
     {
         QMenu* m = menubar->addMenu("Layers");
         m->addAction( "&Add Layer", this, SLOT( do_addlayer()) );
 
-        m_ActionToggleSpare = a = m->addAction("Spare page?", this, SLOT(do_togglespare(bool)),QKeySequence("j"));
-        a->setCheckable(true);
     }
-
+#endif
 
     // DrawMode menu
     {
@@ -1400,7 +1402,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
     {
         QMenu* m = menubar->addMenu("&Help");
         a = m->addAction( "Help...", this, SLOT(showHelp()));
-        a = m->addAction( "About Evilpixie...", this, SLOT(showAbout()));
+        a = m->addAction( "About EvilPixie...", this, SLOT(showAbout()));
         connect(m, SIGNAL(aboutToShow()), this, SLOT( update_menu_states()));
     }
 
@@ -1463,7 +1465,11 @@ void EditorWindow::RethinkWindowTitle()
     int h = img.H();
 
     char dim[128];
-    sprintf( dim, " (%dx%d) frame %d/%d", w, h, m_Frame+1, (int)l.mFrames.size());
+    if (m_Frame==SPARE_FRAME ) {
+        sprintf( dim, " (%dx%d) frame ---", w, h);
+    } else {
+        sprintf( dim, " (%dx%d) frame %d/%d", w, h, m_Frame+1, (int)l.mFrames.size());
+    }
 
     std::string title = "[*]";
     title += name;

@@ -1,6 +1,7 @@
 #include "miscwindows.h"
 #include "../app.h"
 #include "../util.h"
+#include "../version.h"
 #include <QFile>
 #include <QString>
 #include <QtWidgets/QTextEdit>
@@ -41,8 +42,9 @@ AboutBox::AboutBox(QWidget* parent) :
     resize( 500,300);
     QTextEdit* content = new QTextEdit();
     content->setReadOnly(true);
-    QString txt = "<h1>Evilpixie</h1>"
-        "version 0.2<br/><br/>"
+    QString txt = "<h1>EvilPixie</h1>"
+        "Version " VERSION_STRING " (" VERSION_NAME ")<br/>"
+        "Built " __DATE__ "<br/><br/>"
         "By Ben Campbell (ben@scumways.com)<br/><br/>"
         "Licensed under GPLv3<br/>"
         "Homepage: <a href=\"http://evilpixie.scumways.com\">http://evilpixie.scumways.com</a><br/>"

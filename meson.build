@@ -42,7 +42,8 @@ ep_headers = [
 	'src/scale2x.h',
 	'src/sheet.h',
 	'src/tool.h',
-	'src/util.h']
+	'src/util.h',
+	'src/version.h']
 
 ep_sources = ['src/app.cpp',
 	'src/blit.cpp',
