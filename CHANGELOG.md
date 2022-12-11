@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.2 - (Dec 2022) "Your in test" TCE Shanghai Gutter Edition
+## v0.3 (Dec 2022) - "Your in test" TCE Shanghai Gutter Edition
 
 - New panel to define colour ranges
 - New drawmode: range
