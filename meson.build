@@ -78,6 +78,10 @@ ep_sources = ['src/app.cpp',
 	'src/tool.cpp',
 	'src/util.cpp']
 
+if host_machine.system() == 'windows'
+    ep_sources += import('windows').compile_resources('win32/evilpixie.rc' )
+endif
+
 ep_qt_headers = [
 	'src/qt/changefmtdialog.h',
 	'src/qt/editorwindow.h',
