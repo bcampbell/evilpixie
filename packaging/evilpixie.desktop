@@ -1,9 +1,11 @@
 [Desktop Entry]
 Type=Application
-Version=0.3
+Version=1.1
 Name=Evilpixie
 Comment=Pixelart-oriented drawing and animation app.
-Exec=evilpixie
+Exec=evilpixie %F
 Icon=evilpixie
 Terminal=false
-Categories=Graphics,2DGraphics;
+Categories=Graphics,2DGraphics;RasterGraphics
+MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/png;image/x-pcx;image/x-targa;image/x-tga
+Keywords=Pixel Art
