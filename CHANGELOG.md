@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1 (Dec 2022)
+
+- Fixed up .desktop file (fgaz)
+
 ## v0.3 (Dec 2022) - "Your in test" TCE Shanghai Gutter Edition
 
 - New panel to define colour ranges
