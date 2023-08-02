@@ -813,6 +813,30 @@ void EditorWindow::do_yflipbrush()
     ShowToolCursor();
 }
 
+void EditorWindow::do_rotatebrush90()
+{
+    if (GetBrush() != -1)
+        return; // std brush - do nothing
+    HideToolCursor();
+    // UGH!
+    Brush& oldBrush = CurrentBrush();
+    Img* tmpImg = Rotate90Clockwise(oldBrush);
+
+    Brush* newBrush = new Brush(oldBrush.Style(),
+           *tmpImg,
+           tmpImg->Bounds(),
+           oldBrush.TransparentColour());
+
+    Point const& handle = oldBrush.Handle();
+    newBrush->SetHandle(Point(handle.y, handle.x));  // flipped
+    newBrush->SetPalette(oldBrush.GetPalette());
+
+    g_App->SetCustomBrush( newBrush );
+    SetBrush( -1 );
+    delete tmpImg;
+    ShowToolCursor();
+}
+
 void EditorWindow::do_scale2xbrush()
 {
     if (GetBrush() != -1)
@@ -1349,6 +1373,7 @@ QMenuBar* EditorWindow::CreateMenuBar()
         m->addSeparator();
         m->addAction( "X-Flip Brush", this, SLOT(do_xflipbrush()),QKeySequence("x") );
         m->addAction( "Y-Flip Brush", this, SLOT(do_yflipbrush()),QKeySequence("y") );
+        m->addAction("Rotate Brush 90°", this, SLOT(do_rotatebrush90()), QKeySequence("z"));
         m_ActionScale2xBrush = m->addAction( "Scale2x Brush", this, SLOT(do_scale2xbrush()));
         m_ActionRemapBrush = m->addAction( "Remap Brush", this, SLOT(do_remapbrush()));
         m->addSeparator();

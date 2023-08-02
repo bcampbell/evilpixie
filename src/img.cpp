@@ -213,3 +213,24 @@ void Img::OutlineBox( PenColour const& pen, Box& b )
 }
 
 
+Img* Rotate90Clockwise(Img const& srcImg)
+{
+    int destW = srcImg.H(); // Flipped.
+    int destH = srcImg.W(); // Flipped.
+    int srcPitch = srcImg.Pitch();
+    size_t bytesPerPixel = PixelSize(srcImg.Fmt());
+    Img* destImg = new Img(srcImg.Fmt(), destW, destH);
+    // Scan out destImg.
+    for (int y = 0; y < destH; ++y) {
+        uint8_t* dest = destImg->Ptr(0, y);
+        uint8_t const* src = srcImg.PtrConst(y, destW-1);   // Flipped!
+        for (int x = 0; x < destW; ++x) {
+            for (size_t i=0; i<bytesPerPixel; ++i) {
+                dest[i] = src[i];
+            }
+            dest += bytesPerPixel;
+            src -= srcPitch;
+        }
+    }
+    return destImg;
+}

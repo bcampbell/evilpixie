@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <cassert>
-
+#include <cstddef>
 
 // Raw pixel types:
 enum PixelFormat {
@@ -16,6 +16,18 @@ enum PenID {
     PEN_FG=0,
     PEN_BG=1,
 };
+
+// Return the number of bytes required to store a pixel.
+inline size_t PixelSize(PixelFormat f) {
+    switch (f) {
+        case FMT_I8: return 1;
+        case FMT_RGBX8: return 4;
+        case FMT_RGBA8: return 4;
+        default: assert(false); // unsupported!
+    }
+    return 0;   // should never get here!
+}
+
 
 class RGBA8;
 

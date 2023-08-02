@@ -82,12 +82,13 @@ protected:
     PixelFormat m_Format;
     int m_BytesPerPixel;
     int m_BytesPerRow;
-    Box m_Bounds;
+    Box m_Bounds;   // TODO: should just be w & h.
 	uint8_t* m_Pixels;
 private:
 };
 
-
+// Return a copy of the image, rotated 90 degrees clockwise.
+Img* Rotate90Clockwise(Img const& srcImg);
 
 #endif // IMG_H
 

@@ -131,6 +131,7 @@ public slots:
     void do_usebrushpalette();
     void do_xflipbrush();
     void do_yflipbrush();
+    void do_rotatebrush90();
     void do_scale2xbrush();
     void do_remapbrush();
     void do_drawmodeChanged(QAction* act);

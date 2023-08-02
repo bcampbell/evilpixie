@@ -1,5 +1,9 @@
 # Changelog
 
+## WIP
+
+- Add brush rotate-by-90-degrees-clockwise.
+
 ## v0.3.1 (Dec 2022)
 
 - Fixed up .desktop file (fgaz)
