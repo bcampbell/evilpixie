@@ -97,6 +97,41 @@ static bool operator<(Bucket const& lhs, Bucket const& rhs) {
 static void medianCut(Bucket all, std::vector<Colour>& out, int numColours);
 
 
+// Call fn for every pixel in the image.
+// srcPalette is required if img is FMT_I8.
+template <typename PixFn> void IteratePixels(Img const& img, Palette const* srcPalette, PixFn fn)
+{
+    for (int y = 0; y < img.H(); ++y) {
+        switch (img.Fmt()) {
+            case FMT_RGBX8:
+                {
+                    RGBX8 const* src = img.PtrConst_RGBX8(0,y);
+                    for (int x = 0; x < img.W(); ++x) {
+                        fn(Colour(*src++));
+                    }
+                }
+                break;
+            case FMT_RGBA8:
+                {
+                    RGBA8 const* src = img.PtrConst_RGBA8(0,y);
+                    for (int x = 0; x < img.W(); ++x) {
+                        fn(Colour(*src++));
+                    }
+                }
+                break;
+            case FMT_I8:
+                {
+                    assert(srcPalette);
+                    I8 const* src = img.PtrConst_I8(0,y);
+                    for (int x = 0; x < img.W(); ++x) {
+                        Colour c = srcPalette->GetColour((int)*src++);
+                        fn(c);
+                    }
+                }
+                break;
+        }
+    }
+}
 
 // TODO: should be able to feed in multiple images here...
 // TODO: ditch srcPalette once images contain their own palette...
@@ -107,50 +142,27 @@ void CalculatePalette(Img const& srcImg, std::vector<Colour>& out, int nColours,
 
     // build histogram
     std::map<Colour, int> hist;
-    int y;
-    for (y = 0; y < srcImg.H(); ++y) {
-        switch (srcImg.Fmt()) {
-            case FMT_RGBX8:
-                {
-                    int x;
-                    RGBX8 const* src = srcImg.PtrConst_RGBX8(0,y);
-                    for (x = 0; x < srcImg.W(); ++x) {
-                        Colour c(*src++);
-                        hist[c]++;
-                    }
-                }
-                break;
-            case FMT_RGBA8:
-                {
-                    int x;
-                    RGBA8 const* src = srcImg.PtrConst_RGBA8(0,y);
-                    for (x = 0; x < srcImg.W(); ++x) {
-                        Colour c(*src++);
-                        hist[c]++;
-                    }
-                }
-                break;
-            case FMT_I8:
-                {
-                    assert(srcPalette);
-                    I8 const* src = srcImg.PtrConst_I8(0,y);
-                    for (int x = 0; x < srcImg.W(); ++x) {
-                        Colour c = srcPalette->GetColour((int)*src++);
-                        hist[c]++;
-                    }
-                }
-                break;
-                // TODO: handle indexed images ;-)
-                assert(false);  // not supported...
-                break;
+    std::vector<Colour> firstn;
+    IteratePixels(srcImg, srcPalette, [&](Colour const& c) {
+        auto it = hist.find(c);
+        if (it == hist.end()) {
+            hist.insert({c,0});
+            // Remember the ordering for the first n colours!
+            if (firstn.size() < (size_t)nColours) {
+                firstn.push_back(c);
+            }
+        } else {
+            it->second++;
         }
-    }
+    });
 
     if (hist.size() <= (size_t)nColours) {
-        // no colour reduction needed!
-        for (auto const& dat : hist) {
-            out.push_back(dat.first);
+        // No colour reduction needed. Preserve ordering seen in image.
+        // Pad out if needed.
+        while (firstn.size() < (size_t)nColours) {
+            firstn.push_back(Colour(0,0,0,0));
         }
+        out = firstn;
         return;
     }
 

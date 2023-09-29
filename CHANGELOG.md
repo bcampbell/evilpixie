@@ -3,6 +3,7 @@
 ## WIP
 
 - Add brush rotate-by-90-degrees-clockwise.
+- Colour quantising: preserve colour order within image if no colour reduction required.
 
 ## v0.3.1 (Dec 2022)
 
