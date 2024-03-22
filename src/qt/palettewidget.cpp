@@ -295,19 +295,13 @@ QRect PaletteWidget::CellRect(int n) const
 int PaletteWidget::Cols() const
 {
     int n=m_Palette.NumColours();
-    if(n<=8)
-        return 1;
-    if(n<=16)
-        return 2;
-    if(n<=32)
-        return 4;
-    return 8;
+    return std::min(1 + (n-1)/8, 8);
 }
 
 int PaletteWidget::Rows() const
 {
     int n=m_Palette.NumColours();
-    return n/Cols();
+    return 1 + (n-1)/Cols();
 }
 
 
