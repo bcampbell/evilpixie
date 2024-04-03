@@ -22,7 +22,7 @@ struct SpriteGrid
 
     unsigned int cellW{0};  // width of each cell (exclude padX) 0=unset
     unsigned int cellH{0};  // height of each cell (excluding padY) 0=unset
-    unsigned int numFrames{0};  // 0 = rows * cols
+    unsigned int numFrames{1};  // <= rows * cols
 
     // Calculate cells in the grid. Returns overall bounding box.
     void Layout(std::vector<Box>& cells) const;

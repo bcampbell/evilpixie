@@ -11,10 +11,10 @@ void SpriteGrid::Layout(std::vector<Box>& cells) const
 {
     assert(cellW > 0);
     assert(cellH > 0);
-    unsigned int cnt = (numFrames > 0) ? numFrames : numColumns * numRows;
+    assert(numFrames <= numColumns * numRows);
     int w = padX + cellW + padX;
     int h = padY + cellH + padY;
-    for (unsigned int i = 0; i < cnt; ++i) {
+    for (unsigned int i = 0; i < numFrames; ++i) {
         int x = (i % numColumns) * w;
         int y = (i / numColumns) * h;
         cells.push_back(Box(x, y, cellW, cellH));
@@ -119,6 +119,7 @@ bool SpriteGrid::Parse(std::string input, Box const& imgbounds)
 Img* FramesToSpriteSheet(std::vector<Frame*> const& frames, SpriteGrid const& grid)
 {
     assert(!frames.empty());
+    assert(grid.numFrames >= frames.size());
     std::vector<Box> cells;
     grid.Layout(cells);
     Box destBounds = grid.Extent();

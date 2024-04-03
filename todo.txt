@@ -1,7 +1,5 @@
 range editor window
-spare page (j)
 layers
-brush rotate (by 90 degrees)
 arbitrary brush rotate (rotsprite?)
 arbitrary brush resize
 better error messages for load/save!!!

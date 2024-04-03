@@ -1053,6 +1053,7 @@ void EditorWindow::do_tospritesheet()
             cell.Merge(frame->mImg->Bounds());
         }
         grid.numColumns = l.mFrames.size();
+        grid.numRows = 1;
         grid.numFrames = l.mFrames.size();
         grid.cellW = cell.w;
         grid.cellH = cell.h;
@@ -1078,9 +1079,9 @@ void EditorWindow::do_fromspritesheet()
         Box b = srcImg.Bounds();
         grid.numColumns = 4;
         grid.numRows = 1;
+        grid.numFrames = grid.numColumns * grid.numRows;
         grid.cellW = (b.w / grid.numColumns)-(grid.padX*2);
         grid.cellH = (b.h / grid.numRows)-(grid.padY*2);
-        grid.numFrames = 0; // use rows*cols
     }
     FromSpritesheetDialog dlg(this, srcImg, grid);
     if( dlg.exec() == QDialog::Accepted )

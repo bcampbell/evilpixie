@@ -32,8 +32,6 @@ void SheetPreviewWidget::paintEvent(QPaintEvent *)
     QPainter painter(this);
     painter.eraseRect( r );
 
- 
-
     const int F=8192;   // cheesy fixed-point math
     int rx = (F*r.width())/m_Contain.w;
     int ry = (F*r.height())/m_Contain.h;
@@ -195,6 +193,7 @@ void FromSpritesheetDialog::rethink()
     Box b = mSrcImg.Bounds();
     mGrid.numColumns = cols;
     mGrid.numRows = rows;
+    mGrid.numFrames = rows * cols;
     mGrid.cellW = (b.w / cols)-(mGrid.padX*2);
     mGrid.cellH = (b.h / rows)-(mGrid.padY*2);
 
