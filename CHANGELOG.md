@@ -2,6 +2,7 @@
 
 ## WIP
 
+- Use Qt 6 instead of Qt 5.
 - Add brush rotate-by-90-degrees-clockwise.
 - Colour quantising: preserve colour order within image if no colour reduction required.
 

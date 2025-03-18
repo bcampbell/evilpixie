@@ -1,7 +1,8 @@
 project('evilpixie', 'cpp', default_options: ['cpp_std=c++20'])
 
-qt5 = import('qt5')
-qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
+qt6 = import('qt6')
+qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets'])
+#qt6_dep = dependency('qt6', modules: 'Widgets')
 
 impy_dep = dependency('impy', static: true)
 
@@ -123,9 +124,9 @@ ep_qt_sources = [
 
 ep_qt_resources = ['resources.qrc']
 
-moc_files = qt5.preprocess(moc_headers: ep_qt_headers,
+moc_files = qt6.preprocess(moc_headers: ep_qt_headers,
   qresources : ep_qt_resources,
-  dependencies: qt5_dep)
+  dependencies: qt6_dep)
 
 # generate config.h
 conf_data = configuration_data()
@@ -138,7 +139,7 @@ configure_file(input : 'src/config.h.in',
 executable('evilpixie',
   sources: [ep_sources, ep_qt_sources, moc_files],
   include_directories: incdirs,
-  dependencies : [qt5_dep, impy_dep], #, png_dep, gif_dep, jpeg_dep],
+  dependencies : [qt6_dep, impy_dep], #, png_dep, gif_dep, jpeg_dep],
   win_subsystem: 'windows',
   install : true)
 

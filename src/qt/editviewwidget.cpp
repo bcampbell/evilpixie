@@ -7,7 +7,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QMouseEvent>
-#include <QtWidgets/QShortcut>
+#include <QShortcut>
 #include <cassert>
 
 EditViewWidget::EditViewWidget(Editor& editor, NodePath const& focus, int frame) :

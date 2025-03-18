@@ -12,7 +12,7 @@
 #include <QMouseEvent>
 #include <QMimeData>
 #include <QDrag>
-#include <QtWidgets/QShortcut>
+#include <QShortcut>
 
 PaletteWidget::PaletteWidget(Palette const& src) :
     m_Palette(src),

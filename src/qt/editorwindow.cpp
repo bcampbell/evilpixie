@@ -52,9 +52,9 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QTextEdit>
 
+#include <QAction>
 #include <QCloseEvent>
 #include <QCursor>
 
@@ -138,7 +138,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
 
     QGridLayout* layout = new QGridLayout();
     layout->setSpacing(0);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
 
     CreateActions();
     QMenuBar* menubar = CreateMenuBar();
@@ -155,7 +155,7 @@ EditorWindow::EditorWindow( Project* proj, QWidget* parent ) :
     m_ViewSplitter->addWidget(m_ViewWidget);
 
     QFrame* hr = new QFrame();  // this, "<hr>", 0 );
-    hr->setFrameStyle( QFrame::Sunken + QFrame::HLine );
+    hr->setFrameStyle( QFrame::Sunken | QFrame::HLine );
     hr->setFixedHeight( 8 );
 
 //    QLabel* hr = new QLabel( "Hello" );

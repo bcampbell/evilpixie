@@ -12,7 +12,7 @@ be familiar :-)
 
 Depends upon:
 
-- qt5
+- Qt 6
 - [libimpy](http://github.com/bcampbell/impy)
 - libpng
 - giflib (version 5)
@@ -20,7 +20,7 @@ Depends upon:
 
 For Debian/Unbuntu, this means something like:
 ```
-$ sudo apt install qt5-default libjpeg-dev libpng-dev libgif-dev
+$ sudo apt install qt6-base-dev qt6-tools-dev libjpeg-dev libpng-dev libgif-dev
 ```
 
 ## Building from source
